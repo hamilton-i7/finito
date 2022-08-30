@@ -1,26 +1,27 @@
 package com.example.finito.features.boards.domain.entity
 
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.example.finito.features.labels.domain.entity.Label
 
-@Entity(tableName = "labeled_boards", foreignKeys = [
+@Entity(
+    tableName = "labeled_boards", primaryKeys = ["board_id", "label_id"], foreignKeys = [
     ForeignKey(
         entity = Board::class,
-        parentColumns = ["boardId"],
-        childColumns = ["boardId"],
+        parentColumns = ["board_id"],
+        childColumns = ["board_id"],
         onDelete = ForeignKey.CASCADE
     ),
     ForeignKey(
         entity = Label::class,
-        parentColumns = ["labelId"],
-        childColumns = ["labelId"],
+        parentColumns = ["label_id"],
+        childColumns = ["label_id"],
         onDelete = ForeignKey.CASCADE
-    ),
-])
+    )],
+    indices = [
+        Index(value = ["label_id"])
+    ]
+)
 data class BoardLabelCrossRef(
-    @PrimaryKey val id: Int,
-    val boardId: Int,
-    val labelId: Int
+    @ColumnInfo(name = "board_id") val boardId: Int,
+    @ColumnInfo(name = "label_id") val labelId: Int
 )

@@ -19,6 +19,6 @@ object AppModule {
             app,
             FinitoDatabase::class.java,
             FinitoDatabase.DATABASE_NAME
-        ).build()
+        ).createFromAsset("database/kanban.db").build()
     }
 }

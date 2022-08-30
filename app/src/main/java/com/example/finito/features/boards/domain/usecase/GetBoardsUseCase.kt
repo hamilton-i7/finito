@@ -14,8 +14,8 @@ class GetBoardsUseCase(
     ): Flow<List<BoardWithLabels>> {
         return repository.getBoards().map { boards ->
             when(boardOrder) {
-                BoardOrder.A_Z -> boards.sortedBy { it.board.name.lowercase() }
-                BoardOrder.Z_A -> boards.sortedByDescending { it.board.name.lowercase() }
+                BoardOrder.A_Z -> boards.sortedBy { it.board.normalizedName }
+                BoardOrder.Z_A -> boards.sortedByDescending { it.board.normalizedName }
                 BoardOrder.NEWEST -> boards.sortedBy { it.board.createdAt }
                 BoardOrder.OLDEST -> boards.sortedByDescending { it.board.createdAt }
             }

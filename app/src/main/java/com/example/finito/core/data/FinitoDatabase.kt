@@ -14,4 +14,8 @@ import com.example.finito.features.labels.domain.entity.Label
 abstract class FinitoDatabase : RoomDatabase() {
 
     abstract val boardDao: BoardDao
+
+    companion object {
+        const val DATABASE_NAME = "finito_db"
+    }
 }

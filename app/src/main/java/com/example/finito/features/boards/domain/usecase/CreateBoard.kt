@@ -7,14 +7,8 @@ import com.example.finito.features.boards.domain.repository.BoardRepository
 class CreateBoard(
     private val repository: BoardRepository
 ) {
-    suspend operator fun invoke(board: Board) {
-        if (isValidBoard(board)) {
-            return repository.create(board)
-        }
-    }
-
     @Throws(ResourceException::class)
-    private fun isValidBoard(board: Board): Boolean {
+    suspend operator fun invoke(board: Board) {
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
@@ -23,6 +17,6 @@ class CreateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return true
+        return repository.create(board)
     }
 }

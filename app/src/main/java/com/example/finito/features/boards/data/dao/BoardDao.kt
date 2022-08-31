@@ -11,10 +11,10 @@ interface BoardDao {
     suspend fun create(board: Board)
 
     @Transaction
-    @Query("SELECT * FROM boards")
+    @Query("SELECT * FROM boards WHERE archived = 0 AND deleted = 0")
     fun findAll(): Flow<List<BoardWithLabels>>
 
-    @Query("SELECT board_id, name, normalized_name FROM boards")
+    @Query("SELECT board_id, name, normalized_name FROM boards WHERE archived = 0 AND deleted = 0")
     fun findSimpleBoards(): Flow<List<SimpleBoard>>
 
     @Transaction
@@ -30,7 +30,7 @@ interface BoardDao {
     @Query("SELECT * FROM boards WHERE board_id = :id")
     suspend fun findOne(id: Int): DetailedBoard?
 
-    @Query("SELECT seq FROM sqlite_sequence WHERE name = 'finito_db'")
+    @Query("SELECT seq FROM sqlite_sequence WHERE name = 'boards'")
     suspend fun findNewestId(): Int
 
     @Update

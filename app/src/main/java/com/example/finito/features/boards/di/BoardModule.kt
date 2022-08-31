@@ -37,6 +37,7 @@ object BoardModule {
             findArchivedBoards = FindArchivedBoards(repository),
             findDeletedBoards = FindDeletedBoards(repository),
             findSimpleBoards = FindSimpleBoards(repository),
+            findOneBoard = FindOneBoard(repository)
         )
     }
 }

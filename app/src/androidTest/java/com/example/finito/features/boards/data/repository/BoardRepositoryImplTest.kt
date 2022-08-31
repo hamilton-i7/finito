@@ -7,9 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.boards.domain.entity.Board
-import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.entity.BoardWithLabels
-import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -45,13 +43,13 @@ class BoardRepositoryImplTest {
     fun prepopulate() = runTest {
         ('A'..'J').forEachIndexed { index, c ->
             runBlocking {
-                val id = index + 1
-                db.boardDao.create(Board(boardId = id, name = "Board $c"))
-                db.labelDao.create(Label(labelId = id, name = "Label $c"))
-
-                if (index % 2 == 0) {
-                    db.boardLabelDao.create(BoardLabelCrossRef(labelId = id, boardId = id))
-                }
+                db.boardDao.create(
+                    Board(
+                        name = "Board $c",
+                        archived = index % 3 == 0,
+                        deleted = index % 2 == 0
+                    )
+                )
             }
         }
         dummyBoards = db.boardDao.findAll().first()
@@ -78,5 +76,47 @@ class BoardRepositoryImplTest {
     fun findAll() = runTest {
         val boards = boardRepositoryImpl.findAll().first()
         assertThat(boards.size).isGreaterThan(0)
+        // Check if there are only active boards
+        assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
+    }
+
+    @Test
+    fun findSimpleBoards() = runTest {
+        val boards = boardRepositoryImpl.findSimpleBoards().first()
+        assertThat(boards.size).isGreaterThan(0)
+
+        // Check if there are only active boards
+        val boardIds = boards.map { it.boardId }
+        val deletedBoards = dummyBoards.filter { it.board.deleted }.groupBy { it.board.boardId }
+        boardIds.forEach {
+            assertThat(deletedBoards[it]).isNull()
+        }
+
+        val archivedBoards = dummyBoards.filter { it.board.archived }.groupBy { it.board.boardId }
+        boardIds.forEach {
+            assertThat(archivedBoards[it]).isNull()
+        }
+    }
+
+    @Test
+    fun findArchivedBoards() = runTest {
+        val archivedBoards = boardRepositoryImpl.findArchivedBoards().first()
+        assertThat(archivedBoards.size).isGreaterThan(0)
+        assertThat(archivedBoards.all { it.board.archived }).isTrue()
+    }
+
+    @Test
+    fun findDeletedBoards() = runTest {
+        val deletedBoards = boardRepositoryImpl.findDeletedBoards().first()
+        assertThat(deletedBoards.size).isGreaterThan(0)
+        assertThat(deletedBoards.all { it.board.deleted }).isTrue()
+    }
+
+    @Test
+    fun findOne() = runTest {
+        val board = boardRepositoryImpl.findOne(dummyBoards.random().board.boardId)
+        assertThat(board).isNotNull()
+
+        assertThat(boardRepositoryImpl.findOne(id = 0)).isNull()
     }
 }

@@ -2,12 +2,33 @@ package com.example.finito.features.boards.data.repository
 
 import com.example.finito.features.boards.domain.entity.*
 import com.example.finito.features.boards.domain.repository.BoardRepository
+import com.example.finito.features.labels.domain.entity.Label
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class FakeBoardRepository : BoardRepository {
 
     private val boards = mutableListOf<BoardWithLabels>()
+
+    override suspend fun create(board: Board) {
+        boards.add(BoardWithLabels(
+            board = board,
+            labels = emptyList()
+        ))
+    }
+
+    override suspend fun create(board: Board, labels: List<BoardLabelCrossRef>) {
+        boards.add(
+            BoardWithLabels(
+                board = board,
+                labels = labels.map { Label(it.labelId, name = "Label name") }
+            )
+        )
+    }
+
+    override suspend fun create(vararg labels: BoardLabelCrossRef) {
+        TODO("Not yet implemented")
+    }
 
     override fun findAll(): Flow<List<BoardWithLabels>> {
         return flow { emit(boards) }
@@ -38,21 +59,6 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override suspend fun remove(vararg labels: BoardLabelCrossRef) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun create(board: Board) {
-        boards.add(BoardWithLabels(
-            board = board,
-            labels = emptyList()
-        ))
-    }
-
-    override suspend fun create(board: Board, labels: List<BoardLabelCrossRef>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun create(vararg labels: BoardLabelCrossRef) {
         TODO("Not yet implemented")
     }
 }

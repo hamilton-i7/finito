@@ -5,6 +5,7 @@ import com.example.finito.features.boards.data.repository.BoardRepositoryImpl
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import com.example.finito.features.boards.domain.usecase.CreateBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
+import com.example.finito.features.boards.domain.usecase.CreateBoardWithLabels
 import com.example.finito.features.boards.domain.usecase.FindAllBoards
 import dagger.Module
 import dagger.Provides
@@ -27,7 +28,8 @@ object BoardModule {
     fun provideBoardUseCases(repository: BoardRepository): BoardUseCases {
         return BoardUseCases(
             findAllBoards = FindAllBoards(repository),
-            createBoard = CreateBoard(repository)
+            createBoard = CreateBoard(repository),
+            createBoardWithLabels = CreateBoardWithLabels(repository)
         )
     }
 }

@@ -1,8 +1,9 @@
 package com.example.finito.features.boards.domain.entity
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.example.finito.core.util.normalize
-import com.example.finito.features.labels.domain.entity.Label
 import java.time.LocalDateTime
 
 @Entity(tableName = "boards")
@@ -11,15 +12,8 @@ data class Board(
     @ColumnInfo(name = "board_id") val boardId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
+    val archived: Boolean = false,
+    val deleted: Boolean = false,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 
-data class BoardWithLabels(
-    @Embedded val board: Board,
-    @Relation(
-        parentColumn = "board_id",
-        entityColumn = "label_id",
-        associateBy = Junction(BoardLabelCrossRef::class)
-    )
-    val labels: List<Label>
-)

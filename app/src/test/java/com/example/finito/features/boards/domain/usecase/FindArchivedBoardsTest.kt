@@ -13,16 +13,16 @@ import org.junit.Before
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class FindAllBoardsTest {
+class FindArchivedBoardsTest {
 
-    private lateinit var findAllBoards: FindAllBoards
+    private lateinit var findArchivedBoards: FindArchivedBoards
     private lateinit var fakeBoardRepository: FakeBoardRepository
     private lateinit var dummyBoards: MutableList<Board>
 
     @Before
     fun setUp() {
         fakeBoardRepository = FakeBoardRepository()
-        findAllBoards = FindAllBoards(fakeBoardRepository)
+        findArchivedBoards = FindArchivedBoards(fakeBoardRepository)
         dummyBoards = mutableListOf()
 
         ('A'..'Z').forEachIndexed { index, c ->
@@ -45,14 +45,14 @@ class FindAllBoardsTest {
     }
 
     @Test
-    fun `find all boards returns active boards only (non-deleted and non-archived)`() = runTest {
-        val boards = findAllBoards().first()
-        assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
+    fun `find all boards returns archived boards only`() = runTest {
+        val boards = findArchivedBoards().first()
+        assertThat(boards.all { it.board.archived }).isTrue()
     }
 
     @Test
     fun `get boards use case returns list sorted by name ascending`(): Unit = runTest {
-        val sortedBoards = findAllBoards(BoardOrder.A_Z).first()
+        val sortedBoards = findArchivedBoards(BoardOrder.A_Z).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(sortedBoards[i].board.normalizedName)
@@ -62,7 +62,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `get boards use case returns list sorted by name descending`(): Unit = runTest {
-        val sortedBoards = findAllBoards(BoardOrder.Z_A).first()
+        val sortedBoards = findArchivedBoards(BoardOrder.Z_A).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(sortedBoards[i].board.normalizedName)
@@ -72,7 +72,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `get boards use case returns list sorted by creation date ascending`(): Unit = runTest {
-        val sortedBoards = findAllBoards(BoardOrder.OLDEST).first()
+        val sortedBoards = findArchivedBoards(BoardOrder.OLDEST).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(
@@ -83,7 +83,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `get boards use case returns list sorted by creation date descending`(): Unit = runTest {
-        val sortedBoards = findAllBoards(BoardOrder.NEWEST).first()
+        val sortedBoards = findArchivedBoards(BoardOrder.NEWEST).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(

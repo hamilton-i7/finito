@@ -10,6 +10,8 @@ class FakeBoardRepository : BoardRepository {
 
     private val boards = mutableListOf<BoardWithLabels>()
 
+    val boardLabels = mutableListOf<BoardLabelCrossRef>()
+
     override suspend fun create(board: Board) {
         boards.add(BoardWithLabels(
             board = board,
@@ -27,11 +29,11 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override suspend fun create(vararg labels: BoardLabelCrossRef) {
-        TODO("Not yet implemented")
+        boardLabels.addAll(labels)
     }
 
     override fun findAll(): Flow<List<BoardWithLabels>> {
-        return flow { emit(boards) }
+        return flow { emit(boards.filter { !it.board.deleted && !it.board.archived }) }
     }
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {
@@ -39,11 +41,11 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override fun findArchivedBoards(): Flow<List<BoardWithLabels>> {
-        TODO("Not yet implemented")
+        return flow { emit(boards.filter { it.board.archived }) }
     }
 
     override fun findDeletedBoards(): Flow<List<BoardWithLabels>> {
-        TODO("Not yet implemented")
+        return flow { emit(boards.filter { it.board.deleted }) }
     }
 
     override suspend fun findOne(id: Int): DetailedBoard? {

@@ -87,14 +87,21 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override suspend fun findNewestId(): Int {
-        TODO("Not yet implemented")
+        return boards.map { it.board.boardId }.max()
     }
 
     override suspend fun update(board: Board) {
-        TODO("Not yet implemented")
+        boards.find { it.board.boardId == board.boardId } ?: return
+        boards.set(
+            index = boards.indexOfFirst { it.board.boardId == board.boardId },
+            element = BoardWithLabels(board)
+        )
     }
 
     override suspend fun remove(board: Board) {
-        TODO("Not yet implemented")
+        val boardToDeleteIndex = boards.indexOfFirst { it.board.boardId == board.boardId }
+        if (boardToDeleteIndex == -1) return
+
+        boards.removeAt(boardToDeleteIndex)
     }
 }

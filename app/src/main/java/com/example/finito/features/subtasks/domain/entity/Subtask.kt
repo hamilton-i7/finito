@@ -1,9 +1,6 @@
 package com.example.finito.features.subtasks.domain.entity
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.example.finito.core.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.util.normalize
@@ -21,6 +18,9 @@ import java.time.LocalTime
             childColumns = ["task_id"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["task_id"])
     ]
 )
 data class Subtask(

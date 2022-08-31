@@ -32,6 +32,7 @@ interface BoardDao {
     fun findDeletedBoards(): Flow<List<BoardWithLabels>>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM boards WHERE board_id = :id")
     suspend fun findOne(id: Int): DetailedBoard?
 

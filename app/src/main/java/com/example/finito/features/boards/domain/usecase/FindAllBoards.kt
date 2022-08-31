@@ -6,7 +6,7 @@ import com.example.finito.features.boards.domain.util.BoardOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class GetBoardsUseCase(
+class FindAllBoards(
     private val repository: BoardRepository
 ) {
     operator fun invoke(

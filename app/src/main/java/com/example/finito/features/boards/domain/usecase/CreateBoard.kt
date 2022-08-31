@@ -5,7 +5,7 @@ import com.example.finito.core.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.repository.BoardRepository
 
-class AddBoardUseCase(
+class CreateBoard(
     private val repository: BoardRepository
 ) {
     suspend operator fun invoke(board: Board) {

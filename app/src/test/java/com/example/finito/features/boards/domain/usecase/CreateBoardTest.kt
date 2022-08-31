@@ -12,26 +12,26 @@ import org.junit.Before
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class AddBoardUseCaseTest {
-    private lateinit var addBoardUseCase: AddBoardUseCase
+class CreateBoardTest {
+    private lateinit var createBoard: CreateBoard
     private lateinit var fakeBoardRepository: FakeBoardRepository
 
     @Before
     fun setUp() {
         fakeBoardRepository = FakeBoardRepository()
-        addBoardUseCase = AddBoardUseCase(fakeBoardRepository)
+        createBoard = CreateBoard(fakeBoardRepository)
     }
 
     @Test
     fun `add board throws Exception if invalid name`() {
         val emptyNameBoard = Board(name = "")
         assertThrows(ResourceException::class.java) {
-            runTest { addBoardUseCase(emptyNameBoard) }
+            runTest { createBoard(emptyNameBoard) }
         }
 
         val blankNameBoard = Board(name = "     ")
         assertThrows(ResourceException::class.java) {
-            runTest { addBoardUseCase(blankNameBoard) }
+            runTest { createBoard(blankNameBoard) }
         }
     }
 
@@ -41,8 +41,8 @@ class AddBoardUseCaseTest {
         var boards = fakeBoardRepository.findAll().first()
 
         assertThat(boards.size).isEqualTo(0)
-        addBoardUseCase(board)
-        addBoardUseCase(board)
+        createBoard(board)
+        createBoard(board)
 
         boards = fakeBoardRepository.findAll().first()
         assertThat(boards.size).isEqualTo(2)

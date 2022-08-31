@@ -18,6 +18,11 @@ class CreateBoard(
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
+        if (board.archived && board.deleted) {
+            throw ResourceException.InvalidException(
+                message = "Board must be either archived or deleted. Not both"
+            )
+        }
         return true
     }
 }

@@ -24,17 +24,17 @@ class BoardRepositoryImplTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var finitoDatabase: FinitoDatabase
+    private lateinit var db: FinitoDatabase
     private lateinit var boardRepositoryImpl: BoardRepositoryImpl
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        finitoDatabase = Room
+        db = Room
             .inMemoryDatabaseBuilder(context, FinitoDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        boardRepositoryImpl = BoardRepositoryImpl(finitoDatabase.boardDao)
+        boardRepositoryImpl = BoardRepositoryImpl(db.boardDao)
     }
 
     @Before
@@ -49,24 +49,30 @@ class BoardRepositoryImplTest {
 
     @After
     fun teardown() {
-        finitoDatabase.close()
-    }
-
-    @Test
-    fun findAll() = runTest {
-        val boards = boardRepositoryImpl.findAll().first()
-        assertThat(boards.size).isGreaterThan(0)
+        db.close()
     }
 
     @Test
     fun create() = runTest {
-        val boards = boardRepositoryImpl.findAll().first()
+        val boards = db.boardDao.findAll().first()
         val board = Board(name = "Board name")
 
         assertThat(boards.size).isEqualTo(boards.size)
         for (i in 0..2) {
             boardRepositoryImpl.create(board)
         }
-        assertThat(boardRepositoryImpl.findAll().first().size).isEqualTo(boards.size + 3)
+        assertThat(db.boardDao.findAll().first().size)
+            .isEqualTo(boards.size + 3)
+    }
+
+    @Test
+    fun createBoardWithLabels() = runTest {
+
+    }
+
+    @Test
+    fun findAll() = runTest {
+        val boards = boardRepositoryImpl.findAll().first()
+        assertThat(boards.size).isGreaterThan(0)
     }
 }

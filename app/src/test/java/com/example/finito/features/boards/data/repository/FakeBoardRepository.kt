@@ -37,7 +37,14 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {
-        TODO("Not yet implemented")
+        return flow {
+            emit(boards.filter { !it.board.deleted && !it.board.archived }.map {
+                SimpleBoard(
+                    boardId = it.board.boardId,
+                    name = it.board.name
+                )
+            })
+        }
     }
 
     override fun findArchivedBoards(): Flow<List<BoardWithLabels>> {

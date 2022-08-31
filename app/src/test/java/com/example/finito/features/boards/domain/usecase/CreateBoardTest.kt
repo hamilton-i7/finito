@@ -36,6 +36,18 @@ class CreateBoardTest {
     }
 
     @Test
+    fun `create board throws Exception if board is archived and deleted`() {
+        val board = Board(
+            name = "Invalid Board",
+            archived = true,
+            deleted = true
+        )
+        assertThrows(ResourceException::class.java) {
+            runTest { createBoard(board) }
+        }
+    }
+
+    @Test
     fun `add board inserts new board on list`() = runTest {
         val board = Board(name = "Board name")
         var boards = fakeBoardRepository.findAll().first()

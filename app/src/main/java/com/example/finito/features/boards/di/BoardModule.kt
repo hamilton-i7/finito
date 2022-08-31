@@ -29,7 +29,8 @@ object BoardModule {
             createBoardLabel = CreateBoardLabel(repository),
             findAllBoards = FindAllBoards(repository),
             findArchivedBoards = FindArchivedBoards(repository),
-            findDeletedBoards = FindDeletedBoards(repository)
+            findDeletedBoards = FindDeletedBoards(repository),
+            findSimpleBoards = FindSimpleBoards(repository),
         )
     }
 }

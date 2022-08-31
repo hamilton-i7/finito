@@ -7,4 +7,5 @@ data class BoardUseCases(
     val findAllBoards: FindAllBoards,
     val findArchivedBoards: FindArchivedBoards,
     val findDeletedBoards: FindDeletedBoards,
+    val findSimpleBoards: FindSimpleBoards
 )

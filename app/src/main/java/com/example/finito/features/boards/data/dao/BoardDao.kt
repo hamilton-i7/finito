@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BoardDao {
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun create(board: Board)
+
     @Transaction
     @Query("SELECT * FROM boards")
     fun findAll(): Flow<List<BoardWithLabels>>
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(board: Board)
 }

@@ -10,12 +10,6 @@ interface BoardDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun create(board: Board)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(board: Board, labels: List<BoardLabelCrossRef>)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(vararg labels: BoardLabelCrossRef)
-
     @Transaction
     @Query("SELECT * FROM boards")
     fun findAll(): Flow<List<BoardWithLabels>>
@@ -36,12 +30,12 @@ interface BoardDao {
     @Query("SELECT * FROM boards WHERE board_id = :id")
     suspend fun findOne(id: Int): DetailedBoard?
 
+    @Query("SELECT seq FROM sqlite_sequence WHERE name = 'finito_db'")
+    suspend fun findNewestId(): Int
+
     @Update
     suspend fun update(board: Board)
 
     @Delete
     suspend fun remove(board: Board)
-
-    @Delete
-    suspend fun remove(vararg labels: BoardLabelCrossRef)
 }

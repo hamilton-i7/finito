@@ -7,6 +7,7 @@ import com.example.finito.core.domain.converters.DateConverters
 import com.example.finito.core.domain.converters.DateTimeConverters
 import com.example.finito.core.domain.converters.TimeConverters
 import com.example.finito.features.boards.data.dao.BoardDao
+import com.example.finito.features.boards.data.dao.BoardLabelDao
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.labels.data.dao.LabelDao
@@ -23,6 +24,7 @@ abstract class FinitoDatabase : RoomDatabase() {
 
     abstract val boardDao: BoardDao
     abstract val labelDao: LabelDao
+    abstract val boardLabelDao: BoardLabelDao
 
     companion object {
         const val DATABASE_NAME = "finito_db"

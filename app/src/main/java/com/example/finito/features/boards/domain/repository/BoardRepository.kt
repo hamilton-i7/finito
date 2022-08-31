@@ -7,10 +7,6 @@ interface BoardRepository {
 
     suspend fun create(board: Board)
 
-    suspend fun create(board: Board, labels: List<BoardLabelCrossRef>)
-
-    suspend fun create(vararg labels: BoardLabelCrossRef)
-
     fun findAll(): Flow<List<BoardWithLabels>>
 
     fun findSimpleBoards(): Flow<List<SimpleBoard>>
@@ -21,9 +17,9 @@ interface BoardRepository {
 
     suspend fun findOne(id: Int): DetailedBoard?
 
+    suspend fun findNewestId(): Int
+
     suspend fun update(board: Board)
 
     suspend fun remove(board: Board)
-
-    suspend fun remove(vararg labels: BoardLabelCrossRef)
 }

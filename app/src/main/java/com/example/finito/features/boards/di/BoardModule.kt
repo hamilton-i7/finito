@@ -1,7 +1,9 @@
 package com.example.finito.features.boards.di
 
 import com.example.finito.core.data.FinitoDatabase
+import com.example.finito.features.boards.data.repository.BoardLabelRepositoryImpl
 import com.example.finito.features.boards.data.repository.BoardRepositoryImpl
+import com.example.finito.features.boards.domain.repository.BoardLabelRepository
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import com.example.finito.features.boards.domain.usecase.*
 import dagger.Module
@@ -22,11 +24,15 @@ object BoardModule {
 
     @Provides
     @Singleton
+    fun provideBoardLabelRepository(db: FinitoDatabase): BoardLabelRepository {
+        return BoardLabelRepositoryImpl(db.boardLabelDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideBoardUseCases(repository: BoardRepository): BoardUseCases {
         return BoardUseCases(
             createBoard = CreateBoard(repository),
-            createBoardWithLabels = CreateBoardWithLabels(repository),
-            createBoardLabel = CreateBoardLabel(repository),
             findAllBoards = FindAllBoards(repository),
             findArchivedBoards = FindArchivedBoards(repository),
             findDeletedBoards = FindDeletedBoards(repository),

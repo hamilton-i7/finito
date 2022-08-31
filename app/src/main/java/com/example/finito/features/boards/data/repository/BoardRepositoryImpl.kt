@@ -12,14 +12,6 @@ class BoardRepositoryImpl(
         return dao.create(board)
     }
 
-    override suspend fun create(board: Board, labels: List<BoardLabelCrossRef>) {
-        return dao.create(board, labels)
-    }
-
-    override suspend fun create(vararg labels: BoardLabelCrossRef) {
-        return dao.create(*labels)
-    }
-
     override fun findAll(): Flow<List<BoardWithLabels>> {
         return dao.findAll()
     }
@@ -40,15 +32,15 @@ class BoardRepositoryImpl(
         return dao.findOne(id)
     }
 
+    override suspend fun findNewestId(): Int {
+        return dao.findNewestId()
+    }
+
     override suspend fun update(board: Board) {
         return dao.update(board)
     }
 
     override suspend fun remove(board: Board) {
         return dao.remove(board)
-    }
-
-    override suspend fun remove(vararg labels: BoardLabelCrossRef) {
-        return dao.remove(*labels)
     }
 }

@@ -1,8 +1,10 @@
 package com.example.finito.features.boards.data.repository
 
-import com.example.finito.features.boards.domain.entity.*
+import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.DetailedBoard
+import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
-import com.example.finito.features.labels.domain.entity.Label
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -10,26 +12,11 @@ class FakeBoardRepository : BoardRepository {
 
     private val boards = mutableListOf<BoardWithLabels>()
 
-    val boardLabels = mutableListOf<BoardLabelCrossRef>()
-
     override suspend fun create(board: Board) {
         boards.add(BoardWithLabels(
             board = board,
             labels = emptyList()
         ))
-    }
-
-    override suspend fun create(board: Board, labels: List<BoardLabelCrossRef>) {
-        boards.add(
-            BoardWithLabels(
-                board = board,
-                labels = labels.map { Label(it.labelId, name = "Label name") }
-            )
-        )
-    }
-
-    override suspend fun create(vararg labels: BoardLabelCrossRef) {
-        boardLabels.addAll(labels)
     }
 
     override fun findAll(): Flow<List<BoardWithLabels>> {
@@ -59,15 +46,15 @@ class FakeBoardRepository : BoardRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun findNewestId(): Int {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun update(board: Board) {
         TODO("Not yet implemented")
     }
 
     override suspend fun remove(board: Board) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun remove(vararg labels: BoardLabelCrossRef) {
         TODO("Not yet implemented")
     }
 }

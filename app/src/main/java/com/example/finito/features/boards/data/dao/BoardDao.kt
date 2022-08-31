@@ -10,8 +10,8 @@ interface BoardDao {
 
     @Transaction
     @Query("SELECT * FROM boards")
-    fun getBoards(): Flow<List<BoardWithLabels>>
+    fun findAll(): Flow<List<BoardWithLabels>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addBoard(board: Board)
+    suspend fun create(board: Board)
 }

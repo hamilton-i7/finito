@@ -3,6 +3,7 @@ package com.example.finito.features.boards.di
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.boards.data.repository.BoardRepositoryImpl
 import com.example.finito.features.boards.domain.repository.BoardRepository
+import com.example.finito.features.boards.domain.usecase.AddBoardUseCase
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.domain.usecase.GetBoardsUseCase
 import dagger.Module
@@ -25,7 +26,8 @@ object BoardModule {
     @Singleton
     fun provideBoardUseCases(repository: BoardRepository): BoardUseCases {
         return BoardUseCases(
-            getBoardsUseCase = GetBoardsUseCase(repository)
+            getBoardsUseCase = GetBoardsUseCase(repository),
+            addBoardUseCase = AddBoardUseCase(repository)
         )
     }
 }

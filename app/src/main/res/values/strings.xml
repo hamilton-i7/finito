@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Finito</string>
+    <string name="empty_name_error">Name cannot be empty</string>
 </resources>

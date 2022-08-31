@@ -8,8 +8,8 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "labels")
 data class Label(
-    @PrimaryKey
-    @ColumnInfo(name = "label_id") val labelId: Int,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "label_id") val labelId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),

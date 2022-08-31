@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BoardRepository {
 
-    fun getBoards(): Flow<List<BoardWithLabels>>
+    fun findAll(): Flow<List<BoardWithLabels>>
 
-    suspend fun addBoard(board: Board)
+    suspend fun create(board: Board)
 }

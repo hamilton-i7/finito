@@ -10,11 +10,11 @@ class FakeBoardRepository : BoardRepository {
 
     private val boards = mutableListOf<BoardWithLabels>()
 
-    override fun getBoards(): Flow<List<BoardWithLabels>> {
+    override fun findAll(): Flow<List<BoardWithLabels>> {
         return flow { emit(boards) }
     }
 
-    override suspend fun addBoard(board: Board) {
+    override suspend fun create(board: Board) {
         boards.add(BoardWithLabels(
             board = board,
             labels = emptyList()

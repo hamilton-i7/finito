@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 
 @Entity(tableName = "boards")
 data class Board(
-    @PrimaryKey
-    @ColumnInfo(name = "board_id") val boardId: Int,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "board_id") val boardId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),

@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.Flow
 class BoardRepositoryImpl(
     private val dao: BoardDao
 ) : BoardRepository {
-    override fun getBoards(): Flow<List<BoardWithLabels>> {
-        return dao.getBoards()
+    override fun findAll(): Flow<List<BoardWithLabels>> {
+        return dao.findAll()
     }
 
-    override suspend fun addBoard(board: Board) {
-        return dao.addBoard(board)
+    override suspend fun create(board: Board) {
+        return dao.create(board)
     }
 }

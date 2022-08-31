@@ -12,12 +12,12 @@ class GetBoardsUseCase(
     operator fun invoke(
         boardOrder: BoardOrder = BoardOrder.A_Z
     ): Flow<List<BoardWithLabels>> {
-        return repository.getBoards().map { boards ->
+        return repository.findAll().map { boards ->
             when(boardOrder) {
                 BoardOrder.A_Z -> boards.sortedBy { it.board.normalizedName }
                 BoardOrder.Z_A -> boards.sortedByDescending { it.board.normalizedName }
-                BoardOrder.NEWEST -> boards.sortedBy { it.board.createdAt }
-                BoardOrder.OLDEST -> boards.sortedByDescending { it.board.createdAt }
+                BoardOrder.NEWEST -> boards.sortedByDescending { it.board.createdAt }
+                BoardOrder.OLDEST -> boards.sortedBy { it.board.createdAt }
             }
         }
     }

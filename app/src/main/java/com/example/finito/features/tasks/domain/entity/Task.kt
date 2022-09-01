@@ -36,5 +36,8 @@ data class Task(
     val reminder: Reminder? = null,
     val priority: Priority? = null,
     val position: Int = 0,
+    @ColumnInfo(name = "today_position") val todayPosition: Int? = null,
+    @ColumnInfo(name = "upcoming_position") val upcomingPosition: Int? = null,
+    @ColumnInfo(name = "urgent_position") val urgentPosition: Int? = null,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )

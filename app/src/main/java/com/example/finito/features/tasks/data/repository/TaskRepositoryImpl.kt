@@ -26,6 +26,10 @@ class TaskRepositoryImpl(
         return dao.findUrgentTasks(priority)
     }
 
+    override suspend fun findTasksByBoardAmount(boardId: Int): Int {
+        return dao.findTasksByBoardAmount(boardId)
+    }
+
     override suspend fun update(task: Task) {
         return dao.update(task)
     }

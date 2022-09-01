@@ -13,6 +13,10 @@ class FindOneBoard(
         if (!isValidId(id)) {
             throw InvalidIdException
         }
-        return repository.findOne(id)
+        return repository.findOne(id)?.let { board ->
+            board.copy(
+                tasks = board.tasks.sortedBy { it.task.position }
+            )
+        }
     }
 }

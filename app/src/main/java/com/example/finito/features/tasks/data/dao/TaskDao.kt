@@ -26,6 +26,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE priority = :priority")
     fun findUrgentTasks(priority: Priority = Priority.URGENT): Flow<List<TaskWithSubtasks>>
 
+    @Query("SELECT COUNT(*) FROM tasks WHERE board_id = :boardId AND completed = 0")
+    suspend fun findTasksByBoardAmount(boardId: Int): Int
+
     @Update
     suspend fun update(task: Task)
 

@@ -15,6 +15,8 @@ interface TaskRepository {
 
     fun findUrgentTasks(priority: Priority = Priority.URGENT): Flow<List<TaskWithSubtasks>>
 
+    suspend fun findTasksByBoardAmount(boardId: Int): Int
+
     suspend fun update(task: Task)
 
     suspend fun remove(task: Task)

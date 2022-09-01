@@ -10,15 +10,28 @@ class FindDeletedBoards(
     private val repository: BoardRepository
 ) {
     operator fun invoke(
-        boardOrder: BoardOrder = BoardOrder.A_Z
+        boardOrder: BoardOrder = BoardOrder.A_Z,
+        vararg labelIds: Int,
     ): Flow<List<BoardWithLabels>> {
         return repository.findDeletedBoards().map { boards ->
-            when(boardOrder) {
-                BoardOrder.A_Z -> boards.sortedBy { it.board.normalizedName }
-                BoardOrder.Z_A -> boards.sortedByDescending { it.board.normalizedName }
-                BoardOrder.NEWEST -> boards.sortedByDescending { it.board.createdAt }
-                BoardOrder.OLDEST -> boards.sortedBy { it.board.createdAt }
+            if (labelIds.isEmpty()) {
+                return@map sortBoards(boardOrder, boards)
             }
+            val idsMap = labelIds.groupBy { it }
+            val filteredBoards = boards.filter { board ->
+                board.labels.any { idsMap[it.labelId] != null }
+            }
+            sortBoards(boardOrder, filteredBoards)
         }
+    }
+
+    private fun sortBoards(
+        boardOrder: BoardOrder,
+        boards: List<BoardWithLabels>,
+    ): List<BoardWithLabels> = when(boardOrder) {
+        BoardOrder.A_Z -> boards.sortedBy { it.board.normalizedName }
+        BoardOrder.Z_A -> boards.sortedByDescending { it.board.normalizedName }
+        BoardOrder.NEWEST -> boards.sortedByDescending { it.board.createdAt }
+        BoardOrder.OLDEST -> boards.sortedBy { it.board.createdAt }
     }
 }

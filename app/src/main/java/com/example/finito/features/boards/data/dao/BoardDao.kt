@@ -1,7 +1,10 @@
 package com.example.finito.features.boards.data.dao
 
 import androidx.room.*
-import com.example.finito.features.boards.domain.entity.*
+import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.DetailedBoard
+import com.example.finito.features.boards.domain.entity.SimpleBoard
 import kotlinx.coroutines.flow.Flow
 
 @Dao

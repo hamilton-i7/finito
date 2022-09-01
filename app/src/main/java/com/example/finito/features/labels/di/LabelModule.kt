@@ -3,6 +3,8 @@ package com.example.finito.features.labels.di
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.labels.data.repository.LabelRepositoryImpl
 import com.example.finito.features.labels.domain.repository.LabelRepository
+import com.example.finito.features.labels.domain.usecase.CreateLabel
+import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,5 +19,13 @@ object LabelModule {
     @Singleton
     fun provideLabelRepository(db: FinitoDatabase): LabelRepository {
         return LabelRepositoryImpl(db.labelDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLabelUseCases(repository: LabelRepository): LabelUseCases {
+        return LabelUseCases(
+            createLabel = CreateLabel(repository)
+        )
     }
 }

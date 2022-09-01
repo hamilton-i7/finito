@@ -7,7 +7,6 @@ import com.example.finito.features.boards.domain.entity.Board
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -20,7 +19,7 @@ class UpdateBoardTest {
     private lateinit var dummyBoards: MutableList<Board>
 
     @Before
-    fun setUp() {
+    fun setUp() = runTest {
         fakeBoardRepository = FakeBoardRepository()
         updateBoard = UpdateBoard(fakeBoardRepository)
         dummyBoards = mutableListOf()
@@ -35,9 +34,7 @@ class UpdateBoardTest {
                 )
             )
         }
-        runBlocking {
-            dummyBoards.forEach { fakeBoardRepository.create(it) }
-        }
+        dummyBoards.forEach { fakeBoardRepository.create(it) }
     }
 
     @Test

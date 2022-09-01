@@ -22,8 +22,14 @@ class FakeBoardRepository : BoardRepository {
         ))
     }
 
+    fun create(boardWithLabels: BoardWithLabels) {
+        boards.add(boardWithLabels)
+    }
+
     override fun findAll(): Flow<List<BoardWithLabels>> {
-        return flow { emit(boards.filter { !it.board.deleted && !it.board.archived }) }
+        return flow {
+            emit(boards.filter { !it.board.deleted && !it.board.archived })
+        }
     }
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {

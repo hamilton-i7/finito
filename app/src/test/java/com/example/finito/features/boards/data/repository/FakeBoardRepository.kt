@@ -61,8 +61,8 @@ class FakeBoardRepository : BoardRepository {
                 tasks = listOf(
                     TaskWithSubtasks(
                         task = Task(
-                            name = "Task name",
                             boardId = it.board.boardId,
+                            name = "Task name",
                             position = 0
                         ),
                         subtasks = emptyList(),
@@ -70,19 +70,19 @@ class FakeBoardRepository : BoardRepository {
                     TaskWithSubtasks(
                         task = Task(
                             taskId = 1,
-                            name = "Task name",
                             boardId = it.board.boardId,
+                            name = "Task name",
                             position = 1
                         ),
                         subtasks = listOf(
                             Subtask(
-                                name = "Subtask name",
                                 taskId = 1,
+                                name = "Subtask name",
                                 position = 0
                             ),
                             Subtask(
-                                name = "Subtask name",
                                 taskId = 1,
+                                name = "Subtask name",
                                 position = 1
                             ),
                         ),

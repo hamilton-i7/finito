@@ -55,7 +55,7 @@ class FindArchivedBoardsTest {
     }
 
     @Test
-    fun `find archived boards returns list sorted by name ascending`(): Unit = runTest {
+    fun `find archived boards returns list sorted by name ascending`() = runTest {
         val sortedBoards = findArchivedBoards(BoardOrder.A_Z).first()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -65,7 +65,7 @@ class FindArchivedBoardsTest {
     }
 
     @Test
-    fun `find archived boards returns list sorted by name descending`(): Unit = runTest {
+    fun `find archived boards returns list sorted by name descending`() = runTest {
         val sortedBoards = findArchivedBoards(BoardOrder.Z_A).first()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -75,7 +75,7 @@ class FindArchivedBoardsTest {
     }
 
     @Test
-    fun `find archived boards returns list sorted by creation date ascending`(): Unit = runTest {
+    fun `find archived boards returns list sorted by creation date ascending`() = runTest {
         val sortedBoards = findArchivedBoards(BoardOrder.OLDEST).first()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -86,7 +86,7 @@ class FindArchivedBoardsTest {
     }
 
     @Test
-    fun `find archived boards returns list sorted by creation date descending`(): Unit = runTest {
+    fun `find archived boards returns list sorted by creation date descending`() = runTest {
         val sortedBoards = findArchivedBoards(BoardOrder.NEWEST).first()
 
         for (i in 0..sortedBoards.size - 2) {

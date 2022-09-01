@@ -25,6 +25,10 @@ class FakeLabelRepository : LabelRepository {
         }
     }
 
+    fun findOne(id: Int): Label? {
+        return labels.find { it.labelId == id }
+    }
+
     override suspend fun update(label: Label) {
         labels.find { it.labelId == label.labelId } ?: return
         labels.set(

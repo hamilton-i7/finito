@@ -2,6 +2,7 @@ package com.example.finito.features.tasks.data.repository
 
 import com.example.finito.core.Priority
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
@@ -58,7 +59,19 @@ class FakeTaskRepository : TaskRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun update(task: Task) {
+    override suspend fun findTasksByBoard(boardId: Int): List<Task> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun findOne(id: Int): Task? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun update(taskUpdate: TaskUpdate) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateMany(vararg tasks: Task) {
         TODO("Not yet implemented")
     }
 

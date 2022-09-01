@@ -41,3 +41,9 @@ data class Task(
     @ColumnInfo(name = "urgent_position") val urgentPosition: Int? = null,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )
+
+fun Task.toTaskUpdate(): TaskUpdate {
+    return TaskUpdate(
+        taskId, boardId, name, description, completed, date, time, reminder, priority
+    )
+}

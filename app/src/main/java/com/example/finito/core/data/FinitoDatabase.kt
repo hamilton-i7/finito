@@ -13,6 +13,7 @@ import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.labels.data.dao.LabelDao
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.tasks.data.dao.TaskDao
 import com.example.finito.features.tasks.domain.entity.Task
 
 @Database(
@@ -25,6 +26,7 @@ abstract class FinitoDatabase : RoomDatabase() {
     abstract val boardDao: BoardDao
     abstract val labelDao: LabelDao
     abstract val boardLabelDao: BoardLabelDao
+    abstract val taskDao: TaskDao
 
     companion object {
         const val DATABASE_NAME = "finito_db"

@@ -10,5 +10,5 @@ data class TaskWithSubtasks(
         parentColumn = "task_id",
         entityColumn = "task_id",
     )
-    val subtasks: List<Subtask>
+    val subtasks: List<Subtask> = emptyList()
 )

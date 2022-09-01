@@ -6,13 +6,13 @@ import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class FindTodayTasks(
+class FindTomorrowTasks(
     private val repository: TaskRepository
 ) {
     operator fun invoke(
         taskOrder: TaskOrder? = null
     ): Flow<List<TaskWithSubtasks>> {
-        return repository.findTodayTasks().map { tasks ->
+        return repository.findTomorrowTasks().map { tasks ->
             when (taskOrder) {
                 TaskOrder.MOST_URGENT -> tasks.sortedWith(
                     compareByDescending<TaskWithSubtasks> {

@@ -49,14 +49,14 @@ class FindAllBoardsTest {
     }
 
     @Test
-    fun `find all boards returns active boards only (non-deleted and non-archived)`() = runTest {
+    fun `Should return active boards only when asked`() = runTest {
         val boards = findAllBoards().first()
         assertThat(boards).isNotEmpty()
         assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
     }
 
     @Test
-    fun `find all boards returns list sorted by name ascending`() = runTest {
+    fun `Should return boards sorted by name ascending when asked for A_Z sorting`() = runTest {
         val sortedBoards = findAllBoards(BoardOrder.A_Z).first()
         assertThat(sortedBoards).isNotEmpty()
 
@@ -67,7 +67,7 @@ class FindAllBoardsTest {
     }
 
     @Test
-    fun `find all boards returns list sorted by name descending`() = runTest {
+    fun `Should return boards sorted by name descending when asked for Z_A`() = runTest {
         val sortedBoards = findAllBoards(BoardOrder.Z_A).first()
         assertThat(sortedBoards).isNotEmpty()
 
@@ -78,7 +78,7 @@ class FindAllBoardsTest {
     }
 
     @Test
-    fun `find all boards returns list sorted by creation date ascending`() = runTest {
+    fun `Should return boards sorted by date ascending when asked for OLDEST`() = runTest {
         val sortedBoards = findAllBoards(BoardOrder.OLDEST).first()
         assertThat(sortedBoards).isNotEmpty()
 
@@ -88,7 +88,7 @@ class FindAllBoardsTest {
     }
 
     @Test
-    fun `find all boards returns list sorted by creation date descending`() = runTest {
+    fun `Should return boards sorted by date descending when asked for NEWEST`() = runTest {
         val sortedBoards = findAllBoards(BoardOrder.NEWEST).first()
         assertThat(sortedBoards).isNotEmpty()
 
@@ -98,7 +98,7 @@ class FindAllBoardsTest {
     }
     
     @Test
-    fun `find all boards returns filtered list`() = runTest {
+    fun `Should return filtered boards when label IDs provided`() = runTest {
         val activeLabeledBoards = dummyBoards.filter {
             it.labels.isNotEmpty() && !it.board.deleted && !it.board.archived
         }

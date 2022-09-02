@@ -1,13 +1,13 @@
 package com.example.finito.features.labels.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
+import com.example.finito.core.util.ResourceException
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 
@@ -35,34 +35,33 @@ class DeleteLabelTest {
     }
 
     @Test
-    fun `delete board throws Exception if invalid ID`() {
+    fun `Should throw InvalidIdException when ID is invalid`() {
         var label = dummyLabels.random().copy(labelId = 0)
-        Assert.assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { deleteLabel(label) }
         }
 
         label = dummyLabels.random().copy(labelId = -2)
-        Assert.assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { deleteLabel(label) }
         }
     }
 
     @Test
-    fun `delete board does not remove any board`() = runTest {
+    fun `Should throw NotFoundException when label isn't found`() = runTest {
         val latestId = dummyLabels.map { it.labelId }.max()
-        val boardToDelete = dummyLabels.random().copy(labelId = latestId + 1)
-        deleteLabel(boardToDelete)
-
-        val labels = fakeLabelRepository.findSimpleLabels().first()
-        Truth.assertThat(labels.size).isEqualTo(dummyLabels.size)
+        dummyLabels.random().copy(labelId = latestId + 1).let {
+            assertThrows(ResourceException.NotFoundException::class.java) {
+                runTest { deleteLabel(it) }
+            }
+        }
     }
 
     @Test
-    fun `delete board removes board from the list`() = runTest {
-        val boardToDelete = dummyLabels.random()
-        deleteLabel(boardToDelete)
-
-        val labels = fakeLabelRepository.findSimpleLabels().first()
-        Truth.assertThat(labels.size).isLessThan(dummyLabels.size)
+    fun `Should remove label from the list when it is found`() = runTest {
+        deleteLabel(dummyLabels.random())
+        fakeLabelRepository.findSimpleLabels().first().let {
+            assertThat(it.size).isLessThan(dummyLabels.size)
+        }
     }
 }

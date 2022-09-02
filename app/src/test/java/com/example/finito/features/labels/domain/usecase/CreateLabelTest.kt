@@ -23,20 +23,20 @@ class CreateLabelTest {
     }
 
     @Test
-    fun `create label throws Exception if invalid label`() {
+    fun `Should throw EmptyException when label name is empty`() {
         var label = Label(name = "")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { createLabel(label) }
         }
 
         label = Label(name = "    ")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { createLabel(label) }
         }
     }
 
     @Test
-    fun `create label inserts new label into list`() = runTest {
+    fun `Should insert new label into list when label state is valid`() = runTest {
         val label = Label(name = "Label name")
         var labels = fakeLabelRepository.findSimpleLabels().first()
 

@@ -1,12 +1,10 @@
 package com.example.finito.features.labels.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -36,20 +34,20 @@ class UpdateLabelTest {
     }
 
     @Test
-    fun `update label throws Exception if invalid ID`() {
+    fun `Should throw InvalidIdException when ID is invalid`() {
         var label = dummyLabels.random().copy(labelId = -3)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { updateLabel(label) }
         }
 
         label = dummyLabels.random().copy(labelId = 0)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { updateLabel(label) }
         }
     }
 
     @Test
-    fun `update label throws Exception if invalid name`() {
+    fun `Should throw EmptyException when name is empty`() {
         var label = dummyLabels.random().copy(name = "")
         assertThrows(ResourceException.EmptyException::class.java) {
             runTest { updateLabel(label) }
@@ -62,30 +60,23 @@ class UpdateLabelTest {
     }
 
     @Test
-    fun `update label makes changes to requested label`() = runTest {
+    fun `Should throw NotFoundException if no label is found`() = runTest {
+        val label = dummyLabels.random().copy(labelId = 10_000)
+        updateLabel(label)
+        assertThrows(ResourceException.EmptyException::class.java) {
+            runTest { updateLabel(label) }
+        }
+    }
+
+    @Test
+    fun `Should update label when it's found & its state is valid`() = runTest {
         val label = dummyLabels.random()
-        Truth.assertThat(dummyLabels.find { it.labelId == label.labelId }?.name).startsWith("Label")
+        assertThat(dummyLabels.find { it.labelId == label.labelId }?.name).startsWith("Label")
 
         val updatedLabel = label.copy(name = "Updated label")
         updateLabel(updatedLabel)
 
-        Truth.assertThat(fakeLabelRepository.findOne(updatedLabel.labelId)?.name)
+        assertThat(fakeLabelRepository.findOne(updatedLabel.labelId)?.name)
             .isEqualTo("Updated label")
-    }
-
-    @Test
-    fun `update label makes no changes`() = runTest {
-        val label = dummyLabels.random()
-        Truth.assertThat(dummyLabels.find { it.labelId == label.labelId }?.name).startsWith("Label")
-        val latestId = dummyLabels.map { it.labelId }.max()
-
-        val updatedLabel = label.copy(
-            labelId = latestId + 1,
-            name = "Updated label",
-        )
-        updateLabel(updatedLabel)
-        Truth.assertThat(fakeLabelRepository.findSimpleLabels().first().any {
-            it.name == "Updated label"
-        }).isFalse()
     }
 }

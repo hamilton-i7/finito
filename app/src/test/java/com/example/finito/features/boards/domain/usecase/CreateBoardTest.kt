@@ -23,20 +23,20 @@ class CreateBoardTest {
     }
 
     @Test
-    fun `add board throws Exception if invalid name`() {
+    fun `Should throw EmptyException when board name is empty`() {
         val emptyNameBoard = Board(name = "")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { createBoard(emptyNameBoard) }
         }
 
         val blankNameBoard = Board(name = "     ")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { createBoard(blankNameBoard) }
         }
     }
 
     @Test
-    fun `create board throws Exception if board is archived and deleted`() {
+    fun `Should throw InvalidException when board state is invalid`() {
         val board = Board(
             name = "Invalid Board",
             archived = true,
@@ -48,7 +48,7 @@ class CreateBoardTest {
     }
 
     @Test
-    fun `add board inserts new board on list`() = runTest {
+    fun `Should insert new board into list board state is valid`() = runTest {
         val board = Board(name = "Board name")
         var boards = fakeBoardRepository.findAll().first()
 

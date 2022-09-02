@@ -71,14 +71,14 @@ class FindUrgentTasksTest {
     }
 
     @Test
-    fun `find urgent tasks returns tasks with urgent priority only`() = runTest {
+    fun `Should return urgent tasks when asked`() = runTest {
         val tasks = findUrgentTasks().first().values.flatten()
         assertThat(tasks).isNotEmpty()
         assertThat(tasks.all { it.task.priority == Priority.URGENT }).isTrue()
     }
 
     @Test
-    fun `find urgent tasks returns list grouped by date descending`() = runTest {
+    fun `Should return tasks grouped by date descending when asked`() = runTest {
         val dates = findUrgentTasks().first().keys
         assertThat(dates).isNotEmpty()
 
@@ -90,7 +90,7 @@ class FindUrgentTasksTest {
     }
 
     @Test
-    fun `find urgent tasks returns list sorted by date & time descending`() = runTest {
+    fun `Should return urgent tasks sorted by date & time descending when asked`() = runTest {
         val tasks = findUrgentTasks().first().values.flatten()
         assertThat(tasks).isNotEmpty()
 

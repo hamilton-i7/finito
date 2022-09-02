@@ -48,13 +48,13 @@ class FindDeletedBoardsTest {
     }
 
     @Test
-    fun `find all boards returns deleted boards only`() = runTest {
+    fun `Should return deleted boards only when asked`() = runTest {
         val boards = findDeletedBoards().first()
         assertThat(boards.all { it.board.deleted }).isTrue()
     }
 
     @Test
-    fun `findDeletedBoards( returns list sorted by name ascending`() = runTest {
+    fun `Should return deleted boards sorted by name ascending when asked`() = runTest {
         val sortedBoards = findDeletedBoards().first()
 
         for (i in 0..sortedBoards.size - 2) {

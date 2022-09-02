@@ -29,18 +29,20 @@ class FakeLabelRepository : LabelRepository {
         return labels.find { it.labelId == id }
     }
 
-    override suspend fun update(label: Label) {
-        labels.find { it.labelId == label.labelId } ?: return
+    override suspend fun update(label: Label): Int {
+        labels.find { it.labelId == label.labelId } ?: return 0
         labels.set(
             index = labels.indexOfFirst { it.labelId == label.labelId },
             element = label
         )
+        return 1
     }
 
-    override suspend fun remove(label: Label) {
+    override suspend fun remove(label: Label): Int {
         val labelToDeleteIndex = labels.indexOfFirst { it.labelId == label.labelId }
-        if (labelToDeleteIndex == -1) return
+        if (labelToDeleteIndex == -1) return 0
 
         labels.removeAt(labelToDeleteIndex)
+        return 1
     }
 }

@@ -37,7 +37,7 @@ class FindSimpleBoardsTest {
     }
 
     @Test
-    fun `find all boards returns active boards only (non-deleted and non-archived)`() = runTest {
+    fun `Should return active boards when asked`() = runTest {
         val boardIds = findSimpleBoards().first().map { it.boardId }
         val deletedBoards = dummyBoards.filter { it.deleted }.groupBy { it.boardId }
         boardIds.forEach {
@@ -51,7 +51,7 @@ class FindSimpleBoardsTest {
     }
 
     @Test
-    fun `get boards use case returns list sorted by name ascending`(): Unit = runTest {
+    fun `Should return boards sorted by name ascending when asked`() = runTest {
         val sortedBoards = findSimpleBoards().first()
 
         for (i in 0..sortedBoards.size - 2) {

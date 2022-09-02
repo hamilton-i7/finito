@@ -86,10 +86,11 @@ class FakeTaskRepository : TaskRepository {
         }
     }
 
-    override suspend fun remove(task: Task) {
+    override suspend fun remove(task: Task): Int {
         tasks.indexOfFirst { it.taskId == task.taskId }.let {
-            if (it == -1) return
+            if (it == -1) return 0
             tasks.removeAt(it)
+            return 1
         }
     }
 }

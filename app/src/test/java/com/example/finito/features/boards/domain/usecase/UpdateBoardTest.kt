@@ -1,12 +1,10 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -38,45 +36,53 @@ class UpdateBoardTest {
     }
 
     @Test
-    fun `update board throws Exception if invalid ID`() {
+    fun `Should throw InvalidIdException when ID is invalid`() {
         var board = dummyBoards.random().copy(boardId = 0)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { updateBoard(board) }
         }
 
         board = dummyBoards.random().copy(boardId = -2)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { updateBoard(board) }
         }
     }
 
     @Test
-    fun `update board throws Exception if invalid name`() {
+    fun `Should throw EmptyException when name is empty`() {
         val emptyNameBoard = dummyBoards.random().copy(name = "")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { updateBoard(emptyNameBoard) }
         }
 
         val blankNameBoard = dummyBoards.random().copy(name = "     ")
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.EmptyException::class.java) {
             runTest { updateBoard(blankNameBoard) }
         }
     }
 
     @Test
-    fun `update board throws Exception if board is archived and deleted`() {
+    fun `Should throw InvalidException when board state is invalid`() {
         val board = dummyBoards.random().copy(
-            name = "Invalid Board",
+            name = "Board name",
             archived = true,
             deleted = true
         )
-        assertThrows(ResourceException::class.java) {
+        assertThrows(ResourceException.InvalidException::class.java) {
             runTest { updateBoard(board) }
         }
     }
 
     @Test
-    fun `update board makes changes to requested board`() = runTest {
+    fun `Should throw NotFoundException when no board is found`() = runTest {
+        val board = dummyBoards.first { !it.archived && !it.deleted }.copy(boardId = 10_000)
+        assertThrows(ResourceException.NotFoundException::class.java) {
+            runTest { updateBoard(board) }
+        }
+    }
+
+    @Test
+    fun `Should update board when it's found and its state is valid`() = runTest {
         val board = dummyBoards.random()
         assertThat(dummyBoards.find { it.boardId == board.boardId }?.name).startsWith("Board")
 
@@ -88,23 +94,5 @@ class UpdateBoardTest {
         updateBoard(updatedBoard)
         assertThat(fakeBoardRepository.findOne(updatedBoard.boardId)?.name)
             .isEqualTo("Updated board")
-    }
-
-    @Test
-    fun `update board makes no changes`() = runTest {
-        val board = dummyBoards.first { !it.archived && !it.deleted }
-        assertThat(dummyBoards.find { it.boardId == board.boardId }?.name).startsWith("Board")
-        val latestId = fakeBoardRepository.findNewestId()
-
-        val updatedBoard = board.copy(
-            boardId = latestId + 1,
-            name = "Updated board",
-            deleted = true,
-            archived = false
-        )
-        updateBoard(updatedBoard)
-        assertThat(fakeBoardRepository.findAll().first().any {
-            it.board.name == "Updated board"
-        }).isFalse()
     }
 }

@@ -1,6 +1,6 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
+import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.google.common.truth.Truth.assertThat
@@ -35,30 +35,31 @@ class DeleteBoardTest {
     }
 
     @Test
-    fun `delete board throws Exception if invalid ID`() {
+    fun `Should throw InvalidIdException when ID is invalid`() {
         var board = dummyBoards.random().copy(boardId = 0)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { deleteBoard(board) }
         }
 
         board = dummyBoards.random().copy(boardId = -2)
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { deleteBoard(board) }
         }
     }
 
     @Test
-    fun `delete board does not remove any board`() = runTest {
+    fun `Should throw NotFoundException when board isn't found`() = runTest {
         val latestId = fakeBoardRepository.findNewestId()
-        val boardToDelete = dummyBoards.random().copy(boardId = latestId + 1)
-        deleteBoard(boardToDelete)
 
-        val boards = fakeBoardRepository.findAll().first()
-        assertThat(boards.size).isEqualTo(dummyBoards.size)
+        dummyBoards.random().copy(boardId = latestId + 1).let {
+            assertThrows(ResourceException.NotFoundException::class.java) {
+                runTest { deleteBoard(it) }
+            }
+        }
     }
 
     @Test
-    fun `delete board removes board from the list`() = runTest {
+    fun `Should remove board from the list when it is found`() = runTest {
         val boardToDelete = dummyBoards.random()
         deleteBoard(boardToDelete)
 

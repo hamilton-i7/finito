@@ -96,18 +96,20 @@ class FakeBoardRepository : BoardRepository {
         return boards.map { it.board.boardId }.max()
     }
 
-    override suspend fun update(board: Board) {
-        boards.find { it.board.boardId == board.boardId } ?: return
+    override suspend fun update(board: Board): Int {
+        boards.find { it.board.boardId == board.boardId } ?: return 0
         boards.set(
             index = boards.indexOfFirst { it.board.boardId == board.boardId },
             element = BoardWithLabels(board)
         )
+        return 1
     }
 
-    override suspend fun remove(board: Board) {
+    override suspend fun remove(board: Board): Int {
         val boardToDeleteIndex = boards.indexOfFirst { it.board.boardId == board.boardId }
-        if (boardToDeleteIndex == -1) return
+        if (boardToDeleteIndex == -1) return 0
 
         boards.removeAt(boardToDeleteIndex)
+        return 1
     }
 }

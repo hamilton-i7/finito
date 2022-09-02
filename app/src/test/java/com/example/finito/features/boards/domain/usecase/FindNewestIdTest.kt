@@ -34,7 +34,7 @@ class FindNewestIdTest {
     }
 
     @Test
-    fun `find newest id returns last inserted board id`() = runTest {
+    fun `Should find newest id returns last inserted board id`() = runTest {
         val lastBoardId = dummyBoards.map { it.boardId }.max()
         assertThat(findNewestId()).isEqualTo(lastBoardId)
 

@@ -77,7 +77,7 @@ class CreateTaskTest {
     }
 
     @Test
-    fun `create task throws Exception if invalid name`() {
+    fun `Should throw EmptyException when task name is empty`() {
         Task(name = "", boardId = boards.random().boardId).let {
             Assert.assertThrows(ResourceException.EmptyException::class.java) {
                 runTest { createTask(it) }
@@ -92,7 +92,7 @@ class CreateTaskTest {
     }
 
     @Test
-    fun `create task throws Exception if invalid state`() {
+    fun `Should throw InvalidException when task state is invalid`() {
         Task(
             name = "Task name",
             boardId = boards.random().boardId,
@@ -105,19 +105,28 @@ class CreateTaskTest {
     }
 
     @Test
-    fun `create task adds task with position set as the list size`() = runTest {
+    fun `Should insert new task into list when task state is valid`() = runTest {
         val task = Task(name = "Task name", boardId = boards.random().boardId)
-        var tasks = fakeTaskRepository.findTasksByBoard(task.boardId)
+        with(fakeTaskRepository.findTasksByBoard(task.boardId)) {
+            val tasksInBoard = fakeTaskRepository.findAll().filter { it.boardId == task.boardId }
 
-        val tasksInBoard = fakeTaskRepository.findAll().filter { it.boardId == task.boardId }
-        assertThat(tasks.size).isEqualTo(tasksInBoard.size)
+            assertThat(size).isEqualTo(tasksInBoard.size)
+            createTask(task)
 
+            fakeTaskRepository.findTasksByBoard(task.boardId).let {
+                assertThat(it.size).isEqualTo(tasksInBoard.size + 1)
+            }
+        }
+    }
+
+    @Test
+    fun `Should set task position to list size when task state is valid`() = runTest {
+        val task = Task(name = "Task name", boardId = boards.random().boardId)
+        val tasks = fakeTaskRepository.findTasksByBoard(task.boardId)
         createTask(task)
 
-        tasks = fakeTaskRepository.findTasksByBoard(task.boardId)
-        assertThat(tasks.size).isEqualTo(tasksInBoard.size + 1)
-
-        val createdTask = tasks.first { it.name == "Task name" }
-        assertThat(createdTask.position).isEqualTo(tasksInBoard.size)
+        with(fakeTaskRepository.findTasksByBoard(task.boardId).first {
+            it.name == "Task name"
+        }) { assertThat(position).isEqualTo(tasks.size) }
     }
 }

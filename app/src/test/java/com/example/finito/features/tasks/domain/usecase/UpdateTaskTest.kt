@@ -108,7 +108,7 @@ class UpdateTaskTest {
     @Test
     fun `update task throws Exception if task is not found`() {
         dummyTasks.random().copy(taskId = dummyTasks.size + 1).let { task ->
-            assertThrows(ResourceException.NotFound::class.java) {
+            assertThrows(ResourceException.NotFoundException::class.java) {
                 runTest { updateTask(task) }
             }
         }

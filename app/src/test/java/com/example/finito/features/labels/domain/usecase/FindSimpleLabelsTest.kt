@@ -35,14 +35,14 @@ class FindSimpleLabelsTest {
     }
 
     @Test
-    fun `find simple boards returns all labels`() = runTest {
+    fun `Should return labels when asked`() = runTest {
         val labels = findSimpleLabels().first()
         assertThat(labels).isNotEmpty()
         assertThat(labels.size).isEqualTo(dummyLabels.size)
     }
 
     @Test
-    fun `find simple labels returns sorted labels by name ascending`() = runTest {
+    fun `Should return labels sorted by name ascending when asked`() = runTest {
         val sortedLabels = findSimpleLabels().first()
 
         for (i in 0..sortedLabels.size - 2) {

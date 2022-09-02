@@ -67,7 +67,7 @@ class FindTodayTasksTest {
     }
 
     @Test
-    fun `find today tasks returns tasks with today's date only`() = runTest {
+    fun `Should return today's tasks when asked`() = runTest {
         val today = LocalDate.now()
         val tasks = findTodayTasks().first()
         assertThat(tasks).isNotEmpty()
@@ -75,7 +75,7 @@ class FindTodayTasksTest {
     }
 
     @Test
-    fun `find today tasks returns list sorted by time descending`() = runTest {
+    fun `Should return today's tasks sorted by time descending when asked`() = runTest {
         val tasks = findTodayTasks().first()
 
         for (i in 0..tasks.size - 2) {
@@ -88,7 +88,7 @@ class FindTodayTasksTest {
     }
 
     @Test
-    fun `find today tasks returns list sorted by most urgent & time descending`() = runTest {
+    fun `Should return today's tasks sorted by most urgent & time descending when asked for MOST_URGENT`() = runTest {
         val tasks = findTodayTasks(TaskOrder.MOST_URGENT).first()
 
         for (i in 0..tasks.size - 2) {
@@ -107,7 +107,7 @@ class FindTodayTasksTest {
     }
 
     @Test
-    fun `find today tasks returns list sorted by least urgent & time descending`() = runTest {
+    fun `Should return today's tasks sorted by least urgent & time descending when asked for LEAST_URGENT`() = runTest {
         val tasks = findTodayTasks(TaskOrder.LEAST_URGENT).first()
 
         for (i in 0..tasks.size - 2) {

@@ -1,14 +1,14 @@
 package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.Priority
-import com.example.finito.core.util.InvalidIdException
+import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -77,21 +77,31 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `delete task throws Exception if invalid ID`() {
+    fun `Should throw InvalidIdException when ID is invalid`() {
         dummyTasks.random().copy(taskId = 0).let {
-            Assert.assertThrows(InvalidIdException::class.java) {
+            assertThrows(ResourceException.InvalidIdException::class.java) {
                 runTest { deleteTask(it) }
             }
         }
         dummyTasks.random().copy(taskId = -2).let {
-            Assert.assertThrows(InvalidIdException::class.java) {
+            assertThrows(ResourceException.InvalidIdException::class.java) {
                 runTest { deleteTask(it) }
             }
         }
     }
 
     @Test
-    fun `delete task removes task from the list`() = runTest {
+    fun `Should throw NotFoundException when task isn't found`() = runTest {
+        val latestId = dummyTasks.map { it.taskId }.max()
+        dummyTasks.random().copy(taskId = latestId + 1).let {
+            assertThrows(ResourceException.NotFoundException::class.java) {
+                runTest { deleteTask(it) }
+            }
+        }
+    }
+
+    @Test
+    fun `Should remove task from the list when it is found`() = runTest {
         with(dummyTasks.random()) {
             deleteTask(task = this)
 
@@ -103,7 +113,7 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `delete task arranges remaining tasks`() = runTest {
+    fun `Should arrange remaining tasks when task is found`() = runTest {
         val task = dummyTasks.random()
         deleteTask(task)
         with(fakeTaskRepository.findTasksByBoard(task.boardId)) {

@@ -1,6 +1,6 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
+import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.google.common.truth.Truth.assertThat
@@ -37,25 +37,27 @@ class FindOneBoardTest {
     }
 
     @Test
-    fun `find one board throws Exception if invalid ID`() {
-        assertThrows(InvalidIdException::class.java) {
+    fun `Should throw InvalidIdException when ID is invalid`() {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { findOneBoard(-1) }
         }
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { findOneBoard(0) }
         }
-        assertThrows(InvalidIdException::class.java) {
+        assertThrows(ResourceException.InvalidIdException::class.java) {
             runTest { findOneBoard(-23) }
         }
     }
 
     @Test
-    fun `find one board returns null if no board is found`() = runTest {
-        assertThat(findOneBoard(id = 10_000)).isNull()
+    fun `Should throw NotFoundException when no board is found`() {
+        assertThrows(ResourceException.NotFoundException::class.java) {
+            runTest { findOneBoard(10_000) }
+        }
     }
 
     @Test
-    fun `find one board returns requested board`() = runTest {
+    fun `Should return board when it is found`() = runTest {
         assertThat(findOneBoard(dummyBoards.random().boardId)).isNotNull()
     }
 }

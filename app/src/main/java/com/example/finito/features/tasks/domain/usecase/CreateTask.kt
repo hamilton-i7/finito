@@ -22,7 +22,8 @@ class CreateTask(
     }
 
     private suspend fun setupTaskPosition(task: Task, repository: TaskRepository): Task {
-        val tasksAmount = repository.findTasksByBoardAmount(task.boardId)
-        return task.copy(position = tasksAmount)
+        return repository.findTasksByBoardAmount(task.boardId).let {
+            task.copy(position = it)
+        }
     }
 }

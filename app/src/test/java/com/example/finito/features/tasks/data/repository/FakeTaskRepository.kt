@@ -55,7 +55,7 @@ class FakeTaskRepository : TaskRepository {
     }
 
     override suspend fun findTasksByBoardAmount(boardId: Int): Int {
-        TODO("Not yet implemented")
+        return tasks.count { it.boardId == boardId }
     }
 
     override suspend fun findTasksByBoard(boardId: Int): List<Task> {

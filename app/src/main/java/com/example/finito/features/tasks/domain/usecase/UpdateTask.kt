@@ -76,11 +76,10 @@ class UpdateTask(
         val endBoardTasks = repository
             .findTasksByBoard(endBoardId)
             .toMutableList()
-            .apply { this.add(newTask) }
+            .also {  it.add(newTask) }
             .mapIndexed { index, task ->
                 task.copy(position = index)
             }.toTypedArray()
-
         repository.updateMany(*endBoardTasks)
     }
 }

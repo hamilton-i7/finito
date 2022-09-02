@@ -17,3 +17,17 @@ data class TaskUpdate(
     val reminder: Reminder? = null,
     val priority: Priority? = null,
 )
+
+fun TaskUpdate.toTask(): Task {
+    return Task(
+        taskId = taskId,
+        boardId = boardId,
+        name = name,
+        description = description,
+        completed = completed,
+        date = date,
+        time = time,
+        reminder = reminder,
+        priority = priority
+    )
+}

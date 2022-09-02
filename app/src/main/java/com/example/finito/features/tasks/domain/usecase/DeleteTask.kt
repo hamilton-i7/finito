@@ -1,22 +1,23 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.util.InvalidIdException
+import com.example.finito.core.util.ResourceException
 import com.example.finito.core.util.isValidId
-import com.example.finito.core.util.moveElement
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.repository.TaskRepository
-import kotlin.jvm.Throws
 
 class DeleteTask(
     private val repository: TaskRepository
 ) {
-    @Throws(InvalidIdException::class)
-    suspend operator fun invoke(task: Task) {
+    @Throws(ResourceException.InvalidIdException::class)
+    suspend operator fun invoke(task: Task): Int {
         if (!isValidId(task.taskId)) {
-            throw InvalidIdException
+            throw ResourceException.InvalidIdException
         }
         arrangeTasks(task, repository)
-        return repository.remove(task)
+        return repository.remove(task).let {
+            if (it == 0) throw ResourceException.NotFoundException
+            else it
+        }
     }
 
     private suspend fun arrangeTasks(

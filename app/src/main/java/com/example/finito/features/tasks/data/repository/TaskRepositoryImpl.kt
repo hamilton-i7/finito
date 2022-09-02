@@ -47,7 +47,7 @@ class TaskRepositoryImpl(
         return dao.updateMany(*tasks)
     }
 
-    override suspend fun remove(task: Task) {
+    override suspend fun remove(task: Task): Int {
         return dao.remove(task)
     }
 }

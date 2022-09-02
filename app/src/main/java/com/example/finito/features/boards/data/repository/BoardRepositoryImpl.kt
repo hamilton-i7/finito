@@ -36,11 +36,11 @@ class BoardRepositoryImpl(
         return dao.findNewestId()
     }
 
-    override suspend fun update(board: Board) {
+    override suspend fun update(board: Board): Int {
         return dao.update(board)
     }
 
-    override suspend fun remove(board: Board) {
+    override suspend fun remove(board: Board): Int {
         return dao.remove(board)
     }
 }

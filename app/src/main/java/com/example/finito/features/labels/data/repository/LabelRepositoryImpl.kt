@@ -17,11 +17,11 @@ class LabelRepositoryImpl(
         return dao.findSimpleLabels()
     }
 
-    override suspend fun update(label: Label) {
+    override suspend fun update(label: Label): Int {
         return dao.update(label)
     }
 
-    override suspend fun remove(label: Label) {
+    override suspend fun remove(label: Label): Int {
         return dao.remove(label)
     }
 }

@@ -15,8 +15,8 @@ interface LabelDao {
     fun findSimpleLabels(): Flow<List<SimpleLabel>>
 
     @Update
-    suspend fun update(label: Label)
+    suspend fun update(label: Label): Int
 
     @Delete
-    suspend fun remove(label: Label)
+    suspend fun remove(label: Label): Int
 }

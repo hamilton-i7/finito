@@ -43,5 +43,5 @@ interface TaskDao {
     suspend fun updateMany(vararg tasks: Task)
 
     @Delete
-    suspend fun remove(task: Task)
+    suspend fun remove(task: Task): Int
 }

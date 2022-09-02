@@ -19,7 +19,7 @@ interface BoardRepository {
 
     suspend fun findNewestId(): Int
 
-    suspend fun update(board: Board)
+    suspend fun update(board: Board): Int
 
-    suspend fun remove(board: Board)
+    suspend fun remove(board: Board): Int
 }

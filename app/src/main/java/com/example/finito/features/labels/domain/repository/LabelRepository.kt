@@ -10,7 +10,7 @@ interface LabelRepository {
 
     fun findSimpleLabels(): Flow<List<SimpleLabel>>
 
-    suspend fun update(label: Label)
+    suspend fun update(label: Label): Int
 
-    suspend fun remove(label: Label)
+    suspend fun remove(label: Label): Int
 }

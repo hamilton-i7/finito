@@ -37,8 +37,8 @@ interface BoardDao {
     suspend fun findNewestId(): Int
 
     @Update
-    suspend fun update(board: Board)
+    suspend fun update(board: Board): Int
 
     @Delete
-    suspend fun remove(board: Board)
+    suspend fun remove(board: Board): Int
 }

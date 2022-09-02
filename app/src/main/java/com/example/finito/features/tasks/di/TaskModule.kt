@@ -29,6 +29,7 @@ object TaskModule {
             findTomorrowTasks = FindTomorrowTasks(repository),
             findUrgentTasks = FindUrgentTasks(repository),
             updateTask = UpdateTask(repository),
+            deleteTask = DeleteTask(repository),
         )
     }
 }

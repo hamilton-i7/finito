@@ -87,6 +87,9 @@ class FakeTaskRepository : TaskRepository {
     }
 
     override suspend fun remove(task: Task) {
-        TODO("Not yet implemented")
+        tasks.indexOfFirst { it.taskId == task.taskId }.let {
+            if (it == -1) return
+            tasks.removeAt(it)
+        }
     }
 }

@@ -4,7 +4,6 @@ import com.example.finito.core.Priority
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -18,7 +17,7 @@ import java.time.LocalTime
 class FindUrgentTasksTest {
     private lateinit var findUrgentTasks: FindUrgentTasks
     private lateinit var fakeTaskRepository: FakeTaskRepository
-    private lateinit var dummyTasks: MutableList<TaskWithSubtasks>
+    private lateinit var dummyTasks: MutableList<Task>
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -27,7 +26,7 @@ class FindUrgentTasksTest {
     )
 
     @Before
-    fun setUp() {
+    fun setUp() = runTest {
         fakeTaskRepository = FakeTaskRepository()
         findUrgentTasks = FindUrgentTasks(fakeTaskRepository)
         dummyTasks = mutableListOf()
@@ -57,16 +56,14 @@ class FindUrgentTasksTest {
 
         ('A'..'Z').forEachIndexed { index, c ->
             dummyTasks.add(
-                TaskWithSubtasks(
-                    task = Task(
-                        taskId = index + 1,
-                        name = "Task $c",
-                        boardId = boards.random().boardId,
-                        date = if (index % 2 == 0) dates.random() else null,
-                        time = if (index % 4 == 0) time.random() else null,
-                        priority = priorities.random()
-                    ),
-                )
+                Task(
+                    taskId = index + 1,
+                    name = "Task $c",
+                    boardId = boards.random().boardId,
+                    date = if (index % 2 == 0) dates.random() else null,
+                    time = if (index % 4 == 0) time.random() else null,
+                    priority = priorities.random()
+                ),
             )
         }
         dummyTasks.shuffle()

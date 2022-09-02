@@ -4,21 +4,20 @@ import com.example.finito.core.Priority
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.toTask
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 
 class FakeTaskRepository : TaskRepository {
-    private val tasks = mutableListOf<TaskWithSubtasks>()
+    private val tasks = mutableListOf<Task>()
 
     override suspend fun create(task: Task) {
-        TODO("Not yet implemented")
+        tasks.add(task)
     }
 
-    fun create(taskWithSubtasks: TaskWithSubtasks) {
-        tasks.add(taskWithSubtasks)
-    }
+    fun findAll() = tasks.toList()
 
     override fun findTodayTasks(): Flow<List<TaskWithSubtasks>> {
         val today = LocalDate.now()
@@ -26,9 +25,9 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.task.date
+                    val date = it.date
                     date != null && date.isEqual(today)
-                }
+                }.map { TaskWithSubtasks(task = it) }
             )
         }
     }
@@ -38,9 +37,9 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.task.date
+                    val date = it.date
                     date != null && date.isEqual(tomorrow)
-                }
+                }.map { TaskWithSubtasks(task = it) }
             )
         }
     }
@@ -49,8 +48,8 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    it.task.priority == Priority.URGENT
-                }
+                    it.priority == Priority.URGENT
+                }.map { TaskWithSubtasks(task = it) }
             )
         }
     }
@@ -60,19 +59,31 @@ class FakeTaskRepository : TaskRepository {
     }
 
     override suspend fun findTasksByBoard(boardId: Int): List<Task> {
-        TODO("Not yet implemented")
+        return tasks.filter { it.boardId == boardId }.sortedBy { it.position }
     }
 
     override suspend fun findOne(id: Int): Task? {
-        TODO("Not yet implemented")
+        return tasks.find { it.taskId == id }
     }
 
     override suspend fun update(taskUpdate: TaskUpdate) {
-        TODO("Not yet implemented")
+        tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
+            tasks.set(
+                index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
+                element = taskUpdate.toTask().copy(position = task.position)
+            )
+        }
     }
 
     override suspend fun updateMany(vararg tasks: Task) {
-        TODO("Not yet implemented")
+        val idsMap = this.tasks.groupBy { it.taskId }
+        for (task in tasks) {
+            if (idsMap[task.taskId] == null) continue
+            this.tasks.set(
+                index = this.tasks.indexOfFirst { it.taskId == task.taskId },
+                element = task
+            )
+        }
     }
 
     override suspend fun remove(task: Task) {

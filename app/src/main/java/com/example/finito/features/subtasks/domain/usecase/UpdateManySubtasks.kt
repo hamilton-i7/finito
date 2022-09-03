@@ -4,10 +4,17 @@ import com.example.finito.core.util.ResourceException
 import com.example.finito.core.util.isValidId
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.entity.SubtaskRepository
+import kotlin.jvm.Throws
 
 class UpdateManySubtasks(
     private val repository: SubtaskRepository
 ) {
+    @Throws(
+        ResourceException.EmptyException::class,
+        ResourceException.NegativeIdException::class,
+        ResourceException.InvalidStateException::class,
+        ResourceException.NotFoundException::class
+    )
     suspend operator fun invoke(vararg subtasks: Subtask): Int {
         if (subtasks.any { it.name.isBlank() }) {
             throw ResourceException.EmptyException
@@ -65,7 +72,8 @@ class UpdateManySubtasks(
     ) {
         val ids = newSubtasks.groupBy { it.subtaskId }
         oldSubtasks.filter { ids[it.subtaskId] == null }.let {
-            repository.removeMany(*it.toTypedArray())
+            val deletedSubtasksAmount = repository.removeMany(*it.toTypedArray())
+            if (deletedSubtasksAmount != it.size) throw ResourceException.NotFoundException
         }
     }
 }

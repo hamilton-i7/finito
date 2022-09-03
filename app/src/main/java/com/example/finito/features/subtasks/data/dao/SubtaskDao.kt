@@ -9,9 +9,12 @@ interface SubtaskDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun createMany(vararg subtasks: Subtask)
 
+    @Query("SELECT * FROM subtasks WHERE task_id = :taskId")
+    suspend fun findAllByTaskId(taskId: Int): List<Subtask>
+
     @Update
-    suspend fun updateMany(vararg subtasks: Subtask)
+    suspend fun updateMany(vararg subtasks: Subtask): Int
 
     @Delete
-    suspend fun removeMany(vararg subtasks: Subtask)
+    suspend fun removeMany(vararg subtasks: Subtask): Int
 }

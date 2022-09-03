@@ -92,7 +92,7 @@ class FakeBoardRepository : BoardRepository {
             )
         }
     }
-    
+
     override suspend fun update(board: Board): Int {
         boards.find { it.board.boardId == board.boardId } ?: return 0
         boards.set(

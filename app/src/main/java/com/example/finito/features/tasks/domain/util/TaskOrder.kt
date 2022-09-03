@@ -1,4 +1,4 @@
-package com.example.finito.features.labels.domain.util
+package com.example.finito.features.tasks.domain.util
 
 enum class TaskOrder {
     MOST_URGENT,

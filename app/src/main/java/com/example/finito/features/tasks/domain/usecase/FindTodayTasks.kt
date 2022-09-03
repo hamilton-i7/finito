@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.features.labels.domain.util.TaskOrder
+import com.example.finito.features.tasks.domain.util.TaskOrder
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow

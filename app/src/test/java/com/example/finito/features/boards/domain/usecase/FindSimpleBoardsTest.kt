@@ -25,7 +25,7 @@ class FindSimpleBoardsTest {
         ('A'..'Z').forEachIndexed { index, c ->
             dummyBoards.add(
                 Board(
-                    boardId = index,
+                    boardId = index + 1,
                     name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
                     archived = index % 3 == 0,
                     deleted = index % 2 == 0
@@ -38,7 +38,7 @@ class FindSimpleBoardsTest {
 
     @Test
     fun `Should return active boards when asked`() = runTest {
-        val boardIds = findSimpleBoards().first().map { it.boardId }
+        val boardIds = findSimpleBoards().first().onEach(::println).map { it.boardId }
         val deletedBoards = dummyBoards.filter { it.deleted }.groupBy { it.boardId }
         boardIds.forEach {
             assertThat(deletedBoards[it]).isNull()

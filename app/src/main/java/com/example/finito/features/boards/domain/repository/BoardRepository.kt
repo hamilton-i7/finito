@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BoardRepository {
 
-    suspend fun create(board: Board)
+    suspend fun create(board: Board): Long
 
     fun findAll(): Flow<List<BoardWithLabels>>
 
@@ -16,8 +16,6 @@ interface BoardRepository {
     fun findDeletedBoards(): Flow<List<BoardWithLabels>>
 
     suspend fun findOne(id: Int): DetailedBoard?
-
-    suspend fun findNewestId(): Int
 
     suspend fun update(board: Board): Int
 

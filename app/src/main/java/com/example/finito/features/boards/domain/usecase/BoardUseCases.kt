@@ -7,7 +7,6 @@ data class BoardUseCases(
     val findDeletedBoards: FindDeletedBoards,
     val findSimpleBoards: FindSimpleBoards,
     val findOneBoard: FindOneBoard,
-    val findNewestId: FindNewestId,
     val updateBoard: UpdateBoard,
     val deleteBoard: DeleteBoard,
 )

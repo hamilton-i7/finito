@@ -8,7 +8,7 @@ class CreateBoard(
     private val repository: BoardRepository
 ) {
     @Throws(ResourceException::class)
-    suspend operator fun invoke(board: Board) {
+    suspend operator fun invoke(board: Board): Int {
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
@@ -17,6 +17,6 @@ class CreateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return repository.create(board)
+        return repository.create(board).toInt()
     }
 }

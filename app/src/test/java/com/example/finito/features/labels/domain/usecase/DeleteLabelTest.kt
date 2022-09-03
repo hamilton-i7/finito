@@ -48,12 +48,11 @@ class DeleteLabelTest {
     }
 
     @Test
-    fun `Should throw NotFoundException when label isn't found`() = runTest {
+    fun `Should throw NotFoundException when label isn't found`() {
         val latestId = dummyLabels.map { it.labelId }.max()
-        dummyLabels.random().copy(labelId = latestId + 1).let {
-            assertThrows(ResourceException.NotFoundException::class.java) {
-                runTest { deleteLabel(it) }
-            }
+        val label = dummyLabels.random().copy(labelId = latestId + 1)
+        assertThrows(ResourceException.NotFoundException::class.java) {
+            runTest { deleteLabel(label) }
         }
     }
 

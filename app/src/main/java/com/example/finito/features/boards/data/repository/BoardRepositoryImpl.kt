@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 class BoardRepositoryImpl(
     private val dao: BoardDao
 ) : BoardRepository {
-    override suspend fun create(board: Board) {
+    override suspend fun create(board: Board): Long {
         return dao.create(board)
     }
 
@@ -30,10 +30,6 @@ class BoardRepositoryImpl(
 
     override suspend fun findOne(id: Int): DetailedBoard? {
         return dao.findOne(id)
-    }
-
-    override suspend fun findNewestId(): Int {
-        return dao.findNewestId()
     }
 
     override suspend fun update(board: Board): Int {

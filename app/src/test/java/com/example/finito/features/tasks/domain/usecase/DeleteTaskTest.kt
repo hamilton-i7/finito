@@ -91,7 +91,7 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `Should throw NotFoundException when task isn't found`() = runTest {
+    fun `Should throw NotFoundException when task isn't found`() {
         val latestId = dummyTasks.map { it.taskId }.max()
         dummyTasks.random().copy(taskId = latestId + 1).let {
             assertThrows(ResourceException.NotFoundException::class.java) {

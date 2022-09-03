@@ -38,7 +38,6 @@ object BoardModule {
             findDeletedBoards = FindDeletedBoards(repository),
             findSimpleBoards = FindSimpleBoards(repository),
             findOneBoard = FindOneBoard(repository),
-            findNewestId = FindNewestId(repository),
             updateBoard = UpdateBoard(repository),
             deleteBoard = DeleteBoard(repository),
         )

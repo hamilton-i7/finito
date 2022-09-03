@@ -60,10 +60,9 @@ class UpdateLabelTest {
     }
 
     @Test
-    fun `Should throw NotFoundException if no label is found`() = runTest {
+    fun `Should throw NotFoundException if no label is found`() {
         val label = dummyLabels.random().copy(labelId = 10_000)
-        updateLabel(label)
-        assertThrows(ResourceException.EmptyException::class.java) {
+        assertThrows(ResourceException.NotFoundException::class.java) {
             runTest { updateLabel(label) }
         }
     }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface BoardDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(board: Board)
+    suspend fun create(board: Board): Long
 
     @Transaction
     @Query("SELECT * FROM boards WHERE archived = 0 AND deleted = 0")
@@ -32,9 +32,6 @@ interface BoardDao {
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM boards WHERE board_id = :id")
     suspend fun findOne(id: Int): DetailedBoard?
-
-    @Query("SELECT seq FROM sqlite_sequence WHERE name = 'boards'")
-    suspend fun findNewestId(): Int
 
     @Update
     suspend fun update(board: Board): Int

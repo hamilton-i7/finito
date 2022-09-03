@@ -15,11 +15,12 @@ class FakeBoardRepository : BoardRepository {
 
     private val boards = mutableListOf<BoardWithLabels>()
 
-    override suspend fun create(board: Board) {
+    override suspend fun create(board: Board): Long {
         boards.add(BoardWithLabels(
             board = board,
             labels = emptyList()
         ))
+        return boards.size + 1L
     }
 
     fun create(boardWithLabels: BoardWithLabels) {
@@ -91,11 +92,7 @@ class FakeBoardRepository : BoardRepository {
             )
         }
     }
-
-    override suspend fun findNewestId(): Int {
-        return boards.map { it.board.boardId }.max()
-    }
-
+    
     override suspend fun update(board: Board): Int {
         boards.find { it.board.boardId == board.boardId } ?: return 0
         boards.set(

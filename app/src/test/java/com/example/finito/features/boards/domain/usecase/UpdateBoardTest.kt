@@ -74,7 +74,7 @@ class UpdateBoardTest {
     }
 
     @Test
-    fun `Should throw NotFoundException when no board is found`() = runTest {
+    fun `Should throw NotFoundException when no board is found`() {
         val board = dummyBoards.first { !it.archived && !it.deleted }.copy(boardId = 10_000)
         assertThrows(ResourceException.NotFoundException::class.java) {
             runTest { updateBoard(board) }

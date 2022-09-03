@@ -11,7 +11,7 @@ class UpdateLabel(
     @Throws(ResourceException::class)
     suspend operator fun invoke(label: Label): Int {
         if (!isValidId(label.labelId)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         if (label.name.isBlank()) {
             throw ResourceException.EmptyException

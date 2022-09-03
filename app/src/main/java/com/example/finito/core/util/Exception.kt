@@ -5,7 +5,7 @@ sealed class ResourceException(override val message: String?) : Exception(messag
 
     class InvalidStateException(message: String?) : ResourceException(message)
 
-    object InvalidIdException : Exception("ID must be a positive integer")
+    object NegativeIdException : Exception("ID must be a positive integer")
 
     object NotFoundException : ResourceException(message = "Resource not found")
 }

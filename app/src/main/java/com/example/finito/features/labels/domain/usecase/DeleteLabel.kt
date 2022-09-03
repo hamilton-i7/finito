@@ -9,12 +9,12 @@ class DeleteLabel(
     private val repository: LabelRepository
 ) {
     @Throws(
-        ResourceException.InvalidIdException::class,
+        ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
     suspend operator fun invoke(label: Label): Int {
         if (!isValidId(label.labelId)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         return repository.remove(label).let {
             if (it == 0) throw ResourceException.NotFoundException

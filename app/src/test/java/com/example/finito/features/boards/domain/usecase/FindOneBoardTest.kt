@@ -38,13 +38,13 @@ class FindOneBoardTest {
 
     @Test
     fun `Should throw InvalidIdException when ID is invalid`() {
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { findOneBoard(-1) }
         }
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { findOneBoard(0) }
         }
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { findOneBoard(-23) }
         }
     }

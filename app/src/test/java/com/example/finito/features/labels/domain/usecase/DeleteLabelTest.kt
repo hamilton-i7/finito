@@ -37,12 +37,12 @@ class DeleteLabelTest {
     @Test
     fun `Should throw InvalidIdException when ID is invalid`() {
         var label = dummyLabels.random().copy(labelId = 0)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { deleteLabel(label) }
         }
 
         label = dummyLabels.random().copy(labelId = -2)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { deleteLabel(label) }
         }
     }

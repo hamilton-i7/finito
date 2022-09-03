@@ -8,10 +8,10 @@ import com.example.finito.features.boards.domain.repository.BoardRepository
 class FindOneBoard(
     private val repository: BoardRepository
 ) {
-    @Throws(ResourceException.InvalidIdException::class)
+    @Throws(ResourceException.NegativeIdException::class)
     suspend operator fun invoke(id: Int): DetailedBoard {
         if (!isValidId(id)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         return repository.findOne(id)?.let { board ->
             board.copy(

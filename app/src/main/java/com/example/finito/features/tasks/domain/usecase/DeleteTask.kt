@@ -8,10 +8,10 @@ import com.example.finito.features.tasks.domain.repository.TaskRepository
 class DeleteTask(
     private val repository: TaskRepository
 ) {
-    @Throws(ResourceException.InvalidIdException::class)
+    @Throws(ResourceException.NegativeIdException::class)
     suspend operator fun invoke(task: Task): Int {
         if (!isValidId(task.taskId)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         arrangeTasks(task, repository)
         return repository.remove(task).let {

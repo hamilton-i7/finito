@@ -36,12 +36,12 @@ class UpdateLabelTest {
     @Test
     fun `Should throw InvalidIdException when ID is invalid`() {
         var label = dummyLabels.random().copy(labelId = -3)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { updateLabel(label) }
         }
 
         label = dummyLabels.random().copy(labelId = 0)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { updateLabel(label) }
         }
     }

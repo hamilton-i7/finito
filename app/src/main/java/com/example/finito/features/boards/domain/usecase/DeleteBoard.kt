@@ -9,12 +9,12 @@ class DeleteBoard(
     private val repository: BoardRepository
 ) {
     @Throws(
-        ResourceException.InvalidIdException::class,
+        ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
     suspend operator fun invoke(board: Board): Int {
         if (!isValidId(board.boardId)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         return repository.remove(board).let {
             if (it == 0) throw ResourceException.NotFoundException

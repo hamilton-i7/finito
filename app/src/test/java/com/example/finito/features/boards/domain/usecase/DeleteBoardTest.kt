@@ -37,12 +37,12 @@ class DeleteBoardTest {
     @Test
     fun `Should throw InvalidIdException when ID is invalid`() {
         var board = dummyBoards.random().copy(boardId = 0)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { deleteBoard(board) }
         }
 
         board = dummyBoards.random().copy(boardId = -2)
-        assertThrows(ResourceException.InvalidIdException::class.java) {
+        assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { deleteBoard(board) }
         }
     }

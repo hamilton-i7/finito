@@ -9,14 +9,14 @@ class UpdateBoard(
     private val repository: BoardRepository
 ) {
     @Throws(
-        ResourceException.InvalidIdException::class,
+        ResourceException.NegativeIdException::class,
         ResourceException.EmptyException::class,
         ResourceException.InvalidStateException::class,
         ResourceException.NotFoundException::class
     )
     suspend operator fun invoke(board: Board): Int {
         if (!isValidId(board.boardId)) {
-            throw ResourceException.InvalidIdException
+            throw ResourceException.NegativeIdException
         }
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException

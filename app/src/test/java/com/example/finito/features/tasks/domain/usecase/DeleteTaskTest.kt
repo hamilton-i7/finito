@@ -79,12 +79,12 @@ class DeleteTaskTest {
     @Test
     fun `Should throw InvalidIdException when ID is invalid`() {
         dummyTasks.random().copy(taskId = 0).let {
-            assertThrows(ResourceException.InvalidIdException::class.java) {
+            assertThrows(ResourceException.NegativeIdException::class.java) {
                 runTest { deleteTask(it) }
             }
         }
         dummyTasks.random().copy(taskId = -2).let {
-            assertThrows(ResourceException.InvalidIdException::class.java) {
+            assertThrows(ResourceException.NegativeIdException::class.java) {
                 runTest { deleteTask(it) }
             }
         }

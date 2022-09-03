@@ -35,7 +35,7 @@ class TaskRepositoryImpl(
         return dao.findTasksByBoard(boardId)
     }
 
-    override suspend fun findOne(id: Int): Task? {
+    override suspend fun findOne(id: Int): TaskWithSubtasks? {
         return dao.findOne(id)
     }
 

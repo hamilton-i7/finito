@@ -34,7 +34,7 @@ interface TaskDao {
     suspend fun findTasksByBoard(boardId: Int): List<Task>
 
     @Query("SELECT * FROM tasks WHERE task_id = :id")
-    suspend fun findOne(id: Int): Task?
+    suspend fun findOne(id: Int): TaskWithSubtasks?
 
     @Update(entity = Task::class)
     suspend fun update(taskUpdate: TaskUpdate)

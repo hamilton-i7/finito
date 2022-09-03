@@ -19,22 +19,23 @@ class UpdateTask(
                 message = "Date must not be null if time is set"
             )
         }
-        val oldTask = repository.findOne(task.taskId) ?: throw ResourceException.NotFoundException
-        if (changedBoard(oldTask, task)) {
-            arrangeDiffBoard(
-                startBoardId = oldTask.boardId,
-                endBoardId = task.boardId,
-                newTask = task,
-                repository = repository,
-            )
-        } else if (changedPosition(oldTask, task)) {
-            arrangeSameBoard(
-                boardId = task.boardId,
-                from = oldTask.position,
-                to = task.position,
-                repository = repository
-            )
-        }
+        repository.findOne(task.taskId)?.let {
+            if (changedBoard(it.task, task)) {
+                arrangeDiffBoard(
+                    startBoardId = it.task.boardId,
+                    endBoardId = task.boardId,
+                    newTask = task,
+                    repository = repository,
+                )
+            } else if (changedPosition(it.task, task)) {
+                arrangeSameBoard(
+                    boardId = task.boardId,
+                    from = it.task.position,
+                    to = task.position,
+                    repository = repository
+                )
+            }
+        } ?: throw ResourceException.NotFoundException
         return repository.update(task.toTaskUpdate())
     }
 

@@ -20,7 +20,7 @@ interface TaskRepository {
 
     suspend fun findTasksByBoard(boardId: Int): List<Task>
 
-    suspend fun findOne(id: Int): Task?
+    suspend fun findOne(id: Int): TaskWithSubtasks?
 
     suspend fun update(taskUpdate: TaskUpdate)
 

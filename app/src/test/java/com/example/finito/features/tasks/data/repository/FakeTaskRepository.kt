@@ -62,8 +62,10 @@ class FakeTaskRepository : TaskRepository {
         return tasks.filter { it.boardId == boardId }.sortedBy { it.position }
     }
 
-    override suspend fun findOne(id: Int): Task? {
-        return tasks.find { it.taskId == id }
+    override suspend fun findOne(id: Int): TaskWithSubtasks? {
+        return tasks.find { it.taskId == id }?.let {
+            TaskWithSubtasks(it)
+        }
     }
 
     override suspend fun update(taskUpdate: TaskUpdate) {

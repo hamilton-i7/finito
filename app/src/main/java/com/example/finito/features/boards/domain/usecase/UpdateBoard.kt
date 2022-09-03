@@ -11,7 +11,7 @@ class UpdateBoard(
     @Throws(
         ResourceException.InvalidIdException::class,
         ResourceException.EmptyException::class,
-        ResourceException.InvalidException::class,
+        ResourceException.InvalidStateException::class,
         ResourceException.NotFoundException::class
     )
     suspend operator fun invoke(board: Board): Int {
@@ -22,7 +22,7 @@ class UpdateBoard(
             throw ResourceException.EmptyException
         }
         if (board.archived && board.deleted) {
-            throw ResourceException.InvalidException(
+            throw ResourceException.InvalidStateException(
                 message = "Board must be either archived or deleted. Not both"
             )
         }

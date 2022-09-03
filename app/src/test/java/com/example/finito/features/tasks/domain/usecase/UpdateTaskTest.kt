@@ -92,7 +92,7 @@ class UpdateTaskTest {
     @Test
     fun `update task throws Exception if invalid state`() {
         dummyTasks.random().let { task ->
-            assertThrows(ResourceException.InvalidException::class.java) {
+            assertThrows(ResourceException.InvalidStateException::class.java) {
                 runTest {
                     updateTask(
                         task.copy(

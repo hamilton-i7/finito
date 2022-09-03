@@ -98,7 +98,7 @@ class CreateTaskTest {
             boardId = boards.random().boardId,
             time = LocalTime.now()
         ).let {
-            Assert.assertThrows(ResourceException.InvalidException::class.java) {
+            Assert.assertThrows(ResourceException.InvalidStateException::class.java) {
                 runTest { createTask(it) }
             }
         }

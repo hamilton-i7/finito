@@ -68,7 +68,7 @@ class UpdateBoardTest {
             archived = true,
             deleted = true
         )
-        assertThrows(ResourceException.InvalidException::class.java) {
+        assertThrows(ResourceException.InvalidStateException::class.java) {
             runTest { updateBoard(board) }
         }
     }

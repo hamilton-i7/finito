@@ -15,7 +15,7 @@ class UpdateTask(
             throw ResourceException.EmptyException
         }
         if (task.date == null && task.time != null) {
-            throw ResourceException.InvalidException(
+            throw ResourceException.InvalidStateException(
                 message = "Date must not be null if time is set"
             )
         }

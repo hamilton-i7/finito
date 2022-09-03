@@ -13,7 +13,7 @@ class CreateBoard(
             throw ResourceException.EmptyException
         }
         if (board.archived && board.deleted) {
-            throw ResourceException.InvalidException(
+            throw ResourceException.InvalidStateException(
                 message = "Board must be either archived or deleted. Not both"
             )
         }

@@ -5,7 +5,7 @@ import com.example.finito.features.subtasks.data.repository.SubtaskRepositoryImp
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.subtasks.domain.usecase.DeleteSubtask
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
-import com.example.finito.features.subtasks.domain.usecase.UpdateManySubtasks
+import com.example.finito.features.subtasks.domain.usecase.UpdateSubtask
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +26,7 @@ object SubtaskModule {
     @Singleton
     fun provideSubtaskUseCases(repository: SubtaskRepository): SubtaskUseCases {
         return SubtaskUseCases(
-            updateManySubtasks = UpdateManySubtasks(repository),
+            updateSubtask = UpdateSubtask(repository),
             deleteSubtask = DeleteSubtask(repository),
         )
     }

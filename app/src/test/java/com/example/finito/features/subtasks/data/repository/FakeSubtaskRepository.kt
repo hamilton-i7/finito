@@ -19,6 +19,10 @@ class FakeSubtaskRepository: SubtaskRepository {
         return subtasks.filter { it.taskId == taskId }.sortedBy { it.position }
     }
 
+    override suspend fun findOne(id: Int): Subtask? {
+        return subtasks.find { it.subtaskId == id }
+    }
+
     override suspend fun updateMany(vararg subtasks: Subtask): Int {
         var updateCount = 0
         val ids = this.subtasks.groupBy { it.subtaskId }

@@ -51,7 +51,7 @@ class UpdateTask(
                 // Create the new subtasks
                 createSubtasks(subtasks = this, subtaskRepository)
 
-                this.filter { it.subtaskId != 0 }.let {
+                filter { it.subtaskId != 0 }.let {
                     val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
                     if (it.any { subtask -> ids[subtask.subtaskId] == null }) {
                         throw ResourceException.NotFoundException
@@ -136,4 +136,5 @@ class UpdateTask(
             repository.removeMany(*it.toTypedArray())
         }
     }
+
 }

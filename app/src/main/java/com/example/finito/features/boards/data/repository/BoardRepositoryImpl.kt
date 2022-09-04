@@ -32,11 +32,11 @@ class BoardRepositoryImpl(
         return dao.findOne(id)
     }
 
-    override suspend fun update(board: Board): Int {
+    override suspend fun update(board: Board) {
         return dao.update(board)
     }
 
-    override suspend fun remove(board: Board): Int {
+    override suspend fun remove(board: Board) {
         return dao.remove(board)
     }
 }

@@ -9,7 +9,7 @@ class DeleteTask(
     private val repository: TaskRepository
 ) {
     @Throws(ResourceException.NegativeIdException::class)
-    suspend operator fun invoke(task: Task): Int {
+    suspend operator fun invoke(task: Task) {
         if (!isValidId(task.taskId)) {
             throw ResourceException.NegativeIdException
         }

@@ -12,13 +12,11 @@ class DeleteBoard(
         ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(board: Board): Int {
+    suspend operator fun invoke(board: Board) {
         if (!isValidId(board.boardId)) {
             throw ResourceException.NegativeIdException
         }
-        return repository.remove(board).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }
+        repository.findOne(board.boardId) ?: throw ResourceException.NotFoundException
+        return repository.remove(board)
     }
 }

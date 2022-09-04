@@ -30,16 +30,19 @@ object BoardModule {
 
     @Provides
     @Singleton
-    fun provideBoardUseCases(repository: BoardRepository): BoardUseCases {
+    fun provideBoardUseCases(
+        boardRepository: BoardRepository,
+        boardLabelRepository: BoardLabelRepository,
+    ): BoardUseCases {
         return BoardUseCases(
-            createBoard = CreateBoard(repository),
-            findAllBoards = FindAllBoards(repository),
-            findArchivedBoards = FindArchivedBoards(repository),
-            findDeletedBoards = FindDeletedBoards(repository),
-            findSimpleBoards = FindSimpleBoards(repository),
-            findOneBoard = FindOneBoard(repository),
-            updateBoard = UpdateBoard(repository),
-            deleteBoard = DeleteBoard(repository),
+            createBoard = CreateBoard(boardRepository, boardLabelRepository),
+            findAllBoards = FindAllBoards(boardRepository),
+            findArchivedBoards = FindArchivedBoards(boardRepository),
+            findDeletedBoards = FindDeletedBoards(boardRepository),
+            findSimpleBoards = FindSimpleBoards(boardRepository),
+            findOneBoard = FindOneBoard(boardRepository),
+            updateBoard = UpdateBoard(boardRepository, boardLabelRepository),
+            deleteBoard = DeleteBoard(boardRepository),
         )
     }
 }

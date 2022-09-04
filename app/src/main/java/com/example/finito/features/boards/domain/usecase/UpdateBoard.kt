@@ -17,7 +17,7 @@ class UpdateBoard(
         ResourceException.InvalidStateException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(boardWithLabels: BoardWithLabels): Int {
+    suspend operator fun invoke(boardWithLabels: BoardWithLabels) {
         val (board, labels) = boardWithLabels
 
         if (!isValidId(board.boardId)) {
@@ -31,10 +31,9 @@ class UpdateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return boardRepository.update(board).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }.also {
+        boardRepository.findOne(board.boardId) ?: throw ResourceException.NotFoundException
+
+        return boardRepository.update(board).also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {
                 if (isEmpty()) return@with
                 val newRefs = labels.map {

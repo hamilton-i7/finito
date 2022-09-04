@@ -12,6 +12,9 @@ interface SubtaskDao {
     @Query("SELECT * FROM subtasks WHERE task_id = :taskId ORDER BY position ASC")
     suspend fun findAllByTaskId(taskId: Int): List<Subtask>
 
+    @Query("SELECT * FROM subtasks WHERE subtask_id = :id")
+    suspend fun findOne(id: Int): Subtask?
+
     @Update
     suspend fun updateMany(vararg subtasks: Subtask): Int
 

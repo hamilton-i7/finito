@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.di
 
 import com.example.finito.core.data.FinitoDatabase
+import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.data.repository.TaskRepositoryImpl
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import com.example.finito.features.tasks.domain.usecase.*
@@ -22,14 +23,17 @@ object TaskModule {
 
     @Provides
     @Singleton
-    fun provideTaskUseCases(repository: TaskRepository): TaskUseCases {
+    fun provideTaskUseCases(
+        taskRepository: TaskRepository,
+        subtaskRepository: SubtaskRepository,
+    ): TaskUseCases {
         return TaskUseCases(
-            createTask = CreateTask(repository),
-            findTodayTasks = FindTodayTasks(repository),
-            findTomorrowTasks = FindTomorrowTasks(repository),
-            findUrgentTasks = FindUrgentTasks(repository),
-            updateTask = UpdateTask(repository),
-            deleteTask = DeleteTask(repository),
+            createTask = CreateTask(taskRepository, subtaskRepository),
+            findTodayTasks = FindTodayTasks(taskRepository),
+            findTomorrowTasks = FindTomorrowTasks(taskRepository),
+            findUrgentTasks = FindUrgentTasks(taskRepository),
+            updateTask = UpdateTask(taskRepository, subtaskRepository),
+            deleteTask = DeleteTask(taskRepository),
         )
     }
 }

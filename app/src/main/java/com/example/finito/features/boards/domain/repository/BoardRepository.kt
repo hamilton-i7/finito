@@ -17,7 +17,7 @@ interface BoardRepository {
 
     suspend fun findOne(id: Int): DetailedBoard?
 
-    suspend fun update(board: Board): Int
+    suspend fun update(board: Board)
 
-    suspend fun remove(board: Board): Int
+    suspend fun remove(board: Board)
 }

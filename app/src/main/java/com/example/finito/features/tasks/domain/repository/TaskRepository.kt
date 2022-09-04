@@ -26,5 +26,5 @@ interface TaskRepository {
 
     suspend fun updateMany(vararg tasks: Task)
 
-    suspend fun remove(task: Task): Int
+    suspend fun remove(task: Task)
 }

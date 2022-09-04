@@ -126,10 +126,7 @@ class FakeTaskRepository(
         }
     }
 
-    override suspend fun remove(task: Task): Int {
-        return mutableTasks.remove(task).let { deleted ->
-            if (deleted) 1
-            else 0
-        }
+    override suspend fun remove(task: Task) {
+        mutableTasks.remove(task)
     }
 }

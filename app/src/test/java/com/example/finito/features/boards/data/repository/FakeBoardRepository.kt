@@ -125,20 +125,14 @@ class FakeBoardRepository(
         }
     }
 
-    override suspend fun update(board: Board): Int {
-        boards.find { it.boardId == board.boardId } ?: return 0
+    override suspend fun update(board: Board) {
         boards.set(
             index = boards.indexOfFirst { it.boardId == board.boardId },
             element = board
         )
-        return 1
     }
 
-    override suspend fun remove(board: Board): Int {
-        val boardToDeleteIndex = boards.indexOfFirst { it.boardId == board.boardId }
-        if (boardToDeleteIndex == -1) return 0
-
-        boards.removeAt(boardToDeleteIndex)
-        return 1
+    override suspend fun remove(board: Board) {
+        boards.remove(board)
     }
 }

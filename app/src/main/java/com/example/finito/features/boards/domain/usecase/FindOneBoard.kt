@@ -13,9 +13,9 @@ class FindOneBoard(
         if (!isValidId(id)) {
             throw ResourceException.NegativeIdException
         }
-        return repository.findOne(id)?.let { board ->
-            board.copy(
-                tasks = board.tasks.sortedBy { it.task.position }
+        return repository.findOne(id)?.let { detailedBoard ->
+            detailedBoard.copy(
+                tasks = detailedBoard.tasks.sortedBy { it.task.position }
             )
         } ?: throw ResourceException.NotFoundException
     }

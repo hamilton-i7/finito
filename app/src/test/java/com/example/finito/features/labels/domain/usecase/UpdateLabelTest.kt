@@ -34,7 +34,7 @@ class UpdateLabelTest {
     }
 
     @Test
-    fun `Should throw InvalidIdException when ID is invalid`() {
+    fun `Should throw NegativeIdException when ID is invalid`() {
         var label = dummyLabels.random().copy(labelId = -3)
         assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { updateLabel(label) }

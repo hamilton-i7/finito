@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 class TaskRepositoryImpl(
     private val dao: TaskDao
 ) : TaskRepository {
-    override suspend fun create(task: Task) {
+    override suspend fun create(task: Task): Long {
         return dao.create(task)
     }
 

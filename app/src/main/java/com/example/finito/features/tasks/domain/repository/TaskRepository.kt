@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
 
-    suspend fun create(task: Task)
+    suspend fun create(task: Task): Long
 
     fun findTodayTasks(): Flow<List<TaskWithSubtasks>>
 

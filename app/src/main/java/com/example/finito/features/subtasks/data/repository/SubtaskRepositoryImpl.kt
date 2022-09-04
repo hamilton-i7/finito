@@ -2,7 +2,7 @@ package com.example.finito.features.subtasks.data.repository
 
 import com.example.finito.features.subtasks.data.dao.SubtaskDao
 import com.example.finito.features.subtasks.domain.entity.Subtask
-import com.example.finito.features.subtasks.domain.entity.SubtaskRepository
+import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 
 class SubtaskRepositoryImpl(
     private val dao: SubtaskDao

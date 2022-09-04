@@ -11,10 +11,18 @@ import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 
 class FakeTaskRepository : TaskRepository {
-    private val tasks = mutableListOf<Task>()
+    private val tasks = mutableListOf<TaskWithSubtasks>()
 
-    override suspend fun create(task: Task) {
-        tasks.add(task)
+    override suspend fun create(task: Task): Long {
+        val taskId = tasks.map { it.task.taskId }.maxOrNull()?.let { it + 1 } ?: 1
+        tasks.add(TaskWithSubtasks(
+            task = task.copy(taskId = taskId)
+        ))
+        return taskId.toLong()
+    }
+
+    fun create(taskWithSubtasks: TaskWithSubtasks) {
+        tasks.add(taskWithSubtasks)
     }
 
     fun findAll() = tasks.toList()
@@ -25,9 +33,9 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.date
+                    val date = it.task.date
                     date != null && date.isEqual(today)
-                }.map { TaskWithSubtasks(task = it) }
+                }.map { TaskWithSubtasks(task = it.task) }
             )
         }
     }
@@ -37,9 +45,9 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.date
+                    val date = it.task.date
                     date != null && date.isEqual(tomorrow)
-                }.map { TaskWithSubtasks(task = it) }
+                }.map { TaskWithSubtasks(task = it.task) }
             )
         }
     }
@@ -48,48 +56,51 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    it.priority == Priority.URGENT
-                }.map { TaskWithSubtasks(task = it) }
+                    it.task.priority == Priority.URGENT
+                }.map { TaskWithSubtasks(task = it.task) }
             )
         }
     }
 
     override suspend fun findTasksByBoardAmount(boardId: Int): Int {
-        return tasks.count { it.boardId == boardId }
+        return tasks.count { it.task.boardId == boardId }
     }
 
     override suspend fun findTasksByBoard(boardId: Int): List<Task> {
-        return tasks.filter { it.boardId == boardId }.sortedBy { it.position }
+        return tasks.filter { it.task.boardId == boardId }
+            .map { it.task }
+            .sortedBy { it.position }
     }
 
     override suspend fun findOne(id: Int): TaskWithSubtasks? {
-        return tasks.find { it.taskId == id }?.let {
-            TaskWithSubtasks(it)
-        }
+        return tasks.find { it.task.taskId == id }
     }
 
     override suspend fun update(taskUpdate: TaskUpdate) {
-        tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
+        tasks.find { it.task.taskId == taskUpdate.taskId }?.let { taskWithSubtasks ->
             tasks.set(
-                index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
-                element = taskUpdate.toTask().copy(position = task.position)
+                index = tasks.indexOfFirst { it.task.taskId == taskUpdate.taskId },
+                element = taskWithSubtasks.copy(
+                    taskUpdate.toTask().copy(position = taskWithSubtasks.task.position)
+                )
             )
         }
     }
 
     override suspend fun updateMany(vararg tasks: Task) {
-        val idsMap = this.tasks.groupBy { it.taskId }
+        val idsMap = this.tasks.groupBy { it.task.taskId }
         for (task in tasks) {
             if (idsMap[task.taskId] == null) continue
+            val taskToUpdate = this.tasks.first { it.task.taskId == task.taskId }
             this.tasks.set(
-                index = this.tasks.indexOfFirst { it.taskId == task.taskId },
-                element = task
+                index = this.tasks.indexOf(taskToUpdate),
+                element = taskToUpdate.copy(task = task)
             )
         }
     }
 
     override suspend fun remove(task: Task): Int {
-        tasks.indexOfFirst { it.taskId == task.taskId }.let {
+        tasks.indexOfFirst { it.task.taskId == task.taskId }.let {
             if (it == -1) return 0
             tasks.removeAt(it)
             return 1

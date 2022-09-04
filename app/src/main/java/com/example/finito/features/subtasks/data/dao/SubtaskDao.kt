@@ -9,7 +9,7 @@ interface SubtaskDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun createMany(vararg subtasks: Subtask)
 
-    @Query("SELECT * FROM subtasks WHERE task_id = :taskId")
+    @Query("SELECT * FROM subtasks WHERE task_id = :taskId ORDER BY position ASC")
     suspend fun findAllByTaskId(taskId: Int): List<Subtask>
 
     @Update

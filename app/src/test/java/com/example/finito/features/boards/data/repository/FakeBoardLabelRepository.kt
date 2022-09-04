@@ -1,21 +1,27 @@
 package com.example.finito.features.boards.data.repository
 
-import com.example.finito.features.boards.data.dao.BoardLabelDao
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.repository.BoardLabelRepository
 
-class BoardLabelRepositoryImpl(
-    private val dao: BoardLabelDao
-) : BoardLabelRepository {
+class FakeBoardLabelRepository : BoardLabelRepository {
+    private val boardLabelRefs = mutableListOf<BoardLabelCrossRef>()
+
     override suspend fun create(vararg labels: BoardLabelCrossRef) {
-        return dao.create(*labels)
+        boardLabelRefs.addAll(labels)
     }
 
     override suspend fun findAllByBoardId(boardId: Int): List<BoardLabelCrossRef> {
-        return dao.findAllByBoardId(boardId)
+        return boardLabelRefs.filter { it.boardId == boardId }
     }
 
     override suspend fun remove(vararg labels: BoardLabelCrossRef): Int {
-        return dao.remove(*labels)
+        var deleteCount = 0
+        labels.forEach {
+            boardLabelRefs.remove(it).also { deleted ->
+                if (!deleted) return@also
+                deleteCount++
+            }
+        }
+        return deleteCount
     }
 }

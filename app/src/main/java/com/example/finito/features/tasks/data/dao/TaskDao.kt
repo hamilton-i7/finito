@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun create(task: Task)
+    suspend fun create(task: Task): Long
 
     @Transaction
     @Query("SELECT * FROM tasks " +
@@ -33,6 +33,7 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE board_id = :boardId ORDER BY position ASC")
     suspend fun findTasksByBoard(boardId: Int): List<Task>
 
+    @Transaction
     @Query("SELECT * FROM tasks WHERE task_id = :id")
     suspend fun findOne(id: Int): TaskWithSubtasks?
 

@@ -6,8 +6,8 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.tasks.domain.entity.DetailedTask
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -53,39 +53,34 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override suspend fun findOne(id: Int): DetailedBoard? {
-        val board = boards.find { it.board.boardId == id }
-        return board?.let {
+        val board = boards.find { it.board.boardId == id } ?: return null
+        return board.let {
             DetailedBoard(
-                boardId = it.board.boardId,
-                name = it.board.name,
-                createdAt = it.board.createdAt,
+                board = Board(
+                    boardId = it.board.boardId,
+                    name = it.board.name,
+                    createdAt = it.board.createdAt,
+                ),
                 tasks = listOf(
-                    TaskWithSubtasks(
+                    DetailedTask(
                         task = Task(
+                            taskId = 1,
                             boardId = it.board.boardId,
                             name = "Task name",
                             position = 0
                         ),
                         subtasks = emptyList(),
                     ),
-                    TaskWithSubtasks(
+                    DetailedTask(
                         task = Task(
-                            taskId = 1,
+                            taskId = 2,
                             boardId = it.board.boardId,
                             name = "Task name",
                             position = 1
                         ),
                         subtasks = listOf(
-                            Subtask(
-                                taskId = 1,
-                                name = "Subtask name",
-                                position = 0
-                            ),
-                            Subtask(
-                                taskId = 1,
-                                name = "Subtask name",
-                                position = 1
-                            ),
+                            Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),
+                            Subtask(subtaskId = 2, name = "Subtask name", taskId = 2),
                         ),
                     ),
                 )

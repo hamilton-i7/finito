@@ -6,5 +6,7 @@ interface BoardLabelRepository {
 
     suspend fun create(vararg labels: BoardLabelCrossRef)
 
-    suspend fun remove(vararg labels: BoardLabelCrossRef)
+    suspend fun findAllByBoardId(boardId: Int): List<BoardLabelCrossRef>
+
+    suspend fun remove(vararg labels: BoardLabelCrossRef): Int
 }

@@ -14,3 +14,9 @@ data class Label(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )
+
+fun Label.toSimpleLabel(): SimpleLabel {
+    return SimpleLabel(
+        labelId, name, normalizedName
+    )
+}

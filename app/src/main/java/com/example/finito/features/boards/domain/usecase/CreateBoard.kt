@@ -1,14 +1,19 @@
 package com.example.finito.features.boards.domain.usecase
 
 import com.example.finito.core.util.ResourceException
-import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.repository.BoardLabelRepository
 import com.example.finito.features.boards.domain.repository.BoardRepository
 
 class CreateBoard(
-    private val repository: BoardRepository
+    private val boardRepository: BoardRepository,
+    private val boardLabelRepository: BoardLabelRepository
 ) {
     @Throws(ResourceException::class)
-    suspend operator fun invoke(board: Board): Int {
+    suspend operator fun invoke(boardWithLabels: BoardWithLabels): Int {
+        val (board, labels) = boardWithLabels
+
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
@@ -17,6 +22,11 @@ class CreateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return repository.create(board).toInt()
+        return boardRepository.create(board).toInt().also {
+            val boardLabelCrossRefs = labels.map { label ->
+                BoardLabelCrossRef(boardId = board.boardId, labelId = label.labelId)
+            }.toTypedArray()
+            boardLabelRepository.create(*boardLabelCrossRefs)
+        }
     }
 }

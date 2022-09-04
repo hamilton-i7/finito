@@ -3,12 +3,14 @@ package com.example.finito.features.tasks.domain.usecase
 import com.example.finito.core.Priority
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -18,7 +20,8 @@ import java.time.LocalTime
 class CreateTaskTest {
     private lateinit var createTask: CreateTask
     private lateinit var fakeTaskRepository: FakeTaskRepository
-    private lateinit var dummyTasks: MutableList<Task>
+    private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
+    private lateinit var dummyTasks: MutableList<TaskWithSubtasks>
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -29,7 +32,8 @@ class CreateTaskTest {
     @Before
     fun setUp() = runTest {
         fakeTaskRepository = FakeTaskRepository()
-        createTask = CreateTask(fakeTaskRepository)
+        fakeSubtaskRepository = FakeSubtaskRepository()
+        createTask = CreateTask(fakeTaskRepository, fakeSubtaskRepository)
         dummyTasks = mutableListOf()
 
         val dates = listOf(
@@ -57,19 +61,21 @@ class CreateTaskTest {
         ('A'..'Z').forEachIndexed { index, c ->
             val boardId = boards.random().boardId
             dummyTasks.add(
-                Task(
-                    taskId = index + 1,
-                    name = "Task $c",
-                    boardId = boardId,
-                    date = if (index % 2 == 0) dates.random() else null,
-                    time = if (index % 4 == 0) time.random() else null,
-                    priority = priorities.random(),
-                    position = when (boardId) {
-                        boards[0].boardId -> tasksInBoard1Position++
-                        boards[1].boardId -> tasksInBoard2Position++
-                        else -> tasksInBoard3Position++
-                    }
-                ),
+                TaskWithSubtasks(
+                    task = Task(
+                        taskId = index + 1,
+                        name = "Task $c",
+                        boardId = boardId,
+                        date = if (index % 2 == 0) dates.random() else null,
+                        time = if (index % 4 == 0) time.random() else null,
+                        priority = priorities.random(),
+                        position = when (boardId) {
+                            boards[0].boardId -> tasksInBoard1Position++
+                            boards[1].boardId -> tasksInBoard2Position++
+                            else -> tasksInBoard3Position++
+                        }
+                    ),
+                )
             )
         }
         dummyTasks.shuffle()
@@ -78,27 +84,32 @@ class CreateTaskTest {
 
     @Test
     fun `Should throw EmptyException when task name is empty`() {
-        Task(name = "", boardId = boards.random().boardId).let {
-            Assert.assertThrows(ResourceException.EmptyException::class.java) {
+        TaskWithSubtasks(
+            task = Task(name = "", boardId = boards.random().boardId)
+        ).let {
+            assertThrows(ResourceException.EmptyException::class.java) {
                 runTest { createTask(it) }
             }
         }
-
-        Task(name = "     ", boardId = boards.random().boardId).let {
-            Assert.assertThrows(ResourceException.EmptyException::class.java) {
+        TaskWithSubtasks(
+            task = Task(name = "     ", boardId = boards.random().boardId)
+        ).let {
+            assertThrows(ResourceException.EmptyException::class.java) {
                 runTest { createTask(it) }
             }
         }
     }
 
     @Test
-    fun `Should throw InvalidException when task state is invalid`() {
-        Task(
-            name = "Task name",
-            boardId = boards.random().boardId,
-            time = LocalTime.now()
+    fun `Should throw InvalidStateException when task state is invalid`() {
+        TaskWithSubtasks(
+            task = Task(
+                name = "Task name",
+                boardId = boards.random().boardId,
+                time = LocalTime.now()
+            )
         ).let {
-            Assert.assertThrows(ResourceException.InvalidStateException::class.java) {
+            assertThrows(ResourceException.InvalidStateException::class.java) {
                 runTest { createTask(it) }
             }
         }
@@ -106,14 +117,18 @@ class CreateTaskTest {
 
     @Test
     fun `Should insert new task into list when task state is valid`() = runTest {
-        val task = Task(name = "Task name", boardId = boards.random().boardId)
-        with(fakeTaskRepository.findTasksByBoard(task.boardId)) {
-            val tasksInBoard = fakeTaskRepository.findAll().filter { it.boardId == task.boardId }
+        val taskWithSubtasks = TaskWithSubtasks(
+            task = Task(name = "Task name", boardId = boards.random().boardId)
+        )
+        with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId)) {
+            val tasksInBoard = fakeTaskRepository.findAll().filter {
+                it.task.boardId == taskWithSubtasks.task.boardId
+            }
 
             assertThat(size).isEqualTo(tasksInBoard.size)
-            createTask(task)
+            createTask(taskWithSubtasks)
 
-            fakeTaskRepository.findTasksByBoard(task.boardId).let {
+            fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId).let {
                 assertThat(it.size).isEqualTo(tasksInBoard.size + 1)
             }
         }
@@ -121,11 +136,13 @@ class CreateTaskTest {
 
     @Test
     fun `Should set task position to list size when task state is valid`() = runTest {
-        val task = Task(name = "Task name", boardId = boards.random().boardId)
-        val tasks = fakeTaskRepository.findTasksByBoard(task.boardId)
-        createTask(task)
+        val taskWithSubtasks = TaskWithSubtasks(
+            task = Task(name = "Task name", boardId = boards.random().boardId)
+        )
+        val tasks = fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId)
+        createTask(taskWithSubtasks)
 
-        with(fakeTaskRepository.findTasksByBoard(task.boardId).first {
+        with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId).first {
             it.name == "Task name"
         }) { assertThat(position).isEqualTo(tasks.size) }
     }

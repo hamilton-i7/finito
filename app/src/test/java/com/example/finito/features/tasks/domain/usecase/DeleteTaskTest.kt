@@ -77,7 +77,7 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `Should throw InvalidIdException when ID is invalid`() {
+    fun `Should throw NegativeIdException when ID is invalid`() {
         dummyTasks.random().copy(taskId = 0).let {
             assertThrows(ResourceException.NegativeIdException::class.java) {
                 runTest { deleteTask(it) }
@@ -106,7 +106,7 @@ class DeleteTaskTest {
             deleteTask(task = this)
 
             fakeTaskRepository.findAll().let {
-                assertThat(it.find { task -> task.taskId == taskId }).isNull()
+                assertThat(it.find { taskWithSubtasks -> taskWithSubtasks.task.taskId == taskId }).isNull()
                 assertThat(it.size).isLessThan(dummyTasks.size)
             }
         }

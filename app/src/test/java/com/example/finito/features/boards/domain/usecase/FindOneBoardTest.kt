@@ -3,6 +3,7 @@ package com.example.finito.features.boards.domain.usecase
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabels
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -14,7 +15,7 @@ import org.junit.Test
 class FindOneBoardTest {
     private lateinit var findOneBoard: FindOneBoard
     private lateinit var fakeBoardRepository: FakeBoardRepository
-    private lateinit var dummyBoards: MutableList<Board>
+    private lateinit var dummyBoards: MutableList<BoardWithLabels>
 
     @Before
     fun setUp() = runTest {
@@ -24,11 +25,13 @@ class FindOneBoardTest {
 
         ('A'..'Z').forEachIndexed { index, c ->
             dummyBoards.add(
-                Board(
-                    boardId = index + 1,
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0
+                BoardWithLabels(
+                    board = Board(
+                        boardId = index + 1,
+                        name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
+                        archived = index % 3 == 0,
+                        deleted = index % 2 == 0
+                    )
                 )
             )
         }
@@ -37,7 +40,7 @@ class FindOneBoardTest {
     }
 
     @Test
-    fun `Should throw InvalidIdException when ID is invalid`() {
+    fun `Should throw NegativeIdException when ID is invalid`() {
         assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest { findOneBoard(-1) }
         }
@@ -58,6 +61,6 @@ class FindOneBoardTest {
 
     @Test
     fun `Should return board when it is found`() = runTest {
-        assertThat(findOneBoard(dummyBoards.random().boardId)).isNotNull()
+        assertThat(findOneBoard(dummyBoards.random().board.boardId)).isNotNull()
     }
 }

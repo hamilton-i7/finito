@@ -1,4 +1,6 @@
-package com.example.finito.features.subtasks.domain.entity
+package com.example.finito.features.subtasks.domain.repository
+
+import com.example.finito.features.subtasks.domain.entity.Subtask
 
 interface SubtaskRepository {
     suspend fun createMany(vararg subtasks: Subtask)

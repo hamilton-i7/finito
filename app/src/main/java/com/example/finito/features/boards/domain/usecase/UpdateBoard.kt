@@ -36,6 +36,7 @@ class UpdateBoard(
             else it
         }.also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {
+                if (isEmpty()) return@with
                 val newRefs = labels.map {
                     BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
                 }

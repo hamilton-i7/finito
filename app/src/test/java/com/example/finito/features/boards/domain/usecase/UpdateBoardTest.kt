@@ -25,17 +25,15 @@ class UpdateBoardTest {
     private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
     private lateinit var fakeLabelRepository: FakeLabelRepository
 
-    private lateinit var dummyBoards: MutableList<Board>
-    private lateinit var dummyLabels: List<Label>
-
     @Before
     fun setUp() = runTest {
         fakeBoardLabelRepository = FakeBoardLabelRepository()
         fakeLabelRepository = FakeLabelRepository()
         fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
         updateBoard = UpdateBoard(fakeBoardRepository, fakeBoardLabelRepository)
-        dummyBoards = mutableListOf()
-        dummyLabels = listOf(
+
+        val dummyBoards = mutableListOf<Board>()
+        val dummyLabels = listOf(
             Label(name = "Label name"),
             Label(name = "Label name"),
             Label(name = "Label name"),
@@ -45,8 +43,8 @@ class UpdateBoardTest {
             dummyBoards.add(
                 Board(
                     name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0,
+                    archived = index % 5 == 0,
+                    deleted = index % 7 == 0,
                     createdAt = LocalDateTime.now().plusMinutes(index.toLong())
                 )
             )
@@ -54,24 +52,35 @@ class UpdateBoardTest {
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
-        dummyBoards.filter { it.boardId % 3 == 0 }.map {
+
+        val labelIds = fakeLabelRepository.findSimpleLabels().first().map { it.labelId }
+        val boardIds = fakeBoardRepository.boards.map { it.boardId }
+
+        boardIds.filter { it % 2 == 0 }.map {
             BoardLabelCrossRef(
-                boardId = it.boardId,
-                labelId = dummyLabels.random().labelId
+                boardId = it,
+                labelId = labelIds.random()
             )
         }.let { fakeBoardLabelRepository.create(*it.toTypedArray()) }
     }
 
     @Test
     fun `Should throw NegativeIdException when ID is invalid`() {
-        var board = BoardWithLabels(board = dummyBoards.random().copy(boardId = 0))
         assertThrows(ResourceException.NegativeIdException::class.java) {
-            runTest { updateBoard(board) }
+            runTest {
+                val board = BoardWithLabels(
+                    board = fakeBoardRepository.findAll().first().random().board.copy(boardId = 0)
+                )
+                updateBoard(board)
+            }
         }
-
-        board = BoardWithLabels(board = dummyBoards.random().copy(boardId = -2))
         assertThrows(ResourceException.NegativeIdException::class.java) {
-            runTest { updateBoard(board) }
+            runTest {
+                val board = BoardWithLabels(
+                    board = fakeBoardRepository.findAll().first().random().board.copy(boardId = -2)
+                )
+                updateBoard(board)
+            }
         }
     }
 
@@ -112,9 +121,15 @@ class UpdateBoardTest {
 
     @Test
     fun `Should throw NotFoundException when no board is found`() {
-        val board = BoardWithLabels(board = dummyBoards.random().copy(boardId = 10_000))
         assertThrows(ResourceException.NotFoundException::class.java) {
-            runTest { updateBoard(board) }
+            runTest {
+                val board = BoardWithLabels(
+                    board = fakeBoardRepository.findAll().first().random().board.copy(
+                        boardId = 10_000
+                    )
+                )
+                updateBoard(board)
+            }
         }
     }
 
@@ -130,5 +145,47 @@ class UpdateBoardTest {
         )
         assertThat(fakeBoardRepository.findOne(board.boardId)?.board?.name)
             .isEqualTo("Updated board")
+    }
+
+    @Test
+    fun `Should delete board-label refs when labels changed`() = runTest {
+        val boardWithLabels = fakeBoardRepository.findAll().first().first { it.labels.isNotEmpty() }
+        val labelId = boardWithLabels.labels.random().labelId
+
+        assertThat(
+            fakeBoardLabelRepository.findAllByBoardId(
+                boardWithLabels.board.boardId
+            ).find { it.labelId == labelId }
+        ).isNotNull()
+
+        updateBoard(boardWithLabels.copy(labels = emptyList()))
+        assertThat(
+            fakeBoardLabelRepository.findAllByBoardId(
+                boardWithLabels.board.boardId
+            ).find { it.labelId == labelId }
+        ).isNull()
+    }
+
+    @Test
+    fun `Should create board-label refs when new labels were added`() = runTest {
+        val boardWithLabels = fakeBoardRepository.findAll().first().first { it.labels.isNotEmpty() }
+        val labelIds = boardWithLabels.labels.groupBy { it.labelId }
+        val oldRefsSize = fakeBoardLabelRepository.findAllByBoardId(
+            boardWithLabels.board.boardId
+        ).size
+
+        fakeLabelRepository.findSimpleLabels().first().filter {
+            labelIds[it.labelId] == null
+        }.let {
+            updateBoard(
+                boardWithLabels.copy(labels = boardWithLabels.labels + it)
+            )
+        }
+
+        val newRefsSize = fakeBoardLabelRepository.findAllByBoardId(
+            boardWithLabels.board.boardId
+        ).size
+
+        assertThat(newRefsSize).isGreaterThan(oldRefsSize)
     }
 }

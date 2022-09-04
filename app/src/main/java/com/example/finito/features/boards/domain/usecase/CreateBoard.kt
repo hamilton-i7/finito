@@ -23,6 +23,7 @@ class CreateBoard(
             )
         }
         return boardRepository.create(board).toInt().also { boardId ->
+            if (labels.isEmpty()) return@also
             val boardLabelCrossRefs = labels.map { label ->
                 BoardLabelCrossRef(boardId = boardId, labelId = label.labelId)
             }.toTypedArray()

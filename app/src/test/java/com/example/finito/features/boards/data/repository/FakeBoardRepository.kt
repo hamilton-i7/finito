@@ -5,67 +5,104 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabels
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
+import com.example.finito.features.labels.data.repository.FakeLabelRepository
+import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.features.labels.domain.entity.toSimpleLabel
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.DetailedTask
 import com.example.finito.features.tasks.domain.entity.Task
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class FakeBoardRepository : BoardRepository {
-
-    private val boards = mutableListOf<BoardWithLabels>()
+class FakeBoardRepository(
+    private val labelRepository: FakeLabelRepository,
+    private val boardLabelRepository: FakeBoardLabelRepository
+) : BoardRepository {
+    val boards = mutableListOf<Board>()
+    private var boardId = 1
 
     override suspend fun create(board: Board): Long {
-        boards.add(BoardWithLabels(
-            board = board,
-            labels = emptyList()
-        ))
-        return boards.size + 1L
-    }
-
-    fun create(boardWithLabels: BoardWithLabels) {
-        boards.add(boardWithLabels)
+        boards.add(board.copy(boardId = boardId))
+        boardId++
+        return boardId.toLong()
     }
 
     override fun findAll(): Flow<List<BoardWithLabels>> {
         return flow {
-            emit(boards.filter { !it.board.deleted && !it.board.archived })
+            emit(
+                boards.filter { !it.deleted && !it.archived }.map { board ->
+                    val refs = boardLabelRepository.findAllByBoardId(board.boardId)
+                    val labels = mutableListOf<SimpleLabel>()
+                    refs.forEach { ref ->
+                        labelRepository.findOne(ref.labelId)?.also { label ->
+                            labels.add(label.toSimpleLabel())
+                        }
+                    }
+                    BoardWithLabels(board, labels)
+                }
+            )
         }
     }
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {
         return flow {
-            emit(boards.filter { !it.board.deleted && !it.board.archived }.map {
+            emit(boards.filter { !it.deleted && !it.archived }.map {
                 SimpleBoard(
-                    boardId = it.board.boardId,
-                    name = it.board.name
+                    boardId = it.boardId,
+                    name = it.name
                 )
             })
         }
     }
 
     override fun findArchivedBoards(): Flow<List<BoardWithLabels>> {
-        return flow { emit(boards.filter { it.board.archived }) }
+        return flow {
+            emit(
+                boards.filter { it.archived }.map { board ->
+                    val refs = boardLabelRepository.findAllByBoardId(board.boardId)
+                    val labels = mutableListOf<SimpleLabel>()
+                    refs.forEach { ref ->
+                        labelRepository.findOne(ref.labelId)?.also { label ->
+                            labels.add(label.toSimpleLabel())
+                        }
+                    }
+                    BoardWithLabels(board, labels)
+                }
+            )
+        }
     }
 
     override fun findDeletedBoards(): Flow<List<BoardWithLabels>> {
-        return flow { emit(boards.filter { it.board.deleted }) }
+        return flow {
+            emit(
+                boards.filter { it.deleted }.map { board ->
+                    val refs = boardLabelRepository.findAllByBoardId(board.boardId)
+                    val labels = mutableListOf<SimpleLabel>()
+                    refs.forEach { ref ->
+                        labelRepository.findOne(ref.labelId)?.also { label ->
+                            labels.add(label.toSimpleLabel())
+                        }
+                    }
+                    BoardWithLabels(board, labels)
+                }
+            )
+        }
     }
 
     override suspend fun findOne(id: Int): DetailedBoard? {
-        val board = boards.find { it.board.boardId == id } ?: return null
+        val board = boards.find { it.boardId == id } ?: return null
         return board.let {
             DetailedBoard(
                 board = Board(
-                    boardId = it.board.boardId,
-                    name = it.board.name,
-                    createdAt = it.board.createdAt,
+                    boardId = it.boardId,
+                    name = it.name,
+                    createdAt = it.createdAt,
                 ),
                 tasks = listOf(
                     DetailedTask(
                         task = Task(
                             taskId = 1,
-                            boardId = it.board.boardId,
+                            boardId = it.boardId,
                             name = "Task name",
                             position = 0
                         ),
@@ -74,7 +111,7 @@ class FakeBoardRepository : BoardRepository {
                     DetailedTask(
                         task = Task(
                             taskId = 2,
-                            boardId = it.board.boardId,
+                            boardId = it.boardId,
                             name = "Task name",
                             position = 1
                         ),
@@ -89,16 +126,16 @@ class FakeBoardRepository : BoardRepository {
     }
 
     override suspend fun update(board: Board): Int {
-        boards.find { it.board.boardId == board.boardId } ?: return 0
+        boards.find { it.boardId == board.boardId } ?: return 0
         boards.set(
-            index = boards.indexOfFirst { it.board.boardId == board.boardId },
-            element = BoardWithLabels(board)
+            index = boards.indexOfFirst { it.boardId == board.boardId },
+            element = board
         )
         return 1
     }
 
     override suspend fun remove(board: Board): Int {
-        val boardToDeleteIndex = boards.indexOfFirst { it.board.boardId == board.boardId }
+        val boardToDeleteIndex = boards.indexOfFirst { it.boardId == board.boardId }
         if (boardToDeleteIndex == -1) return 0
 
         boards.removeAt(boardToDeleteIndex)

@@ -9,9 +9,11 @@ import kotlinx.coroutines.flow.flow
 class FakeLabelRepository : LabelRepository {
 
     private val labels = mutableListOf<Label>()
+    private var labelId = 1
 
     override suspend fun create(label: Label) {
-        labels.add(label)
+        labels.add(label.copy(labelId = labelId))
+        labelId++
     }
 
     override fun findSimpleLabels(): Flow<List<SimpleLabel>> {

@@ -1,8 +1,10 @@
 package com.example.finito.features.boards.domain.usecase
 
 import com.example.finito.core.util.ResourceException
+import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -15,11 +17,15 @@ import org.junit.Test
 class DeleteBoardTest {
     private lateinit var deleteBoard: DeleteBoard
     private lateinit var fakeBoardRepository: FakeBoardRepository
+    private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
+    private lateinit var fakeLabelRepository: FakeLabelRepository
     private lateinit var dummyBoards: MutableList<Board>
 
     @Before
     fun setUp() = runTest {
-        fakeBoardRepository = FakeBoardRepository()
+        fakeBoardLabelRepository = FakeBoardLabelRepository()
+        fakeLabelRepository = FakeLabelRepository()
+        fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
         deleteBoard = DeleteBoard(fakeBoardRepository)
         dummyBoards = mutableListOf()
 

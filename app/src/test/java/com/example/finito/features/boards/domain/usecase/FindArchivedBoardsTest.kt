@@ -1,10 +1,12 @@
 package com.example.finito.features.boards.domain.usecase
 
+import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
-import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.util.BoardOrder
-import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.features.labels.data.repository.FakeLabelRepository
+import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -17,35 +19,50 @@ import java.time.LocalDateTime
 class FindArchivedBoardsTest {
 
     private lateinit var findArchivedBoards: FindArchivedBoards
+
     private lateinit var fakeBoardRepository: FakeBoardRepository
-    private lateinit var dummyBoards: MutableList<BoardWithLabels>
+    private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
+    private lateinit var fakeLabelRepository: FakeLabelRepository
+
+    private lateinit var dummyBoards: MutableList<Board>
+    private lateinit var dummyLabels: List<Label>
 
     @Before
-    fun setUp() {
-        fakeBoardRepository = FakeBoardRepository()
+    fun setUp() = runTest {
+        fakeBoardLabelRepository = FakeBoardLabelRepository()
+        fakeLabelRepository = FakeLabelRepository()
+        fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
         findArchivedBoards = FindArchivedBoards(fakeBoardRepository)
         dummyBoards = mutableListOf()
+        dummyLabels = listOf(
+            Label(name = "Label name"),
+            Label(name = "Label name"),
+            Label(name = "Label name"),
+        )
 
         ('A'..'Z').forEachIndexed { index, c ->
             dummyBoards.add(
-                BoardWithLabels(
-                    board = Board(
-                        boardId = index + 1,
-                        name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                        archived = index % 3 == 0,
-                        deleted = index % 2 == 0,
-                        createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                    ),
-                    labels = if (index % 5 == 0) listOf(
-                        SimpleLabel(labelId = index + 1, name = "Label name"),
-                        SimpleLabel(labelId = index + 100, name = "Label name"),
-                        SimpleLabel(labelId = index + 200, name = "Label name"),
-                    ) else emptyList()
+                Board(
+                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
+                    archived = index % 3 == 0,
+                    deleted = index % 2 == 0,
+                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
                 )
             )
         }
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
+        dummyLabels.forEach { fakeLabelRepository.create(it) }
+
+        val labelIds = fakeLabelRepository.findSimpleLabels().first().map { it.labelId }
+        val boardIds = fakeBoardRepository.boards.map { it.boardId }
+
+        boardIds.filter { it % 2 == 0 }.map {
+            BoardLabelCrossRef(
+                boardId = it,
+                labelId = labelIds.random()
+            )
+        }.let { fakeBoardLabelRepository.create(*it.toTypedArray()) }
     }
 
     @Test
@@ -98,9 +115,7 @@ class FindArchivedBoardsTest {
 
     @Test
     fun `Should return filtered boards when label IDs provided`() = runTest {
-        val archiveLabeledBoards = dummyBoards.filter {
-            it.labels.isNotEmpty() && it.board.archived
-        }
+        val archiveLabeledBoards = findArchivedBoards().first().filter { it.labels.isNotEmpty() }
         val boards = findArchivedBoards().first()
         val filteredBoards = findArchivedBoards(
             labelIds = archiveLabeledBoards.flatMap { it.labels }.map { it.labelId }.toIntArray()
@@ -124,14 +139,5 @@ class FindArchivedBoardsTest {
 
         val filteredBoards3 = findArchivedBoards(labelIds = intArrayOf()).first()
         assertThat(filteredBoards3.size).isEqualTo(boards.size)
-
-        val activeLabeledBoards = dummyBoards.filter {
-            it.labels.isNotEmpty() && !it.board.deleted && !it.board.archived
-        }
-        val filteredBoards5 = findArchivedBoards(
-            labelIds = activeLabeledBoards.flatMap { it.labels }.map { it.labelId }.toIntArray()
-        ).first()
-        assertThat(activeLabeledBoards).isNotEmpty()
-        assertThat(filteredBoards5).isEmpty()
     }
 }

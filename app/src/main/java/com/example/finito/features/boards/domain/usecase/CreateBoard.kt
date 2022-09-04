@@ -22,9 +22,9 @@ class CreateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return boardRepository.create(board).toInt().also {
+        return boardRepository.create(board).toInt().also { boardId ->
             val boardLabelCrossRefs = labels.map { label ->
-                BoardLabelCrossRef(boardId = board.boardId, labelId = label.labelId)
+                BoardLabelCrossRef(boardId = boardId, labelId = label.labelId)
             }.toTypedArray()
             boardLabelRepository.create(*boardLabelCrossRefs)
         }

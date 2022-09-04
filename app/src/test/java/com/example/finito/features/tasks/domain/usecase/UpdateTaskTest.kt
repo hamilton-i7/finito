@@ -5,6 +5,7 @@ import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
+import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -22,7 +23,6 @@ class UpdateTaskTest {
     private lateinit var updateTask: UpdateTask
     private lateinit var fakeTaskRepository: FakeTaskRepository
     private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
-    private lateinit var dummyTasks: MutableList<TaskWithSubtasks>
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -32,10 +32,11 @@ class UpdateTaskTest {
 
     @Before
     fun setUp() = runTest {
-        fakeTaskRepository = FakeTaskRepository()
         fakeSubtaskRepository = FakeSubtaskRepository()
+        fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
         updateTask = UpdateTask(fakeTaskRepository, fakeSubtaskRepository)
-        dummyTasks = mutableListOf()
+        
+        val dummyTasks = mutableListOf<Task>()
 
         val dates = listOf(
             LocalDate.now(),
@@ -54,59 +55,48 @@ class UpdateTaskTest {
             Priority.LOW,
             null
         )
-
-        var tasksInBoard1Position = 0
-        var tasksInBoard2Position = 0
-        var tasksInBoard3Position = 0
-
-        var subtaskId = 1
-
+        
         ('A'..'Z').forEachIndexed { index, c ->
             val boardId = boards.random().boardId
             dummyTasks.add(
-                TaskWithSubtasks(
-                    task = Task(
-                        taskId = index + 1,
-                        name = "Task $c",
-                        boardId = boardId,
-                        date = if (index % 2 == 0) dates.random() else null,
-                        time = if (index % 4 == 0) time.random() else null,
-                        priority = priorities.random(),
-                        position = when (boardId) {
-                            boards[0].boardId -> tasksInBoard1Position++
-                            boards[1].boardId -> tasksInBoard2Position++
-                            else -> tasksInBoard3Position++
-                        }
-                    ),
-                    subtasks = if (index % 3 == 0) emptyList() else listOf(
-                        SimpleSubtask(subtaskId = subtaskId, name = "Subtask name"),
-                        SimpleSubtask(subtaskId = subtaskId + 1, name = "Subtask name"),
-                        SimpleSubtask(subtaskId = subtaskId + 2, name = "Subtask name"),
-                    )
+                Task(
+                    name = "Task $c",
+                    boardId = boardId,
+                    date = if (index % 2 == 0) dates.random() else null,
+                    time = if (index % 4 == 0) time.random() else null,
+                    priority = priorities.random()
                 )
             )
-            subtaskId++
         }
         dummyTasks.shuffle()
         dummyTasks.forEach { fakeTaskRepository.create(it) }
+        fakeTaskRepository.tasks.map { it.taskId }.let {
+            val subtasks = arrayOf(
+                Subtask(taskId = it.random(), name = "Subtask name"),
+                Subtask(taskId = it.random(), name = "Subtask name"),
+                Subtask(taskId = it.random(), name = "Subtask name"),
+            )
+            fakeSubtaskRepository.createMany(*subtasks)
+        }
     }
 
     @Test
     fun `Should throw EmptyException when task name is empty`() {
-        dummyTasks.random().let { taskWithSubtasks ->
-            assertThrows(ResourceException.EmptyException::class.java) {
-                runTest {
-                    updateTask(
-                        taskWithSubtasks.copy(task = taskWithSubtasks.task.copy(name = "   "))
-                    )
+        assertThrows(ResourceException.EmptyException::class.java) {
+            runTest {
+                TaskWithSubtasks(
+                    task = fakeTaskRepository.tasks.random()
+                ).let {
+                    updateTask(it.copy(task = it.task.copy(name = "   ")))   
                 }
             }
-
-            assertThrows(ResourceException.EmptyException::class.java) {
-                runTest {
-                    updateTask(
-                        taskWithSubtasks.copy(task = taskWithSubtasks.task.copy(name = ""))
-                    )
+        }
+        assertThrows(ResourceException.EmptyException::class.java) {
+            runTest {
+                TaskWithSubtasks(
+                    task = fakeTaskRepository.tasks.random()
+                ).let {
+                    updateTask(it.copy(task = it.task.copy(name = "")))
                 }
             }
         }
@@ -114,17 +104,15 @@ class UpdateTaskTest {
 
     @Test
     fun `Should throw InvalidStateException when task state is invalid`() {
-        dummyTasks.random().let { taskWithSubtasks ->
-            assertThrows(ResourceException.InvalidStateException::class.java) {
-                runTest {
-                    updateTask(
-                        taskWithSubtasks.copy(
-                            task = taskWithSubtasks.task.copy(
-                                date = null,
-                                time = LocalTime.now()
-                            )
-                        )
-                    )
+        assertThrows(ResourceException.InvalidStateException::class.java) {
+            runTest {
+                TaskWithSubtasks(
+                    task = fakeTaskRepository.tasks.random()
+                ).let {
+                    updateTask(it.copy(task = it.task.copy(
+                        date = null,
+                        time = LocalTime.now()
+                    )))
                 }
             }
         }
@@ -132,14 +120,12 @@ class UpdateTaskTest {
 
     @Test
     fun `Should throw NotFoundException when no task is found`() {
-        dummyTasks.random().let { taskWithSubtasks ->
-            assertThrows(ResourceException.NotFoundException::class.java) {
-                runTest {
-                    updateTask(
-                        taskWithSubtasks.copy(
-                            task = taskWithSubtasks.task.copy(taskId = 10_000)
-                        )
-                    )
+        assertThrows(ResourceException.NotFoundException::class.java) {
+            runTest {
+                TaskWithSubtasks(
+                    task = fakeTaskRepository.tasks.random()
+                ).let {
+                    updateTask(it.copy(task = it.task.copy(taskId = 10_000)))
                 }
             }
         }
@@ -147,47 +133,42 @@ class UpdateTaskTest {
 
     @Test
     fun `Should arrange tasks when switching boards`() = runTest {
-        val taskWithSubtasks = dummyTasks.random()
-        val newBoardId = dummyTasks.first {
-            it.task.boardId != taskWithSubtasks.task.boardId
-        }.task.boardId
-        updateTask(
-            taskWithSubtasks.copy(
-                task = taskWithSubtasks.task.copy(boardId = newBoardId)
-            )
-        )
+        val tasks = fakeTaskRepository.tasks
+        val task = tasks.random()
+        val newBoardId = fakeTaskRepository.tasks.first {
+            it.boardId != task.boardId
+        }.boardId
 
-        with(fakeTaskRepository.findAll()) {
+        val originalStartBoardTasksAmount = tasks.filter {
+            it.boardId == task.boardId
+        }.size
+        val originalEndBoardTasksAmount = tasks.filter {
+            it.boardId == newBoardId
+        }.size
+
+        updateTask(TaskWithSubtasks(task = task.copy(boardId = newBoardId)))
+
+        with(tasks) {
             val startBoardTasks = filter {
-                it.task.boardId == taskWithSubtasks.task.boardId
-            }.sortedBy { it.task.position }
+                it.boardId == task.boardId
+            }.sortedBy { it.position }
             val endBoardTasks = filter {
-                it.task.boardId == newBoardId
-            }.sortedBy { it.task.position }
-
+                it.boardId == newBoardId
+            }.sortedBy { it.position }
             assertThat(startBoardTasks.find {
-                it.task.taskId == taskWithSubtasks.task.taskId
+                it.taskId == task.taskId
             }).isNull()
             assertThat(endBoardTasks.find {
-                it.task.taskId == taskWithSubtasks.task.taskId }).isNotNull()
+                it.taskId == task.taskId }).isNotNull()
 
-            dummyTasks.filter {
-                it.task.boardId == taskWithSubtasks.task.boardId
-            }.let {
-                assertThat(startBoardTasks.size).isEqualTo(it.size - 1)
-            }
-
-            dummyTasks.filter {
-                it.task.boardId == newBoardId
-            }.let {
-                assertThat(endBoardTasks.size).isEqualTo(it.size + 1)
-            }
+            assertThat(startBoardTasks.size).isEqualTo(originalStartBoardTasksAmount - 1)
+            assertThat(endBoardTasks.size).isEqualTo(originalEndBoardTasksAmount + 1)
 
             // Check that every task in the start board is positioned correctly
             // [0, 1, 2, 3...]
             for (i in 0..startBoardTasks.size - 2) {
                 assertThat(
-                    startBoardTasks[i].task.position + 1 == startBoardTasks[i+1].task.position
+                    startBoardTasks[i].position + 1 == startBoardTasks[i+1].position
                 ).isTrue()
             }
 
@@ -195,43 +176,74 @@ class UpdateTaskTest {
             // [0, 1, 2, 3...]
             for (i in 0..endBoardTasks.size - 2) {
                 assertThat(
-                    endBoardTasks[i].task.position + 1 == endBoardTasks[i+1].task.position
+                    endBoardTasks[i].position + 1 == endBoardTasks[i+1].position
                 ).isTrue()
             }
 
             first {
-                it.task.taskId == taskWithSubtasks.task.taskId
+                it.taskId == task.taskId
             }.let {
-                assertThat(it.task.position).isEqualTo(endBoardTasks.size - 1)
+                assertThat(it.position).isEqualTo(endBoardTasks.size - 1)
             }
         }
     }
 
     @Test
     fun `update task arranges tasks when switching positions`() = runTest {
-        val taskWithSubtasks = dummyTasks.random()
-        val position = dummyTasks.filter {
-            it.task.boardId == taskWithSubtasks.task.boardId
-                    && it.task.position != taskWithSubtasks.task.position
-        }.random().task.position
-        updateTask(
-            taskWithSubtasks.copy(
-                task = taskWithSubtasks.task.copy(position = position)
-            )
-        )
+        val tasks = fakeTaskRepository.tasks
+        val task = tasks.random()
+        val position = tasks.filter {
+            it.boardId == task.boardId
+                    && it.position != task.position
+        }.random().position
+        updateTask(TaskWithSubtasks(task = task.copy(position = position)))
 
-        with(fakeTaskRepository.findAll().filter {
-            it.task.boardId == taskWithSubtasks.task.boardId
-        }.sortedBy { it.task.position }) {
+        with(fakeTaskRepository.tasks.filter {
+            it.boardId == task.boardId
+        }.sortedBy { it.position }) {
             assertThat(
-                first { it.task.taskId == taskWithSubtasks.task.taskId }.task.position == position
+                first { it.taskId == task.taskId }.position == position
             )
 
             for (i in 0..size - 2) {
                 assertThat(
-                    this[i].task.position + 1 == this[i+1].task.position
+                    this[i].position + 1 == this[i+1].position
                 ).isTrue()
             }
+        }
+    }
+
+    @Test
+    fun `Should delete subtasks when not included in task to update`() = runTest {
+        val taskWithSubtasks = fakeTaskRepository.findOne(
+            fakeSubtaskRepository.subtasks.random().taskId
+        )!!
+
+        fakeSubtaskRepository.findAllByTaskId(taskWithSubtasks.task.taskId).let {
+            assertThat(it.size).isEqualTo(taskWithSubtasks.subtasks.size)
+        }
+        updateTask(
+            taskWithSubtasks.copy(subtasks = emptyList())
+        )
+        fakeSubtaskRepository.findAllByTaskId(taskWithSubtasks.task.taskId).let {
+            assertThat(it.size).isLessThan(taskWithSubtasks.subtasks.size)
+        }
+    }
+
+    @Test
+    fun `Should create subtasks when new subtasks were added`() = runTest {
+        val taskWithSubtasks = fakeTaskRepository.findOne(
+            fakeSubtaskRepository.subtasks.random().taskId
+        )!!
+        val newSubtasks = listOf(
+            SimpleSubtask(name = "Subtask name"),
+            SimpleSubtask(name = "Subtask name"),
+        )
+        updateTask(
+            taskWithSubtasks.copy(subtasks = taskWithSubtasks.subtasks + newSubtasks)
+        )
+        fakeSubtaskRepository.findAllByTaskId(taskWithSubtasks.task.taskId).let {
+            assertThat(it.size).isGreaterThan(taskWithSubtasks.subtasks.size)
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.finito.features.tasks.domain.usecase
 import com.example.finito.core.Priority
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.google.common.truth.Truth.assertThat
@@ -18,7 +19,7 @@ import java.time.LocalTime
 class DeleteTaskTest {
     private lateinit var deleteTask: DeleteTask
     private lateinit var fakeTaskRepository: FakeTaskRepository
-    private lateinit var dummyTasks: MutableList<Task>
+    private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -28,9 +29,11 @@ class DeleteTaskTest {
 
     @Before
     fun setUp() = runTest {
-        fakeTaskRepository = FakeTaskRepository()
+        fakeSubtaskRepository = FakeSubtaskRepository()
+        fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
         deleteTask = DeleteTask(fakeTaskRepository)
-        dummyTasks = mutableListOf()
+
+        val dummyTasks = mutableListOf<Task>()
 
         val dates = listOf(
             LocalDate.now(),
@@ -50,10 +53,6 @@ class DeleteTaskTest {
             null
         )
 
-        var tasksInBoard1Position = 0
-        var tasksInBoard2Position = 0
-        var tasksInBoard3Position = 0
-
         ('A'..'Z').forEachIndexed { index, c ->
             val boardId = boards.random().boardId
             dummyTasks.add(
@@ -64,11 +63,6 @@ class DeleteTaskTest {
                     date = if (index % 2 == 0) dates.random() else null,
                     time = if (index % 4 == 0) time.random() else null,
                     priority = priorities.random(),
-                    position = when (boardId) {
-                        boards[0].boardId -> tasksInBoard1Position++
-                        boards[1].boardId -> tasksInBoard2Position++
-                        else -> tasksInBoard3Position++
-                    }
                 ),
             )
         }
@@ -78,12 +72,12 @@ class DeleteTaskTest {
 
     @Test
     fun `Should throw NegativeIdException when ID is invalid`() {
-        dummyTasks.random().copy(taskId = 0).let {
+        fakeTaskRepository.tasks.random().copy(taskId = 0).let {
             assertThrows(ResourceException.NegativeIdException::class.java) {
                 runTest { deleteTask(it) }
             }
         }
-        dummyTasks.random().copy(taskId = -2).let {
+        fakeTaskRepository.tasks.random().copy(taskId = -2).let {
             assertThrows(ResourceException.NegativeIdException::class.java) {
                 runTest { deleteTask(it) }
             }
@@ -92,8 +86,7 @@ class DeleteTaskTest {
 
     @Test
     fun `Should throw NotFoundException when task isn't found`() {
-        val latestId = dummyTasks.map { it.taskId }.max()
-        dummyTasks.random().copy(taskId = latestId + 1).let {
+        fakeTaskRepository.tasks.random().copy(taskId = 10_000).let {
             assertThrows(ResourceException.NotFoundException::class.java) {
                 runTest { deleteTask(it) }
             }
@@ -102,19 +95,19 @@ class DeleteTaskTest {
 
     @Test
     fun `Should remove task from the list when it is found`() = runTest {
-        with(dummyTasks.random()) {
-            deleteTask(task = this)
+        val tasksAmount = fakeTaskRepository.tasks.size
+        val taskToDelete = fakeTaskRepository.tasks.random()
 
-            fakeTaskRepository.findAll().let {
-                assertThat(it.find { taskWithSubtasks -> taskWithSubtasks.task.taskId == taskId }).isNull()
-                assertThat(it.size).isLessThan(dummyTasks.size)
-            }
+        deleteTask(taskToDelete)
+        fakeTaskRepository.tasks.let {
+            assertThat(it.find { task -> task.taskId == taskToDelete.taskId }).isNull()
+            assertThat(it.size).isLessThan(tasksAmount)
         }
     }
 
     @Test
     fun `Should arrange remaining tasks when task is found`() = runTest {
-        val task = dummyTasks.random()
+        val task = fakeTaskRepository.tasks.random()
         deleteTask(task)
         with(fakeTaskRepository.findTasksByBoard(task.boardId)) {
             for (i in 0..size - 2) {

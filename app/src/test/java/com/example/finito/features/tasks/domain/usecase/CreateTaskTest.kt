@@ -4,6 +4,7 @@ import com.example.finito.core.Priority
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
+import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -21,7 +22,6 @@ class CreateTaskTest {
     private lateinit var createTask: CreateTask
     private lateinit var fakeTaskRepository: FakeTaskRepository
     private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
-    private lateinit var dummyTasks: MutableList<TaskWithSubtasks>
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -31,10 +31,11 @@ class CreateTaskTest {
 
     @Before
     fun setUp() = runTest {
-        fakeTaskRepository = FakeTaskRepository()
         fakeSubtaskRepository = FakeSubtaskRepository()
+        fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
         createTask = CreateTask(fakeTaskRepository, fakeSubtaskRepository)
-        dummyTasks = mutableListOf()
+
+        val dummyTasks = mutableListOf<Task>()
 
         val dates = listOf(
             LocalDate.now(),
@@ -61,21 +62,19 @@ class CreateTaskTest {
         ('A'..'Z').forEachIndexed { index, c ->
             val boardId = boards.random().boardId
             dummyTasks.add(
-                TaskWithSubtasks(
-                    task = Task(
-                        taskId = index + 1,
-                        name = "Task $c",
-                        boardId = boardId,
-                        date = if (index % 2 == 0) dates.random() else null,
-                        time = if (index % 4 == 0) time.random() else null,
-                        priority = priorities.random(),
-                        position = when (boardId) {
-                            boards[0].boardId -> tasksInBoard1Position++
-                            boards[1].boardId -> tasksInBoard2Position++
-                            else -> tasksInBoard3Position++
-                        }
-                    ),
-                )
+                Task(
+                    taskId = index + 1,
+                    name = "Task $c",
+                    boardId = boardId,
+                    date = if (index % 2 == 0) dates.random() else null,
+                    time = if (index % 4 == 0) time.random() else null,
+                    priority = priorities.random(),
+                    position = when (boardId) {
+                        boards[0].boardId -> tasksInBoard1Position++
+                        boards[1].boardId -> tasksInBoard2Position++
+                        else -> tasksInBoard3Position++
+                    }
+                ),
             )
         }
         dummyTasks.shuffle()
@@ -121,8 +120,8 @@ class CreateTaskTest {
             task = Task(name = "Task name", boardId = boards.random().boardId)
         )
         with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId)) {
-            val tasksInBoard = fakeTaskRepository.findAll().filter {
-                it.task.boardId == taskWithSubtasks.task.boardId
+            val tasksInBoard = fakeTaskRepository.tasks.filter {
+                it.boardId == taskWithSubtasks.task.boardId
             }
 
             assertThat(size).isEqualTo(tasksInBoard.size)
@@ -145,5 +144,21 @@ class CreateTaskTest {
         with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId).first {
             it.name == "Task name"
         }) { assertThat(position).isEqualTo(tasks.size) }
+    }
+
+    @Test
+    fun `Should create subtasks when task is created`() = runTest {
+        val taskWithSubtasks = TaskWithSubtasks(
+            task = Task(name = "Task name", boardId = boards.random().boardId),
+            subtasks = listOf(
+                SimpleSubtask(name = "Subtask name"),
+                SimpleSubtask(name = "Subtask name"),
+                SimpleSubtask(name = "Subtask name"),
+            )
+        )
+        val taskId = createTask(taskWithSubtasks)
+        assertThat(
+            fakeSubtaskRepository.findAllByTaskId(taskId).size
+        ).isEqualTo(taskWithSubtasks.subtasks.size)
     }
 }

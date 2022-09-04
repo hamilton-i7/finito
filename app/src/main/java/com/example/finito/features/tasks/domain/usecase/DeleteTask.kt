@@ -13,11 +13,10 @@ class DeleteTask(
         if (!isValidId(task.taskId)) {
             throw ResourceException.NegativeIdException
         }
+        if (repository.findOne(task.taskId) == null) throw ResourceException.NotFoundException
+
         arrangeTasks(task, repository)
-        return repository.remove(task).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }
+        return repository.remove(task)
     }
 
     private suspend fun arrangeTasks(
@@ -25,7 +24,7 @@ class DeleteTask(
         repository: TaskRepository,
     ) {
         with(repository.findTasksByBoard(task.boardId).toMutableList()) {
-            removeIf { it.taskId == task.taskId }
+            removeAt(indexOfFirst { it.taskId == task.taskId })
             mapIndexed { index, task ->
                 task.copy(position = index)
             }.toTypedArray().also {

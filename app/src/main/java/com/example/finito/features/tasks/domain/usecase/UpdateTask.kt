@@ -31,7 +31,7 @@ class UpdateTask(
                 arrangeDiffBoard(
                     startBoardId = it.task.boardId,
                     endBoardId = task.boardId,
-                    newTask = task,
+                    taskToUpdate = task,
                     repository = taskRepository,
                 )
             } else if (changedPosition(it.task, task)) {
@@ -52,8 +52,11 @@ class UpdateTask(
                 createSubtasks(subtasks = this, subtaskRepository)
 
                 this.filter { it.subtaskId != 0 }.let {
-                    val updatedSubtasksAmount = subtaskRepository.updateMany(*it.toTypedArray())
-                    if (updatedSubtasksAmount != it.size) throw ResourceException.NotFoundException
+                    val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
+                    if (it.any { subtask -> ids[subtask.subtaskId] == null }) {
+                        throw ResourceException.NotFoundException
+                    }
+                    subtaskRepository.updateMany(*it.toTypedArray())
                 }
             }
         }
@@ -83,12 +86,12 @@ class UpdateTask(
     private suspend fun arrangeDiffBoard(
         startBoardId: Int,
         endBoardId: Int,
-        newTask: Task,
+        taskToUpdate: Task,
         repository: TaskRepository
     ) {
         val startBoardTasks = repository
             .findTasksByBoard(startBoardId)
-            .filter { it.taskId != newTask.taskId }
+            .filter { it.taskId != taskToUpdate.taskId }
             .mapIndexed { index, task ->
                 task.copy(position = index)
             }.toTypedArray()
@@ -97,7 +100,7 @@ class UpdateTask(
         val endBoardTasks = repository
             .findTasksByBoard(endBoardId)
             .toMutableList()
-            .also {  it.add(newTask) }
+            .also {  it.add(taskToUpdate) }
             .mapIndexed { index, task ->
                 task.copy(position = index)
             }.toTypedArray()
@@ -130,8 +133,7 @@ class UpdateTask(
     ) {
         val ids = newSubtasks.groupBy { it.subtaskId }
         oldSubtasks.filter { ids[it.subtaskId] == null }.let {
-            val deletedSubtasksAmount = repository.removeMany(*it.toTypedArray())
-            if (deletedSubtasksAmount != it.size) throw ResourceException.NotFoundException
+            repository.removeMany(*it.toTypedArray())
         }
     }
 }

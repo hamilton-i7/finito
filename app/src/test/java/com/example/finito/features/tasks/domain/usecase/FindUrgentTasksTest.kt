@@ -2,6 +2,7 @@ package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.Priority
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.google.common.truth.Truth.assertThat
@@ -17,7 +18,7 @@ import java.time.LocalTime
 class FindUrgentTasksTest {
     private lateinit var findUrgentTasks: FindUrgentTasks
     private lateinit var fakeTaskRepository: FakeTaskRepository
-    private lateinit var dummyTasks: MutableList<Task>
+    private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -27,9 +28,11 @@ class FindUrgentTasksTest {
 
     @Before
     fun setUp() = runTest {
-        fakeTaskRepository = FakeTaskRepository()
+        fakeSubtaskRepository = FakeSubtaskRepository()
+        fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
         findUrgentTasks = FindUrgentTasks(fakeTaskRepository)
-        dummyTasks = mutableListOf()
+
+        val dummyTasks = mutableListOf<Task>()
 
         val dates = listOf(
             LocalDate.now(),

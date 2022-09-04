@@ -4,10 +4,15 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 
 class FakeSubtaskRepository: SubtaskRepository {
-    private val subtasks = mutableListOf<Subtask>()
+    val subtasks = mutableListOf<Subtask>()
+    private var subtaskId = 1
 
     override suspend fun createMany(vararg subtasks: Subtask) {
-        this.subtasks.addAll(subtasks)
+        this.subtasks.addAll(
+            subtasks.map {
+                it.copy(subtaskId = subtaskId)
+            }.also { subtaskId++ }
+        )
     }
 
     override suspend fun findAllByTaskId(taskId: Int): List<Subtask> {

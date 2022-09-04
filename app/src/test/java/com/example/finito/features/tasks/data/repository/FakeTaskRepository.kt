@@ -1,6 +1,8 @@
 package com.example.finito.features.tasks.data.repository
 
 import com.example.finito.core.Priority
+import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
+import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -10,22 +12,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 
-class FakeTaskRepository : TaskRepository {
-    private val tasks = mutableListOf<TaskWithSubtasks>()
+class FakeTaskRepository(
+    private val subtaskRepository: FakeSubtaskRepository
+) : TaskRepository {
+    private val mutableTasks = mutableListOf<Task>()
+    val tasks: List<Task> = mutableTasks
+    private var taskId = 1
+    private val boardIds = mutableMapOf<Int, Int>()
 
     override suspend fun create(task: Task): Long {
-        val taskId = tasks.map { it.task.taskId }.maxOrNull()?.let { it + 1 } ?: 1
-        tasks.add(TaskWithSubtasks(
-            task = task.copy(taskId = taskId)
+        boardIds.apply {
+            val boardId = task.boardId
+            this[boardId] = if (this[boardId] == null) 0 else this[boardId]!! + 1
+        }
+        mutableTasks.add(task.copy(
+            taskId = taskId,
+            position = boardIds[task.boardId]!!
         ))
+        taskId++
         return taskId.toLong()
     }
-
-    fun create(taskWithSubtasks: TaskWithSubtasks) {
-        tasks.add(taskWithSubtasks)
-    }
-
-    fun findAll() = tasks.toList()
 
     override fun findTodayTasks(): Flow<List<TaskWithSubtasks>> {
         val today = LocalDate.now()
@@ -33,9 +39,14 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.task.date
+                    val date = it.date
                     date != null && date.isEqual(today)
-                }.map { TaskWithSubtasks(task = it.task) }
+                }.map {
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
+                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
+                    }
+                    TaskWithSubtasks(task = it, subtasks = subtasks)
+                }
             )
         }
     }
@@ -45,9 +56,14 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    val date = it.task.date
+                    val date = it.date
                     date != null && date.isEqual(tomorrow)
-                }.map { TaskWithSubtasks(task = it.task) }
+                }.map {
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
+                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
+                    }
+                    TaskWithSubtasks(task = it, subtasks = subtasks)
+                }
             )
         }
     }
@@ -56,54 +72,64 @@ class FakeTaskRepository : TaskRepository {
         return flow {
             emit(
                 tasks.filter {
-                    it.task.priority == Priority.URGENT
-                }.map { TaskWithSubtasks(task = it.task) }
+                    it.priority == Priority.URGENT
+                }.map {
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
+                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
+                    }
+                    TaskWithSubtasks(task = it, subtasks = subtasks)
+                }
             )
         }
     }
 
     override suspend fun findTasksByBoardAmount(boardId: Int): Int {
-        return tasks.count { it.task.boardId == boardId }
+        return tasks.count { it.boardId == boardId }
     }
 
     override suspend fun findTasksByBoard(boardId: Int): List<Task> {
-        return tasks.filter { it.task.boardId == boardId }
-            .map { it.task }
+        return tasks.filter { it.boardId == boardId }
+            .map { it }
             .sortedBy { it.position }
     }
 
     override suspend fun findOne(id: Int): TaskWithSubtasks? {
-        return tasks.find { it.task.taskId == id }
+        val task = tasks.find { it.taskId == id } ?: return null
+        return task.let {
+            val subtasks = subtaskRepository.findAllByTaskId(it.taskId)
+            TaskWithSubtasks(
+                task = it,
+                subtasks = subtasks.map { subtask ->
+                    SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
+                }
+            )
+        }
     }
 
     override suspend fun update(taskUpdate: TaskUpdate) {
-        tasks.find { it.task.taskId == taskUpdate.taskId }?.let { taskWithSubtasks ->
-            tasks.set(
-                index = tasks.indexOfFirst { it.task.taskId == taskUpdate.taskId },
-                element = taskWithSubtasks.copy(
-                    taskUpdate.toTask().copy(position = taskWithSubtasks.task.position)
-                )
+        tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
+            mutableTasks.set(
+                index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
+                element = taskUpdate.toTask().copy(position = task.position)
             )
         }
     }
 
     override suspend fun updateMany(vararg tasks: Task) {
-        val idsMap = this.tasks.groupBy { it.task.taskId }
+        val idsMap = mutableTasks.groupBy { it.taskId }
         for (task in tasks) {
             if (idsMap[task.taskId] == null) continue
-            val taskToUpdate = this.tasks.first { it.task.taskId == task.taskId }
-            this.tasks.set(
-                index = this.tasks.indexOf(taskToUpdate),
-                element = taskToUpdate.copy(task = task)
+            mutableTasks.set(
+                index = mutableTasks.indexOfFirst { it.taskId == task.taskId },
+                element = task
             )
         }
     }
 
     override suspend fun remove(task: Task): Int {
-        tasks.indexOfFirst { it.task.taskId == task.taskId }.let {
-            if (it == -1) return 0
-            tasks.removeAt(it)
-            return 1
+        return mutableTasks.remove(task).let { deleted ->
+            if (deleted) 1
+            else 0
         }
     }
 }

@@ -10,6 +10,8 @@ interface TaskRepository {
 
     suspend fun create(task: Task): Long
 
+    suspend fun findAll(): List<Task>
+
     fun findTodayTasks(): Flow<List<TaskWithSubtasks>>
 
     fun findTomorrowTasks(): Flow<List<TaskWithSubtasks>>

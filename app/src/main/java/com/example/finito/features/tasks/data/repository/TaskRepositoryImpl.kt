@@ -15,6 +15,10 @@ class TaskRepositoryImpl(
         return dao.create(task)
     }
 
+    override suspend fun findAll(): List<Task> {
+        return dao.findAll()
+    }
+
     override fun findTodayTasks(): Flow<List<TaskWithSubtasks>> {
         return dao.findTodayTasks()
     }

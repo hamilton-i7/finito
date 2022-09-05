@@ -13,6 +13,9 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun create(task: Task): Long
 
+    @Query("SELECT * FROM tasks")
+    suspend fun findAll(): List<Task>
+
     @Transaction
     @Query("SELECT * FROM tasks " +
             "WHERE DATE(date) >= DATE() AND DATE(date) < DATE('now', '+1 day')")

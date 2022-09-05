@@ -15,8 +15,7 @@ import java.time.LocalDate
 class FakeTaskRepository(
     private val subtaskRepository: FakeSubtaskRepository
 ) : TaskRepository {
-    private val mutableTasks = mutableListOf<Task>()
-    val tasks: List<Task> = mutableTasks
+    private val tasks = mutableListOf<Task>()
     private var taskId = 1
     private val boardIds = mutableMapOf<Int, Int>()
 
@@ -25,12 +24,16 @@ class FakeTaskRepository(
             val boardId = task.boardId
             this[boardId] = if (this[boardId] == null) 0 else this[boardId]!! + 1
         }
-        mutableTasks.add(task.copy(
+        tasks.add(task.copy(
             taskId = taskId,
             position = boardIds[task.boardId]!!
         ))
         taskId++
         return taskId.toLong()
+    }
+
+    override suspend fun findAll(): List<Task> {
+        return tasks.toList()
     }
 
     override fun findTodayTasks(): Flow<List<TaskWithSubtasks>> {
@@ -108,7 +111,7 @@ class FakeTaskRepository(
 
     override suspend fun update(taskUpdate: TaskUpdate) {
         tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
-            mutableTasks.set(
+            tasks.set(
                 index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
                 element = taskUpdate.toTask().copy(position = task.position)
             )
@@ -116,17 +119,17 @@ class FakeTaskRepository(
     }
 
     override suspend fun updateMany(vararg tasks: Task) {
-        val idsMap = mutableTasks.groupBy { it.taskId }
+        val idsMap = tasks.groupBy { it.taskId }
         for (task in tasks) {
             if (idsMap[task.taskId] == null) continue
-            mutableTasks.set(
-                index = mutableTasks.indexOfFirst { it.taskId == task.taskId },
+            this.tasks.set(
+                index = tasks.indexOfFirst { it.taskId == task.taskId },
                 element = task
             )
         }
     }
 
     override suspend fun remove(task: Task) {
-        mutableTasks.remove(task)
+        tasks.remove(task)
     }
 }

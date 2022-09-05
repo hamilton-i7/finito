@@ -120,7 +120,7 @@ class CreateTaskTest {
             task = Task(name = "Task name", boardId = boards.random().boardId)
         )
         with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId)) {
-            val tasksInBoard = fakeTaskRepository.tasks.filter {
+            val tasksInBoard = fakeTaskRepository.findAll().filter {
                 it.boardId == taskWithSubtasks.task.boardId
             }
 

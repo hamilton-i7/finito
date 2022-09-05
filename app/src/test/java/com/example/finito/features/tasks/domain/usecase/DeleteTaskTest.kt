@@ -72,34 +72,40 @@ class DeleteTaskTest {
 
     @Test
     fun `Should throw NegativeIdException when ID is invalid`() {
-        fakeTaskRepository.tasks.random().copy(taskId = 0).let {
-            assertThrows(ResourceException.NegativeIdException::class.java) {
-                runTest { deleteTask(it) }
+        assertThrows(ResourceException.NegativeIdException::class.java) {
+            runTest {
+                fakeTaskRepository.findAll().random().copy(taskId = 0).let {
+                    deleteTask(it)
+                }
             }
         }
-        fakeTaskRepository.tasks.random().copy(taskId = -2).let {
-            assertThrows(ResourceException.NegativeIdException::class.java) {
-                runTest { deleteTask(it) }
+        assertThrows(ResourceException.NegativeIdException::class.java) {
+            runTest {
+                fakeTaskRepository.findAll().random().copy(taskId = -2).let {
+                    deleteTask(it)
+                }
             }
         }
     }
 
     @Test
     fun `Should throw NotFoundException when task isn't found`() {
-        fakeTaskRepository.tasks.random().copy(taskId = 10_000).let {
-            assertThrows(ResourceException.NotFoundException::class.java) {
-                runTest { deleteTask(it) }
+        assertThrows(ResourceException.NotFoundException::class.java) {
+            runTest {
+                fakeTaskRepository.findAll().random().copy(taskId = 10_000).let {
+                    deleteTask(it)
+                }
             }
         }
     }
 
     @Test
     fun `Should remove task from the list when it is found`() = runTest {
-        val tasksAmount = fakeTaskRepository.tasks.size
-        val taskToDelete = fakeTaskRepository.tasks.random()
+        val tasksAmount = fakeTaskRepository.findAll().size
+        val taskToDelete = fakeTaskRepository.findAll().random()
 
         deleteTask(taskToDelete)
-        fakeTaskRepository.tasks.let {
+        fakeTaskRepository.findAll().let {
             assertThat(it.find { task -> task.taskId == taskToDelete.taskId }).isNull()
             assertThat(it.size).isLessThan(tasksAmount)
         }
@@ -107,7 +113,7 @@ class DeleteTaskTest {
 
     @Test
     fun `Should arrange remaining tasks when task is found`() = runTest {
-        val task = fakeTaskRepository.tasks.random()
+        val task = fakeTaskRepository.findAll().random()
         deleteTask(task)
         with(fakeTaskRepository.findTasksByBoard(task.boardId)) {
             for (i in 0..size - 2) {

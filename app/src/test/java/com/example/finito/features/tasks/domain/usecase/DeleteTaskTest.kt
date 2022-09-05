@@ -89,26 +89,32 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `Should remove task from the list when it is found`() = runTest {
+    fun `Should remove tasks from the list`() = runTest {
         val tasksAmount = fakeTaskRepository.findAll().size
-        val taskToDelete = fakeTaskRepository.findAll().random()
+        val tasksToDelete = fakeTaskRepository.findAll().shuffled().take(5)
 
-        deleteTask(taskToDelete)
+        deleteTask(*tasksToDelete.toTypedArray())
         fakeTaskRepository.findAll().let {
-            assertThat(it.find { task -> task.taskId == taskToDelete.taskId }).isNull()
+            val taskIds = it.groupBy { task -> task.taskId }
+            assertThat(
+                tasksToDelete.all { task -> taskIds[task.taskId] == null }
+            ).isTrue()
             assertThat(it.size).isLessThan(tasksAmount)
         }
     }
 
     @Test
-    fun `Should arrange remaining tasks when task is found`() = runTest {
-        val task = fakeTaskRepository.findAll().random()
-        deleteTask(task)
-        with(fakeTaskRepository.findTasksByBoard(task.boardId)) {
-            for (i in 0..size - 2) {
-                assertThat(
-                    this[i].boardPosition + 1 == this[i+1].boardPosition
-                ).isTrue()
+    fun `Should arrange remaining tasks`() = runTest {
+        val tasksToDelete = fakeTaskRepository.findAll().shuffled().take(5)
+        deleteTask(*tasksToDelete.toTypedArray())
+
+        tasksToDelete.groupBy { it.boardId }.keys.forEach {
+            with(fakeTaskRepository.findTasksByBoard(it)) {
+                for (i in 0..size - 2) {
+                    assertThat(
+                        this[i].boardPosition + 1 == this[i+1].boardPosition
+                    ).isTrue()
+                }
             }
         }
     }

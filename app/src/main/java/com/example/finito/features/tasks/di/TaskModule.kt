@@ -35,6 +35,7 @@ object TaskModule {
             findOneTask = FindOneTask(taskRepository),
             updateTask = UpdateTask(taskRepository, subtaskRepository),
             deleteTask = DeleteTask(taskRepository),
+            arrangeTasks = ArrangeTasks(taskRepository, subtaskRepository),
         )
     }
 }

@@ -4,7 +4,7 @@ import com.example.finito.core.Priority
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
-import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
+import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -69,7 +69,7 @@ class CreateTaskTest {
                     date = if (index % 2 == 0) dates.random() else null,
                     time = if (index % 4 == 0) time.random() else null,
                     priority = priorities.random(),
-                    position = when (boardId) {
+                    boardPosition = when (boardId) {
                         boards[0].boardId -> tasksInBoard1Position++
                         boards[1].boardId -> tasksInBoard2Position++
                         else -> tasksInBoard3Position++
@@ -143,7 +143,7 @@ class CreateTaskTest {
 
         with(fakeTaskRepository.findTasksByBoard(taskWithSubtasks.task.boardId).first {
             it.name == "Task name"
-        }) { assertThat(position).isEqualTo(tasks.size) }
+        }) { assertThat(boardPosition).isEqualTo(tasks.size) }
     }
 
     @Test
@@ -151,9 +151,9 @@ class CreateTaskTest {
         val taskWithSubtasks = TaskWithSubtasks(
             task = Task(name = "Task name", boardId = boards.random().boardId),
             subtasks = listOf(
-                SimpleSubtask(name = "Subtask name"),
-                SimpleSubtask(name = "Subtask name"),
-                SimpleSubtask(name = "Subtask name"),
+                Subtask(name = "Subtask name"),
+                Subtask(name = "Subtask name"),
+                Subtask(name = "Subtask name"),
             )
         )
         val taskId = createTask(taskWithSubtasks)

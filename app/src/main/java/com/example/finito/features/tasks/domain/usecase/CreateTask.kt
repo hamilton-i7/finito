@@ -1,7 +1,6 @@
 package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.util.ResourceException
-import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -33,17 +32,13 @@ class CreateTask(
 
     private suspend fun setupTaskPosition(task: Task, repository: TaskRepository): Task {
         return repository.findTasksByBoardAmount(task.boardId).let {
-            task.copy(position = it)
+            task.copy(boardPosition = it)
         }
     }
 
-    private fun setupSubtaskPositions(taskId: Int, subtasks: List<SimpleSubtask>): Array<Subtask> {
+    private fun setupSubtaskPositions(taskId: Int, subtasks: List<Subtask>): Array<Subtask> {
         return subtasks.mapIndexed { index, subtask ->
-            Subtask(
-                taskId = taskId,
-                name = subtask.name,
-                position = index
-            )
+            subtask.copy(position = index, taskId = taskId)
         }.toTypedArray()
     }
 }

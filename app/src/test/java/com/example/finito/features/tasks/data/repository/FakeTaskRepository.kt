@@ -2,7 +2,6 @@ package com.example.finito.features.tasks.data.repository
 
 import com.example.finito.core.Priority
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
-import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -26,7 +25,7 @@ class FakeTaskRepository(
         }
         tasks.add(task.copy(
             taskId = taskId,
-            position = boardIds[task.boardId]!!
+            boardPosition = boardIds[task.boardId]!!
         ))
         taskId++
         return taskId.toLong()
@@ -45,9 +44,7 @@ class FakeTaskRepository(
                     val date = it.date
                     date != null && date.isEqual(today)
                 }.map {
-                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
-                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
-                    }
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId)
                     TaskWithSubtasks(task = it, subtasks = subtasks)
                 }
             )
@@ -62,9 +59,7 @@ class FakeTaskRepository(
                     val date = it.date
                     date != null && date.isEqual(tomorrow)
                 }.map {
-                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
-                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
-                    }
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId)
                     TaskWithSubtasks(task = it, subtasks = subtasks)
                 }
             )
@@ -77,9 +72,7 @@ class FakeTaskRepository(
                 tasks.filter {
                     it.priority == Priority.URGENT
                 }.map {
-                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId).map { subtask ->
-                        SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
-                    }
+                    val subtasks = subtaskRepository.findAllByTaskId(it.taskId)
                     TaskWithSubtasks(task = it, subtasks = subtasks)
                 }
             )
@@ -93,7 +86,7 @@ class FakeTaskRepository(
     override suspend fun findTasksByBoard(boardId: Int): List<Task> {
         return tasks.filter { it.boardId == boardId }
             .map { it }
-            .sortedBy { it.position }
+            .sortedBy { it.boardPosition }
     }
 
     override suspend fun findOne(id: Int): TaskWithSubtasks? {
@@ -102,9 +95,7 @@ class FakeTaskRepository(
             val subtasks = subtaskRepository.findAllByTaskId(it.taskId)
             TaskWithSubtasks(
                 task = it,
-                subtasks = subtasks.map { subtask ->
-                    SimpleSubtask(subtaskId = subtask.subtaskId, name = subtask.name)
-                }
+                subtasks = subtasks
             )
         }
     }
@@ -113,7 +104,7 @@ class FakeTaskRepository(
         tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
             tasks.set(
                 index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
-                element = taskUpdate.toTask().copy(position = task.position)
+                element = taskUpdate.toTask().copy(boardPosition = task.boardPosition)
             )
         }
     }

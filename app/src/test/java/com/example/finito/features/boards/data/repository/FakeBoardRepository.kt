@@ -108,7 +108,7 @@ class FakeBoardRepository(
                             taskId = 1,
                             boardId = it.boardId,
                             name = "Task name",
-                            position = 0
+                            boardPosition = 0
                         ),
                         subtasks = emptyList(),
                     ),
@@ -117,7 +117,7 @@ class FakeBoardRepository(
                             taskId = 2,
                             boardId = it.boardId,
                             name = "Task name",
-                            position = 1
+                            boardPosition = 1
                         ),
                         subtasks = listOf(
                             Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),

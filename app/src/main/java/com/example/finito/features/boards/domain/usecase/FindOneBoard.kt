@@ -19,7 +19,7 @@ class FindOneBoard(
         }
         return repository.findOne(id)?.let { detailedBoard ->
             detailedBoard.copy(
-                tasks = detailedBoard.tasks.sortedBy { it.task.position }
+                tasks = detailedBoard.tasks.sortedBy { it.task.boardPosition }
             )
         } ?: throw ResourceException.NotFoundException
     }

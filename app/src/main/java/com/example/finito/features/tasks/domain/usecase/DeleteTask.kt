@@ -26,7 +26,7 @@ class DeleteTask(
         with(repository.findTasksByBoard(task.boardId).toMutableList()) {
             removeAt(indexOfFirst { it.taskId == task.taskId })
             mapIndexed { index, task ->
-                task.copy(position = index)
+                task.copy(boardPosition = index)
             }.toTypedArray().also {
                 repository.updateMany(*it)
             }

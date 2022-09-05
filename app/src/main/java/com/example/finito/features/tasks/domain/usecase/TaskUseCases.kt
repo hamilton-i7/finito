@@ -8,4 +8,5 @@ data class TaskUseCases(
     val findOneTask: FindOneTask,
     val updateTask: UpdateTask,
     val deleteTask: DeleteTask,
+    val arrangeTasks: ArrangeTasks,
 )

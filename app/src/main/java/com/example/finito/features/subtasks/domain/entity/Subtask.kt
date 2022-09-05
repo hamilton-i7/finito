@@ -22,12 +22,11 @@ import java.time.LocalDateTime
 data class Subtask(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "subtask_id") val subtaskId: Int = 0,
-    @ColumnInfo(name = "task_id") val taskId: Int,
+    @ColumnInfo(name = "task_id") val taskId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     val description: String? = null,
     val completed: Boolean = false,
     val position: Int = -1,
-    @ColumnInfo(name = "completed_position") val completedPosition: Int = -1,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )

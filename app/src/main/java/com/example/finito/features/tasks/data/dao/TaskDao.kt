@@ -33,7 +33,7 @@ interface TaskDao {
     @Query("SELECT COUNT(*) FROM tasks WHERE board_id = :boardId")
     suspend fun findTasksByBoardAmount(boardId: Int): Int
 
-    @Query("SELECT * FROM tasks WHERE board_id = :boardId ORDER BY position ASC")
+    @Query("SELECT * FROM tasks WHERE board_id = :boardId ORDER BY board_position ASC")
     suspend fun findTasksByBoard(boardId: Int): List<Task>
 
     @Transaction

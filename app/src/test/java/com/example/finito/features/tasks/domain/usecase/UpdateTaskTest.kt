@@ -4,7 +4,6 @@ import com.example.finito.core.Priority
 import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
-import com.example.finito.features.subtasks.domain.entity.SimpleSubtask
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -64,7 +63,7 @@ class UpdateTaskTest {
                     boardId = boardId,
                     date = if (index % 2 == 0) dates.random() else null,
                     time = if (index % 4 == 0) time.random() else null,
-                    priority = priorities.random()
+                    priority = priorities.random(),
                 )
             )
         }
@@ -141,12 +140,12 @@ class UpdateTaskTest {
 
         var startBoardTasks = tasks.filter {
             it.boardId == task.boardId
-        }.sortedBy { it.position }
+        }.sortedBy { it.boardPosition }
         assertThat(startBoardTasks.find { it.taskId == task.taskId }).isNotNull()
 
         var endBoardTasks = tasks.filter {
             it.boardId == newBoardId
-        }.sortedBy { it.position }
+        }.sortedBy { it.boardPosition }
         assertThat(endBoardTasks.find { it.taskId == task.taskId }).isNull()
 
         updateTask(TaskWithSubtasks(task = task.copy(boardId = newBoardId)))
@@ -154,19 +153,19 @@ class UpdateTaskTest {
         with(fakeTaskRepository.findAll()) {
             startBoardTasks = filter {
                 it.boardId == task.boardId
-            }.sortedBy { it.position }
+            }.sortedBy { it.boardPosition }
             assertThat(startBoardTasks.find { it.taskId == task.taskId }).isNull()
 
             endBoardTasks = filter {
                 it.boardId == newBoardId
-            }.sortedBy { it.position }
+            }.sortedBy { it.boardPosition }
             assertThat(endBoardTasks.find { it.taskId == task.taskId }).isNotNull()
 
             // Check that every task in the start board is positioned correctly
             // [0, 1, 2, 3...]
             for (i in 0..startBoardTasks.size - 2) {
                 assertThat(
-                    startBoardTasks[i].position + 1 == startBoardTasks[i+1].position
+                    startBoardTasks[i].boardPosition + 1 == startBoardTasks[i+1].boardPosition
                 ).isTrue()
             }
 
@@ -174,14 +173,14 @@ class UpdateTaskTest {
             // [0, 1, 2, 3...]
             for (i in 0..endBoardTasks.size - 2) {
                 assertThat(
-                    endBoardTasks[i].position + 1 == endBoardTasks[i+1].position
+                    endBoardTasks[i].boardPosition + 1 == endBoardTasks[i+1].boardPosition
                 ).isTrue()
             }
 
             first {
                 it.taskId == task.taskId
             }.let {
-                assertThat(it.position).isEqualTo(endBoardTasks.size - 1)
+                assertThat(it.boardPosition).isEqualTo(endBoardTasks.size - 1)
             }
         }
     }
@@ -192,20 +191,20 @@ class UpdateTaskTest {
         val task = tasks.random()
         val position = tasks.filter {
             it.boardId == task.boardId
-                    && it.position != task.position
-        }.random().position
-        updateTask(TaskWithSubtasks(task = task.copy(position = position)))
+                    && it.boardPosition != task.boardPosition
+        }.random().boardPosition
+        updateTask(TaskWithSubtasks(task = task.copy(boardPosition = position)))
 
         with(fakeTaskRepository.findAll().filter {
             it.boardId == task.boardId
-        }.sortedBy { it.position }) {
+        }.sortedBy { it.boardPosition }) {
             assertThat(
-                first { it.taskId == task.taskId }.position == position
+                first { it.taskId == task.taskId }.boardPosition == position
             )
 
             for (i in 0..size - 2) {
                 assertThat(
-                    this[i].position + 1 == this[i+1].position
+                    this[i].boardPosition + 1 == this[i+1].boardPosition
                 ).isTrue()
             }
         }
@@ -234,8 +233,8 @@ class UpdateTaskTest {
             fakeSubtaskRepository.subtasks.random().taskId
         )!!
         val newSubtasks = listOf(
-            SimpleSubtask(name = "Subtask name"),
-            SimpleSubtask(name = "Subtask name"),
+            Subtask(name = "Subtask name", taskId = taskWithSubtasks.task.taskId),
+            Subtask(name = "Subtask name", taskId = taskWithSubtasks.task.taskId),
         )
         updateTask(
             taskWithSubtasks.copy(subtasks = taskWithSubtasks.subtasks + newSubtasks)

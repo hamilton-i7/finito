@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f3fb623f4024c3382dce1c43238019f3",
+    "identityHash": "9184a181e58394101c8d31526a204842",
     "entities": [
       {
         "tableName": "boards",
@@ -154,7 +154,7 @@
       },
       {
         "tableName": "tasks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `board_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `normalized_name` TEXT NOT NULL, `description` TEXT, `completed` INTEGER NOT NULL, `date` TEXT, `time` TEXT, `reminder` TEXT, `priority` TEXT, `position` INTEGER NOT NULL, `today_position` INTEGER, `upcoming_position` INTEGER, `urgent_position` INTEGER, `created_at` TEXT NOT NULL, FOREIGN KEY(`board_id`) REFERENCES `boards`(`board_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `board_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `normalized_name` TEXT NOT NULL, `description` TEXT, `completed` INTEGER NOT NULL, `date` TEXT, `time` TEXT, `reminder` TEXT, `priority` TEXT, `position` INTEGER, `completed_board_position` INTEGER, `completed_today_position` INTEGER, `completed_upcoming_position` INTEGER, `completed_urgent_position` INTEGER, `created_at` TEXT NOT NULL, FOREIGN KEY(`board_id`) REFERENCES `boards`(`board_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "taskId",
@@ -220,23 +220,29 @@
             "fieldPath": "position",
             "columnName": "position",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "todayPosition",
-            "columnName": "today_position",
+            "fieldPath": "completedBoardPosition",
+            "columnName": "completed_board_position",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "upcomingPosition",
-            "columnName": "upcoming_position",
+            "fieldPath": "completedTodayPosition",
+            "columnName": "completed_today_position",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "urgentPosition",
-            "columnName": "urgent_position",
+            "fieldPath": "completedUpcomingPosition",
+            "columnName": "completed_upcoming_position",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "completedUrgentPosition",
+            "columnName": "completed_urgent_position",
             "affinity": "INTEGER",
             "notNull": false
           },
@@ -280,7 +286,7 @@
       },
       {
         "tableName": "subtasks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`subtask_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `task_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `normalized_name` TEXT NOT NULL, `description` TEXT, `completed` INTEGER NOT NULL, `position` INTEGER NOT NULL, `created_at` TEXT NOT NULL, FOREIGN KEY(`task_id`) REFERENCES `tasks`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`subtask_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `task_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `normalized_name` TEXT NOT NULL, `description` TEXT, `completed` INTEGER NOT NULL, `position` INTEGER, `completed_position` INTEGER, `created_at` TEXT NOT NULL, FOREIGN KEY(`task_id`) REFERENCES `tasks`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "subtaskId",
@@ -322,7 +328,13 @@
             "fieldPath": "position",
             "columnName": "position",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
+          },
+          {
+            "fieldPath": "completedPosition",
+            "columnName": "completed_position",
+            "affinity": "INTEGER",
+            "notNull": false
           },
           {
             "fieldPath": "createdAt",
@@ -366,7 +378,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f3fb623f4024c3382dce1c43238019f3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9184a181e58394101c8d31526a204842')"
     ]
   }
 }

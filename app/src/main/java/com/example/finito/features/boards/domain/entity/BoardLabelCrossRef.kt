@@ -18,7 +18,10 @@ import com.example.finito.features.labels.domain.entity.Label
         onDelete = ForeignKey.CASCADE
     )],
     indices = [
-        Index(value = ["label_id"])
+        Index(
+            name = "index_labeled_boards_label_id",
+            value = ["label_id"]
+        )
     ]
 )
 data class BoardLabelCrossRef(

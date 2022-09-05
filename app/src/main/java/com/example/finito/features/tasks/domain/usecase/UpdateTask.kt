@@ -37,8 +37,8 @@ class UpdateTask(
             } else if (changedPosition(it.task, task)) {
                 arrangeSameBoard(
                     boardId = task.boardId,
-                    from = it.task.position,
-                    to = task.position,
+                    from = it.task.position!!,
+                    to = task.position!!,
                     repository = taskRepository
                 )
             }

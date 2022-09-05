@@ -35,10 +35,11 @@ data class Task(
     val time: LocalTime? = null,
     val reminder: Reminder? = null,
     val priority: Priority? = null,
-    val position: Int = 0,
-    @ColumnInfo(name = "today_position") val todayPosition: Int? = null,
-    @ColumnInfo(name = "upcoming_position") val upcomingPosition: Int? = null,
-    @ColumnInfo(name = "urgent_position") val urgentPosition: Int? = null,
+    val position: Int? = null,
+    @ColumnInfo(name = "completed_board_position") val completedBoardPosition: Int? = null,
+    @ColumnInfo(name = "completed_today_position") val completedTodayPosition: Int? = null,
+    @ColumnInfo(name = "completed_upcoming_position") val completedUpcomingPosition: Int? = null,
+    @ColumnInfo(name = "completed_urgent_position") val completedUrgentPosition: Int? = null,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

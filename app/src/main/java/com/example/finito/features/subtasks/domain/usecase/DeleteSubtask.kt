@@ -13,13 +13,11 @@ class DeleteSubtask(
         ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(subtask: Subtask): Int {
+    suspend operator fun invoke(subtask: Subtask) {
         if (!isValidId(subtask.subtaskId)) {
             throw ResourceException.NegativeIdException
         }
-        return repository.removeMany(subtask).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }
+        repository.findOne(subtask.subtaskId) ?: throw ResourceException.NotFoundException
+        return repository.removeMany(subtask)
     }
 }

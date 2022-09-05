@@ -11,6 +11,10 @@ class BoardLabelRepositoryImpl(
         return dao.create(*refs)
     }
 
+    override suspend fun findAll(): List<BoardLabelCrossRef> {
+        return dao.findAll()
+    }
+
     override suspend fun findAllByBoardId(boardId: Int): List<BoardLabelCrossRef> {
         return dao.findAllByBoardId(boardId)
     }

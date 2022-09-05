@@ -13,15 +13,23 @@ class LabelRepositoryImpl(
         return dao.create(label)
     }
 
+    override suspend fun findAll(): List<Label> {
+        return dao.findAll()
+    }
+
     override fun findSimpleLabels(): Flow<List<SimpleLabel>> {
         return dao.findSimpleLabels()
     }
 
-    override suspend fun update(label: Label): Int {
+    override suspend fun findOne(id: Int): Label? {
+        return dao.findOne(id)
+    }
+
+    override suspend fun update(label: Label) {
         return dao.update(label)
     }
 
-    override suspend fun remove(label: Label): Int {
+    override suspend fun remove(label: Label) {
         return dao.remove(label)
     }
 }

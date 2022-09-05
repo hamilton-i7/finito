@@ -16,8 +16,8 @@ interface SubtaskDao {
     suspend fun findOne(id: Int): Subtask?
 
     @Update
-    suspend fun updateMany(vararg subtasks: Subtask): Int
+    suspend fun updateMany(vararg subtasks: Subtask)
 
     @Delete
-    suspend fun removeMany(vararg subtasks: Subtask): Int
+    suspend fun removeMany(vararg subtasks: Subtask)
 }

@@ -10,6 +10,10 @@ class FakeBoardLabelRepository : BoardLabelRepository {
         boardLabelRefs.addAll(refs)
     }
 
+    override suspend fun findAll(): List<BoardLabelCrossRef> {
+        return boardLabelRefs.toList()
+    }
+
     override suspend fun findAllByBoardId(boardId: Int): List<BoardLabelCrossRef> {
         return boardLabelRefs.filter { it.boardId == boardId }
     }

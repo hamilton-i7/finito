@@ -12,13 +12,12 @@ class DeleteLabel(
         ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(label: Label): Int {
+    suspend operator fun invoke(label: Label) {
         if (!isValidId(label.labelId)) {
             throw ResourceException.NegativeIdException
         }
-        return repository.remove(label).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }
+        repository.findOne(label.labelId) ?: throw ResourceException.NotFoundException
+
+        return repository.remove(label)
     }
 }

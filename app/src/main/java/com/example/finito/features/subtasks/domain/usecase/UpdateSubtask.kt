@@ -15,7 +15,7 @@ class UpdateSubtask(
         ResourceException.InvalidStateException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(subtask: Subtask): Int {
+    suspend operator fun invoke(subtask: Subtask) {
         if (subtask.name.isBlank()) {
             throw ResourceException.EmptyException
         }

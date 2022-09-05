@@ -23,8 +23,7 @@ class FakeSubtaskRepository: SubtaskRepository {
         return subtasks.find { it.subtaskId == id }
     }
 
-    override suspend fun updateMany(vararg subtasks: Subtask): Int {
-        var updateCount = 0
+    override suspend fun updateMany(vararg subtasks: Subtask) {
         val ids = this.subtasks.groupBy { it.subtaskId }
         for (subtask in subtasks) {
             if (ids[subtask.subtaskId] == null) continue
@@ -32,19 +31,14 @@ class FakeSubtaskRepository: SubtaskRepository {
                 index = subtasks.indexOfFirst { it.subtaskId == subtask.subtaskId },
                 element = subtask
             )
-            updateCount++
         }
-        return updateCount
     }
 
-    override suspend fun removeMany(vararg subtasks: Subtask): Int {
-        var deleteCount = 0
+    override suspend fun removeMany(vararg subtasks: Subtask) {
         subtasks.toList().forEach {
             this.subtasks.remove(it).also { deleted ->
                 if (!deleted) return@also
-                deleteCount++
             }
         }
-        return deleteCount
     }
 }

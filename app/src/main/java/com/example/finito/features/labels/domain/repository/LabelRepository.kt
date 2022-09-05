@@ -8,9 +8,13 @@ interface LabelRepository {
 
     suspend fun create(label: Label)
 
+    suspend fun findAll(): List<Label>
+
     fun findSimpleLabels(): Flow<List<SimpleLabel>>
 
-    suspend fun update(label: Label): Int
+    suspend fun findOne(id: Int): Label?
 
-    suspend fun remove(label: Label): Int
+    suspend fun update(label: Label)
+
+    suspend fun remove(label: Label)
 }

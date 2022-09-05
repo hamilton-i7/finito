@@ -9,6 +9,9 @@ interface BoardLabelDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun create(vararg refs: BoardLabelCrossRef)
 
+    @Query("SELECT * FROM labeled_boards")
+    suspend fun findAll(): List<BoardLabelCrossRef>
+
     @Query("SELECT * FROM labeled_boards WHERE board_id = :boardId")
     suspend fun findAllByBoardId(boardId: Int): List<BoardLabelCrossRef>
 

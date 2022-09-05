@@ -19,11 +19,11 @@ class SubtaskRepositoryImpl(
         return dao.findOne(id)
     }
 
-    override suspend fun updateMany(vararg subtasks: Subtask): Int {
+    override suspend fun updateMany(vararg subtasks: Subtask) {
         return dao.updateMany(*subtasks)
     }
 
-    override suspend fun removeMany(vararg subtasks: Subtask): Int {
+    override suspend fun removeMany(vararg subtasks: Subtask) {
         return dao.removeMany(*subtasks)
     }
 }

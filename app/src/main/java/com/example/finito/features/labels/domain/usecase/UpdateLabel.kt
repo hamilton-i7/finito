@@ -9,16 +9,15 @@ class UpdateLabel(
     private val repository: LabelRepository
 ) {
     @Throws(ResourceException::class)
-    suspend operator fun invoke(label: Label): Int {
+    suspend operator fun invoke(label: Label) {
         if (!isValidId(label.labelId)) {
             throw ResourceException.NegativeIdException
         }
         if (label.name.isBlank()) {
             throw ResourceException.EmptyException
         }
-        return repository.update(label).let {
-            if (it == 0) throw ResourceException.NotFoundException
-            else it
-        }
+        repository.findOne(label.labelId) ?: throw ResourceException.NotFoundException
+
+        return repository.update(label)
     }
 }

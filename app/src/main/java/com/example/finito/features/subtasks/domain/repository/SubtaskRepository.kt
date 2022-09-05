@@ -9,7 +9,7 @@ interface SubtaskRepository {
 
     suspend fun findOne(id: Int): Subtask?
 
-    suspend fun updateMany(vararg subtasks: Subtask): Int
+    suspend fun updateMany(vararg subtasks: Subtask)
 
-    suspend fun removeMany(vararg subtasks: Subtask): Int
+    suspend fun removeMany(vararg subtasks: Subtask)
 }

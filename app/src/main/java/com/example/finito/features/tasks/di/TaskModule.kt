@@ -35,7 +35,10 @@ object TaskModule {
             findOneTask = FindOneTask(taskRepository),
             updateTask = UpdateTask(taskRepository, subtaskRepository),
             deleteTask = DeleteTask(taskRepository),
-            arrangeTasks = ArrangeTasks(taskRepository, subtaskRepository),
+            arrangeBoardTasks = ArrangeBoardTasks(taskRepository, subtaskRepository),
+            arrangeTodayTasks = ArrangeTodayTasks(taskRepository, subtaskRepository),
+            arrangeTomorrowTasks = ArrangeTomorrowTasks(taskRepository, subtaskRepository),
+            arrangeUrgentTasks = ArrangeUrgentTasks(taskRepository, subtaskRepository)
         )
     }
 }

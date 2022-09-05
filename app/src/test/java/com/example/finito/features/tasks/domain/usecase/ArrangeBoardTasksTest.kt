@@ -16,8 +16,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @ExperimentalCoroutinesApi
-class ArrangeTasksTest {
-    private lateinit var arrangeTasks: ArrangeTasks
+class ArrangeBoardTasksTest {
+    private lateinit var arrangeBoardTasks: ArrangeBoardTasks
     private lateinit var fakeTaskRepository: FakeTaskRepository
     private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
 
@@ -31,7 +31,7 @@ class ArrangeTasksTest {
     fun setUp() = runTest {
         fakeSubtaskRepository = FakeSubtaskRepository()
         fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
-        arrangeTasks = ArrangeTasks(fakeTaskRepository, fakeSubtaskRepository)
+        arrangeBoardTasks = ArrangeBoardTasks(fakeTaskRepository, fakeSubtaskRepository)
 
         val dummyTasks = mutableListOf<Task>()
 
@@ -96,7 +96,7 @@ class ArrangeTasksTest {
             val completedTasks = it.filter { taskWithSubtasks -> taskWithSubtasks.task.completed }
             it.removeAll(completedTasks)
             it + completedTasks
-        }.let { arrangeTasks(it) }
+        }.let { arrangeBoardTasks(it) }
 
         tasks = fakeTaskRepository.findTasksByBoard(boardId)
         assertThat(

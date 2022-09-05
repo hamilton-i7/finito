@@ -135,7 +135,7 @@ class FindArchivedBoardsTest {
         ).first()
         assertThat(filteredBoards2).isNotEmpty()
         assertThat(boards.size).isGreaterThan(filteredBoards2.size)
-        assertThat(filteredBoards.size).isGreaterThan(filteredBoards2.size)
+        assertThat(filteredBoards.size >= filteredBoards2.size).isTrue()
 
         val filteredBoards3 = findArchivedBoards(labelIds = intArrayOf()).first()
         assertThat(filteredBoards3.size).isEqualTo(boards.size)

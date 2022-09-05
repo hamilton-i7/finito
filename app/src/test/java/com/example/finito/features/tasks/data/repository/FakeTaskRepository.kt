@@ -120,7 +120,7 @@ class FakeTaskRepository(
         }
     }
 
-    override suspend fun remove(task: Task) {
-        tasks.remove(task)
+    override suspend fun remove(vararg tasks: Task) {
+        this.tasks.removeAll(tasks.toSet())
     }
 }

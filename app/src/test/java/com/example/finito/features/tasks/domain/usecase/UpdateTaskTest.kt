@@ -139,30 +139,28 @@ class UpdateTaskTest {
             it.boardId != task.boardId
         }.boardId
 
-        val originalStartBoardTasksAmount = tasks.filter {
+        var startBoardTasks = tasks.filter {
             it.boardId == task.boardId
-        }.size
-        val originalEndBoardTasksAmount = tasks.filter {
+        }.sortedBy { it.position }
+        assertThat(startBoardTasks.find { it.taskId == task.taskId }).isNotNull()
+
+        var endBoardTasks = tasks.filter {
             it.boardId == newBoardId
-        }.size
+        }.sortedBy { it.position }
+        assertThat(endBoardTasks.find { it.taskId == task.taskId }).isNull()
 
         updateTask(TaskWithSubtasks(task = task.copy(boardId = newBoardId)))
 
         with(fakeTaskRepository.findAll()) {
-            val startBoardTasks = filter {
+            startBoardTasks = filter {
                 it.boardId == task.boardId
             }.sortedBy { it.position }
-            val endBoardTasks = filter {
+            assertThat(startBoardTasks.find { it.taskId == task.taskId }).isNull()
+
+            endBoardTasks = filter {
                 it.boardId == newBoardId
             }.sortedBy { it.position }
-            assertThat(startBoardTasks.find {
-                it.taskId == task.taskId
-            }).isNull()
-            assertThat(endBoardTasks.find {
-                it.taskId == task.taskId }).isNotNull()
-
-            assertThat(startBoardTasks.size).isEqualTo(originalStartBoardTasksAmount - 1)
-            assertThat(endBoardTasks.size).isEqualTo(originalEndBoardTasksAmount + 1)
+            assertThat(endBoardTasks.find { it.taskId == task.taskId }).isNotNull()
 
             // Check that every task in the start board is positioned correctly
             // [0, 1, 2, 3...]

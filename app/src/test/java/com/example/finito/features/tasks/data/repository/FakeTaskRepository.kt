@@ -123,7 +123,7 @@ class FakeTaskRepository(
         for (task in tasks) {
             if (idsMap[task.taskId] == null) continue
             this.tasks.set(
-                index = tasks.indexOfFirst { it.taskId == task.taskId },
+                index = this.tasks.indexOfFirst { it.taskId == task.taskId },
                 element = task
             )
         }

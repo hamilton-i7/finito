@@ -5,6 +5,7 @@ data class TaskUseCases(
     val findTodayTasks: FindTodayTasks,
     val findTomorrowTasks: FindTomorrowTasks,
     val findUrgentTasks: FindUrgentTasks,
+    val findOneTask: FindOneTask,
     val updateTask: UpdateTask,
     val deleteTask: DeleteTask,
 )

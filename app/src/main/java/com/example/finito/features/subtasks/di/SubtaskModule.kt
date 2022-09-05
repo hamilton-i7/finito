@@ -4,6 +4,7 @@ import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.subtasks.data.repository.SubtaskRepositoryImpl
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.subtasks.domain.usecase.DeleteSubtask
+import com.example.finito.features.subtasks.domain.usecase.FindOneSubtask
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.subtasks.domain.usecase.UpdateSubtask
 import dagger.Module
@@ -26,6 +27,7 @@ object SubtaskModule {
     @Singleton
     fun provideSubtaskUseCases(repository: SubtaskRepository): SubtaskUseCases {
         return SubtaskUseCases(
+            findOneSubtask = FindOneSubtask(repository),
             updateSubtask = UpdateSubtask(repository),
             deleteSubtask = DeleteSubtask(repository),
         )

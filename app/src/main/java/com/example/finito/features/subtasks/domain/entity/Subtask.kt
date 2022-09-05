@@ -27,7 +27,7 @@ data class Subtask(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     val description: String? = null,
     val completed: Boolean = false,
-    val position: Int? = null,
-    @ColumnInfo(name = "completed_position") val completedPosition: Int? = null,
+    val position: Int = -1,
+    @ColumnInfo(name = "completed_position") val completedPosition: Int = -1,
     @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
 )

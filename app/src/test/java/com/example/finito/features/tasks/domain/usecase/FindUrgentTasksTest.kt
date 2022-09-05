@@ -27,11 +27,7 @@ class FindUrgentTasksTest {
     private lateinit var fakeLabelRepository: FakeLabelRepository
     private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
 
-    private val boards = listOf(
-        Board(boardId = 1, name = "Board name"),
-        Board(boardId = 2, name = "Board name"),
-        Board(boardId = 3, name = "Board name"),
-    )
+    private lateinit var dummyBoards: List<Board>
 
     @Before
     fun setUp() = runTest {
@@ -40,9 +36,15 @@ class FindUrgentTasksTest {
         fakeLabelRepository = FakeLabelRepository()
         fakeBoardLabelRepository = FakeBoardLabelRepository()
         fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
-
         findUrgentTasks = FindUrgentTasks(fakeTaskRepository, fakeBoardRepository)
 
+        listOf(
+            Board(name = "Board name"),
+            Board(name = "Board name"),
+            Board(name = "Board name"),
+        ).forEach { fakeBoardRepository.create(it) }
+
+        dummyBoards = fakeBoardRepository.findAll()
         val dummyTasks = mutableListOf<Task>()
 
         val dates = listOf(
@@ -73,7 +75,7 @@ class FindUrgentTasksTest {
                 Task(
                     taskId = index + 1,
                     name = "Task $c",
-                    boardId = boards.random().boardId,
+                    boardId = dummyBoards.random().boardId,
                     date = if (index % 2 == 0) dates.random() else null,
                     time = if (index % 4 == 0) time.random() else null,
                     priority = priorities.random()

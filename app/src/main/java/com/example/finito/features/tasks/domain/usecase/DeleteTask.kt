@@ -6,30 +6,31 @@ import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 
 class DeleteTask(
-    private val repository: TaskRepository
+    private val taskRepository: TaskRepository
 ) {
-    @Throws(ResourceException.NegativeIdException::class)
-    suspend operator fun invoke(task: Task) {
-        if (!isValidId(task.taskId)) {
+    @Throws(
+        ResourceException.NegativeIdException::class,
+        ResourceException.InvalidStateException::class
+    )
+    suspend operator fun invoke(vararg tasks: Task) {
+        if (tasks.any { !isValidId(it.taskId) }) {
             throw ResourceException.NegativeIdException
         }
-        if (repository.findOne(task.taskId) == null) throw ResourceException.NotFoundException
-
-        arrangeTasks(task, repository)
-        return repository.remove(task)
+        return taskRepository.remove(*tasks).also {
+            val tasksToArrange = mutableListOf<Task>()
+            tasks.groupBy { it.boardId }.keys.forEach {
+                tasksToArrange.addAll(taskRepository.findTasksByBoard(it))
+            }
+            arrangeTasks(tasksToArrange)
+        }
     }
 
-    private suspend fun arrangeTasks(
-        task: Task,
-        repository: TaskRepository,
-    ) {
-        with(repository.findTasksByBoard(task.boardId).toMutableList()) {
-            removeAt(indexOfFirst { it.taskId == task.taskId })
-            mapIndexed { index, task ->
-                task.copy(boardPosition = index)
-            }.toTypedArray().also {
-                repository.updateMany(*it)
-            }
-        }
+    private suspend fun arrangeTasks(tasks: List<Task>) {
+        val positionsMap = mutableMapOf<Int, Int>()
+        tasks.map {
+            positionsMap[it.boardId] =
+                if (positionsMap[it.boardId] == null) 0 else positionsMap[it.boardId]!! + 1
+            it.copy(boardPosition = positionsMap[it.boardId]!!)
+        }.let { taskRepository.updateMany(*it.toTypedArray()) }
     }
 }

@@ -89,17 +89,6 @@ class DeleteTaskTest {
     }
 
     @Test
-    fun `Should throw NotFoundException when task isn't found`() {
-        assertThrows(ResourceException.NotFoundException::class.java) {
-            runTest {
-                fakeTaskRepository.findAll().random().copy(taskId = 10_000).let {
-                    deleteTask(it)
-                }
-            }
-        }
-    }
-
-    @Test
     fun `Should remove task from the list when it is found`() = runTest {
         val tasksAmount = fakeTaskRepository.findAll().size
         val taskToDelete = fakeTaskRepository.findAll().random()

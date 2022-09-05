@@ -32,7 +32,7 @@ class ArrangeTomorrowTasks(
         tasks.mapIndexed { index, task ->
             task.copy(tomorrowPosition = index)
         }.toTypedArray().let { taskRepository.updateMany(*it) }
-        arrangeSubtasks(subtasks, subtaskRepository)
+        arrangeSubtasks(subtasks)
     }
 
     private fun fromTomorrow(tasks: List<Task>): Boolean {
@@ -42,12 +42,12 @@ class ArrangeTomorrowTasks(
         return tasks.all { it.date != null && it.date.isEqual(tomorrow) }
     }
 
-    private suspend fun arrangeSubtasks(subtasks: List<Subtask>, repository: SubtaskRepository) {
+    private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {
         val positionsMap = mutableMapOf<Int, Int>()
         subtasks.map {
             positionsMap[it.taskId] =
                 if (positionsMap[it.taskId] == null) 0 else positionsMap[it.taskId]!! + 1
             it.copy(position = positionsMap[it.taskId]!!)
-        }.let { repository.updateMany(*it.toTypedArray()) }
+        }.let { subtaskRepository.updateMany(*it.toTypedArray()) }
     }
 }

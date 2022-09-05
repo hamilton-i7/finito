@@ -1,7 +1,10 @@
 package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.Priority
+import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
+import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.domain.util.TaskOrder
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
@@ -18,8 +21,12 @@ import java.time.LocalTime
 @ExperimentalCoroutinesApi
 class FindTomorrowTasksTest {
     private lateinit var findTomorrowTasks: FindTomorrowTasks
+
     private lateinit var fakeTaskRepository: FakeTaskRepository
     private lateinit var fakeSubtaskRepository: FakeSubtaskRepository
+    private lateinit var fakeBoardRepository: FakeBoardRepository
+    private lateinit var fakeLabelRepository: FakeLabelRepository
+    private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
 
     private val boards = listOf(
         Board(boardId = 1, name = "Board name"),
@@ -31,7 +38,11 @@ class FindTomorrowTasksTest {
     fun setUp() = runTest {
         fakeSubtaskRepository = FakeSubtaskRepository()
         fakeTaskRepository = FakeTaskRepository(fakeSubtaskRepository)
-        findTomorrowTasks = FindTomorrowTasks(fakeTaskRepository)
+        fakeLabelRepository = FakeLabelRepository()
+        fakeBoardLabelRepository = FakeBoardLabelRepository()
+        fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
+
+        findTomorrowTasks = FindTomorrowTasks(fakeTaskRepository, fakeBoardRepository)
 
         val dummyTasks = mutableListOf<Task>()
 

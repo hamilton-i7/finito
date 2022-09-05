@@ -23,15 +23,15 @@ class CreateTask(
                 message = "Date must not be null if time is set"
             )
         }
-        val taskWithPosition = setupTaskPosition(task, taskRepository)
+        val taskWithPosition = setupTaskPosition(task)
         return taskRepository.create(taskWithPosition).toInt().also {
             if (subtasks.isEmpty()) return@also
             subtaskRepository.createMany(*setupSubtaskPositions(it, subtasks))
         }
     }
 
-    private suspend fun setupTaskPosition(task: Task, repository: TaskRepository): Task {
-        return repository.findTasksByBoardAmount(task.boardId).let {
+    private suspend fun setupTaskPosition(task: Task): Task {
+        return taskRepository.findTasksByBoardAmount(task.boardId).let {
             task.copy(boardPosition = it)
         }
     }

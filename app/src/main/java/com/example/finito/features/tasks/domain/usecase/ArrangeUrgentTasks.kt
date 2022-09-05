@@ -8,7 +8,6 @@ import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.first
-import java.time.LocalDate
 
 class ArrangeUrgentTasks(
     private val taskRepository: TaskRepository,
@@ -33,7 +32,7 @@ class ArrangeUrgentTasks(
         tasks.mapIndexed { index, task ->
             task.copy(urgentPosition = index)
         }.toTypedArray().let { taskRepository.updateMany(*it) }
-        arrangeSubtasks(subtasks, subtaskRepository)
+        arrangeSubtasks(subtasks)
     }
 
     private fun areUrgent(tasks: List<Task>): Boolean {
@@ -41,12 +40,12 @@ class ArrangeUrgentTasks(
         return tasks.all { it.priority == Priority.URGENT }
     }
 
-    private suspend fun arrangeSubtasks(subtasks: List<Subtask>, repository: SubtaskRepository) {
+    private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {
         val positionsMap = mutableMapOf<Int, Int>()
         subtasks.map {
             positionsMap[it.taskId] =
                 if (positionsMap[it.taskId] == null) 0 else positionsMap[it.taskId]!! + 1
             it.copy(position = positionsMap[it.taskId]!!)
-        }.let { repository.updateMany(*it.toTypedArray()) }
+        }.let { subtaskRepository.updateMany(*it.toTypedArray()) }
     }
 }

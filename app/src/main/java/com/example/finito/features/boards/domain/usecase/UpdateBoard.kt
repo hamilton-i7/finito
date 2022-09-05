@@ -40,24 +40,20 @@ class UpdateBoard(
                     BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
                 }
                 // Delete refs not found in the old refs list
-                deleteRefs(oldRefs= this, newRefs = newRefs, boardLabelRepository)
+                deleteRefs(oldRefs= this, newRefs = newRefs)
                 // Create the new refs
-                createRefs(refs = newRefs, boardLabelRepository)
+                createRefs(refs = newRefs)
             }
         }
     }
 
-    private suspend fun createRefs(
-        refs: List<BoardLabelCrossRef>,
-        boardLabelRepository: BoardLabelRepository,
-    ) {
+    private suspend fun createRefs(refs: List<BoardLabelCrossRef>) {
         boardLabelRepository.create(*refs.toTypedArray())
     }
 
     private suspend fun deleteRefs(
         oldRefs: List<BoardLabelCrossRef>,
         newRefs: List<BoardLabelCrossRef>,
-        boardLabelRepository: BoardLabelRepository,
     ) {
         val refs = newRefs.groupBy { it }
         oldRefs.filter { refs[it] == null }.let {

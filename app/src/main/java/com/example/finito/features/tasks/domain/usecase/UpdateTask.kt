@@ -41,14 +41,12 @@ class UpdateTask(
                     startBoardId = it.task.boardId,
                     endBoardId = task.boardId,
                     taskToUpdate = task,
-                    repository = taskRepository,
                 )
             } else if (changedPosition(it.task, task)) {
                 arrangeSameBoard(
                     boardId = task.boardId,
                     from = it.task.boardPosition,
                     to = task.boardPosition,
-                    repository = taskRepository
                 )
             }
         } ?: throw ResourceException.NotFoundException
@@ -56,9 +54,9 @@ class UpdateTask(
             val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()
             with(setupSubtaskPositions(subtasks)) {
                 // Delete subtasks not found in the old subtasks list
-                deleteSubtasks(oldSubtasks, newSubtasks = this, subtaskRepository)
+                deleteSubtasks(oldSubtasks, newSubtasks = this)
                 // Create the new subtasks
-                createSubtasks(subtasks = this, subtaskRepository)
+                createSubtasks(subtasks = this)
 
                 filter { it.subtaskId != 0 }.let {
                     val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
@@ -90,37 +88,35 @@ class UpdateTask(
         boardId: Int,
         from: Int,
         to: Int,
-        repository: TaskRepository,
     ) {
-        val tasks = repository.findTasksByBoard(boardId)
+        val tasks = taskRepository.findTasksByBoard(boardId)
         val arrangedTasks = tasks.moveElement(from, to).mapIndexed { index, task ->
             task.copy(boardPosition = index)
         }.toTypedArray()
-        repository.updateMany(*arrangedTasks)
+        taskRepository.updateMany(*arrangedTasks)
     }
 
     private suspend fun arrangeDiffBoard(
         startBoardId: Int,
         endBoardId: Int,
         taskToUpdate: Task,
-        repository: TaskRepository
     ) {
-        val startBoardTasks = repository
+        val startBoardTasks = taskRepository
             .findTasksByBoard(startBoardId)
             .filter { it.taskId != taskToUpdate.taskId }
             .mapIndexed { index, task ->
                 task.copy(boardPosition = index)
             }.toTypedArray()
-        repository.updateMany(*startBoardTasks)
+        taskRepository.updateMany(*startBoardTasks)
 
-        val endBoardTasks = repository
+        val endBoardTasks = taskRepository
             .findTasksByBoard(endBoardId)
             .toMutableList()
             .also {  it.add(taskToUpdate) }
             .mapIndexed { index, task ->
                 task.copy(boardPosition = index)
             }.toTypedArray()
-        repository.updateMany(*endBoardTasks)
+        taskRepository.updateMany(*endBoardTasks)
     }
 
     private fun setupSubtaskPositions(subtasks: List<Subtask>): Array<Subtask> {
@@ -129,23 +125,19 @@ class UpdateTask(
         }.toTypedArray()
     }
 
-    private suspend fun createSubtasks(
-        subtasks: Array<out Subtask>,
-        repository: SubtaskRepository,
-    ) {
+    private suspend fun createSubtasks(subtasks: Array<out Subtask>) {
         subtasks.filter { it.subtaskId == 0 }.let {
-            repository.createMany(*it.toTypedArray())
+            subtaskRepository.createMany(*it.toTypedArray())
         }
     }
 
     private suspend fun deleteSubtasks(
         oldSubtasks: Array<out Subtask>,
         newSubtasks: Array<out Subtask>,
-        repository: SubtaskRepository
     ) {
         val ids = newSubtasks.groupBy { it.subtaskId }
         oldSubtasks.filter { ids[it.subtaskId] == null }.let {
-            repository.removeMany(*it.toTypedArray())
+            subtaskRepository.removeMany(*it.toTypedArray())
         }
     }
 

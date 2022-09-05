@@ -1,7 +1,7 @@
 package com.example.finito.features.tasks.data.dao
 
 import androidx.room.*
-import com.example.finito.core.Priority
+import com.example.finito.core.domain.Priority
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks

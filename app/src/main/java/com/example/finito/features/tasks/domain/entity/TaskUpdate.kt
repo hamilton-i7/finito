@@ -1,7 +1,7 @@
 package com.example.finito.features.tasks.domain.entity
 
 import androidx.room.ColumnInfo
-import com.example.finito.core.Priority
+import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import java.time.LocalDate
 import java.time.LocalTime

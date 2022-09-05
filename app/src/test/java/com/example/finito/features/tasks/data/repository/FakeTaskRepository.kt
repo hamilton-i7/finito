@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.data.repository
 
-import com.example.finito.core.Priority
+import com.example.finito.core.domain.Priority
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskUpdate

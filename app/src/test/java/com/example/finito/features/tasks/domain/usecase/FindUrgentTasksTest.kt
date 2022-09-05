@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.Priority
+import com.example.finito.core.domain.Priority
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board

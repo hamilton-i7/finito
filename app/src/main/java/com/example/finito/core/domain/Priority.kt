@@ -1,4 +1,4 @@
-package com.example.finito.core
+package com.example.finito.core.domain
 
 enum class Priority(val level: Int) {
     LOW(level = 1),

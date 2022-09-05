@@ -12,19 +12,23 @@ class BoardRepositoryImpl(
         return dao.create(board)
     }
 
-    override fun findAll(): Flow<List<BoardWithLabels>> {
+    override suspend fun findAll(): List<Board> {
         return dao.findAll()
+    }
+
+    override fun findActiveBoards(): Flow<List<BoardWithLabelsAndTasks>> {
+        return dao.findActiveBoards()
     }
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {
         return dao.findSimpleBoards()
     }
 
-    override fun findArchivedBoards(): Flow<List<BoardWithLabels>> {
+    override fun findArchivedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return dao.findArchivedBoards()
     }
 
-    override fun findDeletedBoards(): Flow<List<BoardWithLabels>> {
+    override fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return dao.findDeletedBoards()
     }
 

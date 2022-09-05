@@ -8,7 +8,7 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.Task
 
-data class BoardWithLabels(
+data class BoardWithLabelsAndTasks(
     @Embedded val board: Board,
     @Relation(
         parentColumn = "board_id",

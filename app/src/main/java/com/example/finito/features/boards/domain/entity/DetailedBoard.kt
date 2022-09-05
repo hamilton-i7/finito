@@ -4,7 +4,6 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import com.example.finito.features.tasks.domain.entity.DetailedTask
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 
 data class DetailedBoard(
     @Embedded val board: Board,

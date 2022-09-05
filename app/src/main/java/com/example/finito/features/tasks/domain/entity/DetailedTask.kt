@@ -8,7 +8,7 @@ data class DetailedTask(
     @Embedded val task: Task,
     @Relation(
         parentColumn = "task_id",
-        entityColumn = "task_id"
+        entityColumn = "task_id",
     )
     val subtasks: List<Subtask> = emptyList()
 )

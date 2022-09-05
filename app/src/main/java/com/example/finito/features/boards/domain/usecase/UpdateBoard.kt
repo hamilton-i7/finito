@@ -3,7 +3,7 @@ package com.example.finito.features.boards.domain.usecase
 import com.example.finito.core.util.ResourceException
 import com.example.finito.core.util.isValidId
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
-import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.repository.BoardLabelRepository
 import com.example.finito.features.boards.domain.repository.BoardRepository
 
@@ -17,8 +17,8 @@ class UpdateBoard(
         ResourceException.InvalidStateException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(boardWithLabels: BoardWithLabels) {
-        val (board, labels) = boardWithLabels
+    suspend operator fun invoke(boardWithLabelsAndTasks: BoardWithLabelsAndTasks) {
+        val (board, labels) = boardWithLabelsAndTasks
 
         if (!isValidId(board.boardId)) {
             throw ResourceException.NegativeIdException

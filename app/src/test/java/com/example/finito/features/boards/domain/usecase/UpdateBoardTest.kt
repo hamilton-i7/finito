@@ -5,7 +5,7 @@ import com.example.finito.features.boards.data.repository.FakeBoardLabelReposito
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
-import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -54,7 +54,7 @@ class UpdateBoardTest {
         dummyLabels.forEach { fakeLabelRepository.create(it) }
 
         val labelIds = fakeLabelRepository.findSimpleLabels().first().map { it.labelId }
-        val boardIds = fakeBoardRepository.boards.map { it.boardId }
+        val boardIds = fakeBoardRepository.findAll().map { it.boardId }
 
         boardIds.filter { it % 2 == 0 }.map {
             BoardLabelCrossRef(
@@ -68,16 +68,16 @@ class UpdateBoardTest {
     fun `Should throw NegativeIdException when ID is invalid`() {
         assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(boardId = 0)
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(boardId = 0)
                 )
                 updateBoard(board)
             }
         }
         assertThrows(ResourceException.NegativeIdException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(boardId = -2)
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(boardId = -2)
                 )
                 updateBoard(board)
             }
@@ -88,16 +88,16 @@ class UpdateBoardTest {
     fun `Should throw EmptyException when name is empty`() {
         assertThrows(ResourceException.EmptyException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(name = "")
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(name = "")
                 )
                 updateBoard(board)
             }
         }
         assertThrows(ResourceException.EmptyException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(name = "   ")
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(name = "   ")
                 )
                 updateBoard(board)
             }
@@ -108,8 +108,8 @@ class UpdateBoardTest {
     fun `Should throw InvalidStateException when board state is invalid`() {
         assertThrows(ResourceException.InvalidStateException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(
                         archived = true,
                         deleted = true
                     )
@@ -123,8 +123,8 @@ class UpdateBoardTest {
     fun `Should throw NotFoundException when no board is found`() {
         assertThrows(ResourceException.NotFoundException::class.java) {
             runTest {
-                val board = BoardWithLabels(
-                    board = fakeBoardRepository.findAll().first().random().board.copy(
+                val board = BoardWithLabelsAndTasks(
+                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(
                         boardId = 10_000
                     )
                 )
@@ -135,13 +135,13 @@ class UpdateBoardTest {
 
     @Test
     fun `Should update board when it's found and its state is valid`() = runTest {
-        val board = fakeBoardRepository.findAll().first().random().board
+        val board = fakeBoardRepository.findActiveBoards().first().random().board
         assertThat(
             fakeBoardRepository.findOne(board.boardId)?.board?.normalizedName
         ).startsWith("board")
 
         updateBoard(
-            BoardWithLabels(board = board.copy(name = "Updated board"))
+            BoardWithLabelsAndTasks(board = board.copy(name = "Updated board"))
         )
         assertThat(fakeBoardRepository.findOne(board.boardId)?.board?.name)
             .isEqualTo("Updated board")
@@ -149,7 +149,7 @@ class UpdateBoardTest {
 
     @Test
     fun `Should delete board-label refs when labels changed`() = runTest {
-        val boardWithLabels = fakeBoardRepository.findAll().first().first { it.labels.isNotEmpty() }
+        val boardWithLabels = fakeBoardRepository.findActiveBoards().first().first { it.labels.isNotEmpty() }
         val labelId = boardWithLabels.labels.random().labelId
 
         assertThat(
@@ -168,7 +168,7 @@ class UpdateBoardTest {
 
     @Test
     fun `Should create board-label refs when new labels were added`() = runTest {
-        val boardWithLabels = fakeBoardRepository.findAll().first().first { it.labels.isNotEmpty() }
+        val boardWithLabels = fakeBoardRepository.findActiveBoards().first().first { it.labels.isNotEmpty() }
         val labelIds = boardWithLabels.labels.groupBy { it.labelId }
         val oldRefsSize = fakeBoardLabelRepository.findAllByBoardId(
             boardWithLabels.board.boardId

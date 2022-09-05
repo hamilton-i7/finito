@@ -1,7 +1,7 @@
 package com.example.finito.features.boards.data.repository
 
 import com.example.finito.features.boards.domain.entity.Board
-import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
@@ -18,7 +18,7 @@ class FakeBoardRepository(
     private val labelRepository: FakeLabelRepository,
     private val boardLabelRepository: FakeBoardLabelRepository
 ) : BoardRepository {
-    val boards = mutableListOf<Board>()
+    private val boards = mutableListOf<Board>()
     private var boardId = 1
 
     override suspend fun create(board: Board): Long {
@@ -27,7 +27,11 @@ class FakeBoardRepository(
         return boardId.toLong()
     }
 
-    override fun findAll(): Flow<List<BoardWithLabels>> {
+    override suspend fun findAll(): List<Board> {
+        return boards.toList()
+    }
+
+    override fun findActiveBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
                 boards.filter { !it.deleted && !it.archived }.map { board ->
@@ -38,7 +42,7 @@ class FakeBoardRepository(
                             labels.add(label.toSimpleLabel())
                         }
                     }
-                    BoardWithLabels(board, labels)
+                    BoardWithLabelsAndTasks(board, labels)
                 }
             )
         }
@@ -55,7 +59,7 @@ class FakeBoardRepository(
         }
     }
 
-    override fun findArchivedBoards(): Flow<List<BoardWithLabels>> {
+    override fun findArchivedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
                 boards.filter { it.archived }.map { board ->
@@ -66,13 +70,13 @@ class FakeBoardRepository(
                             labels.add(label.toSimpleLabel())
                         }
                     }
-                    BoardWithLabels(board, labels)
+                    BoardWithLabelsAndTasks(board, labels)
                 }
             )
         }
     }
 
-    override fun findDeletedBoards(): Flow<List<BoardWithLabels>> {
+    override fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
                 boards.filter { it.deleted }.map { board ->
@@ -83,7 +87,7 @@ class FakeBoardRepository(
                             labels.add(label.toSimpleLabel())
                         }
                     }
-                    BoardWithLabels(board, labels)
+                    BoardWithLabelsAndTasks(board, labels)
                 }
             )
         }

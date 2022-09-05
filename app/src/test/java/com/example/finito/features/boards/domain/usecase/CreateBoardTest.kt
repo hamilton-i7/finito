@@ -4,7 +4,7 @@ import com.example.finito.core.util.ResourceException
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
-import com.example.finito.features.boards.domain.entity.BoardWithLabels
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -45,14 +45,14 @@ class CreateBoardTest {
 
     @Test
     fun `Should throw EmptyException when board name is empty`() {
-        val emptyNameBoard = BoardWithLabels(
+        val emptyNameBoard = BoardWithLabelsAndTasks(
             board = Board(name = "")
         )
         assertThrows(ResourceException.EmptyException::class.java) {
             runTest { createBoard(emptyNameBoard) }
         }
 
-        val blankNameBoard = BoardWithLabels(
+        val blankNameBoard = BoardWithLabelsAndTasks(
             board = Board(name = "     ")
         )
         assertThrows(ResourceException.EmptyException::class.java) {
@@ -62,7 +62,7 @@ class CreateBoardTest {
 
     @Test
     fun `Should throw InvalidStateException when board state is invalid`() {
-        val board = BoardWithLabels(
+        val board = BoardWithLabelsAndTasks(
             board = Board(
                 name = "Invalid Board",
                 archived = true,
@@ -76,31 +76,31 @@ class CreateBoardTest {
 
     @Test
     fun `Should insert new board into list when board state is valid`() = runTest {
-        val board = BoardWithLabels(
+        val board = BoardWithLabelsAndTasks(
             board = Board(name = "Board name")
         )
-        var boards = fakeBoardRepository.findAll().first()
+        var boards = fakeBoardRepository.findActiveBoards().first()
 
         assertThat(boards.size).isEqualTo(0)
         createBoard(board)
         createBoard(board)
 
-        boards = fakeBoardRepository.findAll().first()
+        boards = fakeBoardRepository.findActiveBoards().first()
         assertThat(boards.size).isEqualTo(2)
     }
 
     @Test
     fun `Should create board-label relations when asked`() = runTest {
-        var board = BoardWithLabels(
+        var board = BoardWithLabelsAndTasks(
             board = Board(name = "Board name"),
             labels = listOf(labels.random())
         )
         val boardWithLabelsId = createBoard(board)
 
-        board = BoardWithLabels(board = Board(name = "Board name"))
+        board = BoardWithLabelsAndTasks(board = Board(name = "Board name"))
         createBoard(board)
 
-        assertThat(fakeBoardRepository.findAll().first().size).isEqualTo(2)
+        assertThat(fakeBoardRepository.findActiveBoards().first().size).isEqualTo(2)
         assertThat(fakeBoardLabelRepository.findAllByBoardId(boardWithLabelsId)).isNotEmpty()
     }
 }

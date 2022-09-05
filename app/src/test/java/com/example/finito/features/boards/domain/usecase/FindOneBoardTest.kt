@@ -83,7 +83,7 @@ class FindOneBoardTest {
 
     @Test
     fun `Should return board when it is found`() = runTest {
-        val boardId = fakeBoardRepository.findAll().first().random().board.boardId
+        val boardId = fakeBoardRepository.findActiveBoards().first().random().board.boardId
         assertThat(findOneBoard(boardId)).isNotNull()
     }
 }

@@ -5,12 +5,12 @@ import java.time.LocalTime
 
 class TimeConverters {
     @TypeConverter
-    fun stringToTime(value: String): LocalTime {
-        return LocalTime.parse(value)
+    fun stringToTime(value: String?): LocalTime? {
+        return value?.let { LocalTime.parse(it) }
     }
 
     @TypeConverter
-    fun timeToString(time: LocalTime): String {
-        return time.toString()
+    fun timeToString(time: LocalTime?): String? {
+        return time?.toString()
     }
 }

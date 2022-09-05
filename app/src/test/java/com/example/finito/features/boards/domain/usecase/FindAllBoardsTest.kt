@@ -53,7 +53,7 @@ class FindAllBoardsTest {
         dummyLabels.forEach { fakeLabelRepository.create(it) }
 
         val labelIds = fakeLabelRepository.findSimpleLabels().first().map { it.labelId }
-        val boardIds = fakeBoardRepository.boards.map { it.boardId }
+        val boardIds = fakeBoardRepository.findAll().map { it.boardId }
 
         boardIds.filter { it % 2 == 0 }.map {
             BoardLabelCrossRef(

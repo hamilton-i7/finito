@@ -7,13 +7,15 @@ interface BoardRepository {
 
     suspend fun create(board: Board): Long
 
-    fun findAll(): Flow<List<BoardWithLabels>>
+    suspend fun findAll(): List<Board>
+
+    fun findActiveBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
     fun findSimpleBoards(): Flow<List<SimpleBoard>>
 
-    fun findArchivedBoards(): Flow<List<BoardWithLabels>>
+    fun findArchivedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
-    fun findDeletedBoards(): Flow<List<BoardWithLabels>>
+    fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
     suspend fun findOne(id: Int): DetailedBoard?
 

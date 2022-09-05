@@ -66,7 +66,7 @@ class DeleteBoardTest {
         val boardToDelete = dummyBoards.random()
         deleteBoard(boardToDelete)
 
-        val boards = fakeBoardRepository.findAll().first()
+        val boards = fakeBoardRepository.findActiveBoards().first()
         assertThat(boards.size).isLessThan(dummyBoards.size)
     }
 }

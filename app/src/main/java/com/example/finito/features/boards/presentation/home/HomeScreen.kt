@@ -2,10 +2,12 @@ package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,22 +49,27 @@ fun HomeScreen(
         bottomBar = {
             BottomBar(
                 fabDescription = R.string.add_board,
-                searchDescription = R.string.search_boards
+                searchDescription = R.string.search_boards,
+                onChangeLayoutClick = {
+                    homeViewModel.onEvent(HomeEvent.ChangeLayout)
+                },
+                gridLayout = homeViewModel.gridLayout
             )
         }
     ) { innerPadding ->
         HomeScreen(
             paddingValues = innerPadding,
-            labels = homeViewModel.state.labels,
-            labelFilters = homeViewModel.state.labelFilters,
+            gridLayout = homeViewModel.gridLayout,
+            labels = homeViewModel.labels,
+            labelFilters = homeViewModel.labelFilters,
             onLabelClick = {
                 homeViewModel.onEvent(HomeEvent.AddFilter(it))
             },
             onRemoveFiltersClick = {
                 homeViewModel.onEvent(HomeEvent.RemoveFilters)
             },
-            boards = homeViewModel.state.boards,
-            selectedSortingOption = homeViewModel.state.boardsOrder,
+            boards = homeViewModel.boards,
+            selectedSortingOption = homeViewModel.boardsOrder,
             onSortOptionClick = {
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))
             },
@@ -73,6 +80,7 @@ fun HomeScreen(
 @Composable
 private fun HomeScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
     onLabelClick: (labelId: Int) -> Unit = {},
@@ -93,50 +101,97 @@ private fun HomeScreen(
         horizontal = 16.dp
     )
     Surface(modifier = Modifier.padding(paddingValues)) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(count = BOARD_COLUMNS),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = contentPadding,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            if (labels.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.LABEL_FILTERS) {
+        if (gridLayout) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(count = BOARD_COLUMNS),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = contentPadding,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (labels.isNotEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.LABEL_FILTERS) {
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.filter_by_label),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LabelChips(
+                                labels,
+                                selectedLabels = labelFilters,
+                                onLabelClick = onLabelClick,
+                                onRemoveFiltersClick = onRemoveFiltersClick
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+                item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.SORTING_OPTIONS) {
                     Column {
                         Text(
-                            text = stringResource(id = R.string.filter_by_label),
+                            text = stringResource(id = R.string.sort_by),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        LabelChips(
-                            labels,
-                            selectedLabels = labelFilters,
-                            onLabelClick = onLabelClick,
-                            onRemoveFiltersClick = onRemoveFiltersClick
+                        SortingChips(
+                            options = sortingOptions,
+                            selectedOption = selectedSortingOption,
+                            onOptionClick = {
+                                onSortOptionClick(it as SortingOption.Common)
+                            }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
-            }
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.SORTING_OPTIONS) {
-                Column {
-                    Text(
-                        text = stringResource(id = R.string.sort_by),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    SortingChips(
-                        options = sortingOptions,
-                        selectedOption = selectedSortingOption,
-                        onOptionClick = {
-                            onSortOptionClick(it as SortingOption.Common)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
+                items(boards) {
+                    BoardCard(onClick = { onBoardClick(it.board.boardId) }, board = it)
                 }
             }
-            items(boards) {
-                BoardCard(onClick = { onBoardClick(it.board.boardId) }, board = it)
+        } else {
+            LazyColumn(
+                contentPadding = contentPadding,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (labels.isNotEmpty()) {
+                    item(contentType = ContentType.LABEL_FILTERS) {
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.filter_by_label),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LabelChips(
+                                labels,
+                                selectedLabels = labelFilters,
+                                onLabelClick = onLabelClick,
+                                onRemoveFiltersClick = onRemoveFiltersClick
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+                item(contentType = ContentType.SORTING_OPTIONS) {
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.sort_by),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        SortingChips(
+                            options = sortingOptions,
+                            selectedOption = selectedSortingOption,
+                            onOptionClick = {
+                                onSortOptionClick(it as SortingOption.Common)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                }
+                items(boards) {
+                    BoardCard(onClick = { onBoardClick(it.board.boardId) }, board = it)
+                }
             }
         }
     }

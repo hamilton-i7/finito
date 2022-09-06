@@ -11,6 +11,7 @@ import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
+import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -25,58 +26,66 @@ class HomeViewModel @Inject constructor(
     private val labelUseCases: LabelUseCases,
     private val preferences: SharedPreferences
 ) : ViewModel() {
+    
+    var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
+        private set
+    
+    var labelFilters by mutableStateOf<List<Int>>(emptyList())
+        private set
 
-    var state by mutableStateOf(
-        HomeState(
-            gridLayout = preferences.getBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, true),
-            boardsOrder = preferences.getString(
-                PreferencesModule.TAG.BOARDS_ORDER.name,
-                SortingOption.Common.NameAZ.name
-            )?.let {
-                when (it) {
-                    SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
-                    SortingOption.Common.Newest.name -> SortingOption.Common.Newest
-                    SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
-                    else -> SortingOption.Common.NameAZ
-                }
-            } ?: SortingOption.Common.NameAZ
-        )
+    var boards by mutableStateOf<List<BoardWithLabelsAndTasks>>(emptyList())
+        private set
+    
+    var boardsOrder by mutableStateOf(
+        preferences.getString(
+            PreferencesModule.TAG.BOARDS_ORDER.name,
+            SortingOption.Common.NameAZ.name
+        )?.let {
+            when (it) {
+                SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
+                SortingOption.Common.Newest.name -> SortingOption.Common.Newest
+                SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
+                else -> SortingOption.Common.NameAZ
+            }
+        } ?: SortingOption.Common.NameAZ
     ); private set
+    
+    var gridLayout by mutableStateOf(preferences.getBoolean(
+        PreferencesModule.TAG.GRID_LAYOUT.name,
+        true
+    )); private set
 
     private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
     private var fetchBoardsJob: Job? = null
 
     init {
         fetchLabels()
-        fetchBoards(state.boardsOrder)
+        fetchBoards(boardsOrder)
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.AddFilter -> {
-                val exists = state.labelFilters.contains(event.labelId)
-                state = if (exists) {
-                    state.copy(
-                        labelFilters = state.labelFilters.filter { it != event.labelId }
-                    )
+                val exists = labelFilters.contains(event.labelId)
+                labelFilters = if (exists) {
+                    labelFilters.filter { it != event.labelId }
                 } else {
-                    state.copy(
-                        labelFilters = state.labelFilters + listOf(event.labelId)
-                    )
+                    labelFilters + listOf(event.labelId)
                 }
-                fetchBoards(sortingOption = state.boardsOrder, filters = state.labelFilters)
+                fetchBoards(sortingOption = boardsOrder, filters = labelFilters)
             }
             HomeEvent.RemoveFilters -> {
-                state = state.copy(labelFilters = emptyList())
-                fetchBoards(sortingOption = state.boardsOrder, filters = emptyList())
+                labelFilters = emptyList()
+                fetchBoards(sortingOption = boardsOrder, filters = emptyList())
             }
             is HomeEvent.SortBoards -> {
-                if (event.sortingOption::class == state.boardsOrder::class) return
+                if (event.sortingOption::class == boardsOrder::class) return
 
                 with(preferences.edit()) {
                     putString(PreferencesModule.TAG.BOARDS_ORDER.name, event.sortingOption.name)
+                    apply()
                 }
-                fetchBoards(event.sortingOption, filters = state.labelFilters)
+                fetchBoards(event.sortingOption, filters = labelFilters)
             }
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
@@ -88,12 +97,12 @@ class HomeViewModel @Inject constructor(
 
     private fun fetchLabels() = viewModelScope.launch {
         labelUseCases.findSimpleLabels().onEach { labels ->
-            state = state.copy(labels = labels)
+            this@HomeViewModel.labels = labels
         }.launchIn(viewModelScope)
     }
 
     private fun fetchBoards(
-        sortingOption: SortingOption.Common = state.boardsOrder,
+        sortingOption: SortingOption.Common = boardsOrder,
         filters: List<Int> = emptyList(),
     ) = viewModelScope.launch {
 
@@ -102,10 +111,8 @@ class HomeViewModel @Inject constructor(
             boardOrder = sortingOption,
             labelIds = filters.toIntArray()
         ).onEach { boards ->
-            state = state.copy(
-                boards = boards,
-                boardsOrder = sortingOption
-            )
+            this@HomeViewModel.boards = boards
+            boardsOrder = sortingOption
         }.launchIn(viewModelScope)
     }
 
@@ -133,11 +140,10 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun changeLayout() {
-        state = state.copy(
-            gridLayout = !state.gridLayout
-        )
+        gridLayout = !gridLayout
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, state.gridLayout)
+            putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
+            apply()
         }
     }
 

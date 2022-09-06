@@ -1,6 +1,6 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.domain.util.SortingOptions
+import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import kotlinx.coroutines.flow.Flow
@@ -10,7 +10,7 @@ class FindArchivedBoards(
     private val repository: BoardRepository
 ) {
     operator fun invoke(
-        boardOrder: SortingOptions.Common = SortingOptions.Common.A_Z,
+        boardOrder: SortingOption.Common = SortingOption.Common.NameAZ,
         vararg labelIds: Int,
     ): Flow<List<BoardWithLabelsAndTasks>> {
         return repository.findArchivedBoards().map { boards ->
@@ -26,12 +26,12 @@ class FindArchivedBoards(
     }
 
     private fun sortBoards(
-        boardOrder: SortingOptions.Common,
+        boardOrder: SortingOption.Common,
         boards: List<BoardWithLabelsAndTasks>,
     ): List<BoardWithLabelsAndTasks> = when(boardOrder) {
-        SortingOptions.Common.A_Z -> boards.sortedBy { it.board.normalizedName }
-        SortingOptions.Common.Z_A -> boards.sortedByDescending { it.board.normalizedName }
-        SortingOptions.Common.Newest -> boards.sortedByDescending { it.board.createdAt }
-        SortingOptions.Common.Oldest -> boards.sortedBy { it.board.createdAt }
+        SortingOption.Common.NameAZ -> boards.sortedBy { it.board.normalizedName }
+        SortingOption.Common.NameZA -> boards.sortedByDescending { it.board.normalizedName }
+        SortingOption.Common.Newest -> boards.sortedByDescending { it.board.createdAt }
+        SortingOption.Common.Oldest -> boards.sortedBy { it.board.createdAt }
     }
 }

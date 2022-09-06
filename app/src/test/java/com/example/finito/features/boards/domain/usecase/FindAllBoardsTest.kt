@@ -1,6 +1,6 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.domain.util.SortingOptions
+import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
@@ -72,7 +72,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by name ascending when asked for A_Z sorting`() = runTest {
-        val sortedBoards = findAllBoards(SortingOptions.Common.A_Z).first()
+        val sortedBoards = findAllBoards(SortingOption.Common.NameAZ).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -83,7 +83,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by name descending when asked for Z_A`() = runTest {
-        val sortedBoards = findAllBoards(SortingOptions.Common.Z_A).first()
+        val sortedBoards = findAllBoards(SortingOption.Common.NameZA).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -94,7 +94,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by date ascending when asked for OLDEST`() = runTest {
-        val sortedBoards = findAllBoards(SortingOptions.Common.Oldest).first()
+        val sortedBoards = findAllBoards(SortingOption.Common.Oldest).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -104,7 +104,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by date descending when asked for NEWEST`() = runTest {
-        val sortedBoards = findAllBoards(SortingOptions.Common.Newest).first()
+        val sortedBoards = findAllBoards(SortingOption.Common.Newest).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {

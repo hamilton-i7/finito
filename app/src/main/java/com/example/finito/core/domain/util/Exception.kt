@@ -1,4 +1,4 @@
-package com.example.finito.core.util
+package com.example.finito.core.domain.util
 
 sealed class ResourceException(override val message: String?) : Exception(message) {
     object EmptyException : ResourceException(message = "Cannot be empty")

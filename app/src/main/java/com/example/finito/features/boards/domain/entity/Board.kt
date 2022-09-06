@@ -3,7 +3,7 @@ package com.example.finito.features.boards.domain.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.finito.core.util.normalize
+import com.example.finito.core.domain.util.normalize
 import java.time.LocalDateTime
 
 @Entity(tableName = "boards")

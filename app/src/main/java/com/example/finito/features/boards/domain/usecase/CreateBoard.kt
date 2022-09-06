@@ -1,6 +1,6 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.util.ResourceException
+import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.repository.BoardLabelRepository

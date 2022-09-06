@@ -1,6 +1,6 @@
 package com.example.finito.features.labels.domain.usecase
 
-import com.example.finito.core.util.ResourceException
+import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat

@@ -1,7 +1,7 @@
 package com.example.finito.features.boards.domain.entity
 
 import androidx.room.ColumnInfo
-import com.example.finito.core.util.normalize
+import com.example.finito.core.domain.util.normalize
 
 data class SimpleBoard(
     @ColumnInfo(name = "board_id") val boardId: Int,

@@ -3,7 +3,7 @@ package com.example.finito.features.tasks.domain.entity
 import androidx.room.*
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
-import com.example.finito.core.util.normalize
+import com.example.finito.core.domain.util.normalize
 import com.example.finito.features.boards.domain.entity.Board
 import java.time.LocalDate
 import java.time.LocalDateTime

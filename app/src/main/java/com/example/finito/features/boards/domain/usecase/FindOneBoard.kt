@@ -1,7 +1,7 @@
 package com.example.finito.features.boards.domain.usecase
 
-import com.example.finito.core.util.ResourceException
-import com.example.finito.core.util.isValidId
+import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import kotlin.jvm.Throws

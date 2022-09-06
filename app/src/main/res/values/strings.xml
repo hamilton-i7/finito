@@ -14,4 +14,13 @@
     <string name="create_new_label">Create new label</string>
     <string name="hide_boards">Hide boards</string>
     <string name="show_more">Show more</string>
+    <string name="remove_filters">Remove filters</string>
+    <string name="filter_by_label">Filter by labels</string>
+    <string name="sort_by">Sort by</string>
+    <string name="a_z">A_Z</string>
+    <string name="z_a">Z_A</string>
+    <string name="newest">Newest</string>
+    <string name="oldest">Oldest</string>
+    <string name="most_urgent">Most urgent</string>
+    <string name="least_urgent">Least urgent</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.finito.core.util
+package com.example.finito.core.domain.util
 
 fun <T>List<T>.moveElement(start: Int, end: Int): List<T> {
     val result = this.toMutableList()

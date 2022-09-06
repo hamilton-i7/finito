@@ -1,4 +1,4 @@
-package com.example.finito.core.util
+package com.example.finito.core.domain.util
 
 import java.text.Normalizer
 

@@ -1,7 +1,7 @@
 package com.example.finito.features.subtasks.domain.entity
 
 import androidx.room.*
-import com.example.finito.core.util.normalize
+import com.example.finito.core.domain.util.normalize
 import com.example.finito.features.tasks.domain.entity.Task
 import java.time.LocalDateTime
 

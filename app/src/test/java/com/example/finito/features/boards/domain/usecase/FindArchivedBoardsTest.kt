@@ -1,10 +1,10 @@
 package com.example.finito.features.boards.domain.usecase
 
+import com.example.finito.core.domain.util.SortingOptions
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
-import com.example.finito.features.boards.domain.util.BoardOrder
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -73,7 +73,7 @@ class FindArchivedBoardsTest {
 
     @Test
     fun `Should return boards sorted by name ascending when asked for A_Z sorting`() = runTest {
-        val sortedBoards = findArchivedBoards(BoardOrder.A_Z).first()
+        val sortedBoards = findArchivedBoards(SortingOptions.Common.A_Z).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(sortedBoards[i].board.normalizedName)
@@ -83,7 +83,7 @@ class FindArchivedBoardsTest {
 
     @Test
     fun `Should return boards sorted by name descending when asked for Z_A sorting`() = runTest {
-        val sortedBoards = findArchivedBoards(BoardOrder.Z_A).first()
+        val sortedBoards = findArchivedBoards(SortingOptions.Common.Z_A).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(sortedBoards[i].board.normalizedName)
@@ -93,7 +93,7 @@ class FindArchivedBoardsTest {
 
     @Test
     fun `Should return boards sorted by date ascending when asked for OLDEST`() = runTest {
-        val sortedBoards = findArchivedBoards(BoardOrder.OLDEST).first()
+        val sortedBoards = findArchivedBoards(SortingOptions.Common.Oldest).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(
@@ -104,7 +104,7 @@ class FindArchivedBoardsTest {
 
     @Test
     fun `Should return boards sorted by date descending when asked for NEWEST`() = runTest {
-        val sortedBoards = findArchivedBoards(BoardOrder.NEWEST).first()
+        val sortedBoards = findArchivedBoards(SortingOptions.Common.Newest).first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(

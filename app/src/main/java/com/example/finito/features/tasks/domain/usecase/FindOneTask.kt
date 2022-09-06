@@ -1,7 +1,7 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.util.ResourceException
-import com.example.finito.core.util.isValidId
+import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 

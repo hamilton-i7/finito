@@ -12,7 +12,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 @Composable
 fun App(finishActivity: () -> Unit) {
     val navController = rememberAnimatedNavController()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerState = rememberDrawerState(DrawerValue.Open)
 
     Drawer(
         drawerState = drawerState,

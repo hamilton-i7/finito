@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">Finito</string>
     <string name="empty_name_error">Name cannot be empty</string>
+    <string name="main">Main</string>
+    <string name="home">Home</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="urgent">Urgent</string>
+    <string name="boards">Boards</string>
+    <string name="labels">Labels</string>
+    <string name="archive">Archive</string>
+    <string name="trash">Trash</string>
+    <string name="create_new_board">Create new board</string>
+    <string name="create_new_label">Create new label</string>
+    <string name="hide_boards">Hide boards</string>
+    <string name="show_more">Show more</string>
 </resources>

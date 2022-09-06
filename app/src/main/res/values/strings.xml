@@ -23,4 +23,11 @@
     <string name="oldest">Oldest</string>
     <string name="most_urgent">Most urgent</string>
     <string name="least_urgent">Least urgent</string>
+    <string name="more_options">More options</string>
+    <string name="tasks_amount">Tasks: %1$d</string>
+    <string name="open_menu">Open menu</string>
+    <string name="grid_view">Grid view</string>
+    <string name="list_view">List view</string>
+    <string name="add_board">Add board</string>
+    <string name="search_boards">Search boards</string>
 </resources>

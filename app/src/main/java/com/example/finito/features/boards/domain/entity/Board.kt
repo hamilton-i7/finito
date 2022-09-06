@@ -12,8 +12,20 @@ data class Board(
     @ColumnInfo(name = "board_id") val boardId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
-    val archived: Boolean = false,
-    val deleted: Boolean = false,
-    @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+    @ColumnInfo(defaultValue = "0") val archived: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val deleted: Boolean = false,
+    @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+) {
+    companion object {
+        val dummyBoards = ('A'..'Z').mapIndexed { index, c ->
+            Board(
+                boardId = index + 1,
+                name = "Board $c",
+                archived = index % 2 == 0,
+                deleted = index % 7 == 0 && index % 2 != 0
+            )
+        }.shuffled()
+    }
+}
 

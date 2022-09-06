@@ -3,6 +3,7 @@ package com.example.finito.features.boards.domain.entity
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.example.finito.core.domain.util.takeRandom
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.tasks.domain.entity.CompletedTask
@@ -23,4 +24,14 @@ data class BoardWithLabelsAndTasks(
         entity = Task::class
     )
     val tasks: List<CompletedTask> = emptyList()
-)
+) {
+    companion object {
+        val dummyBoards = (0..20).map {
+            BoardWithLabelsAndTasks(
+                board = Board.dummyBoards[it],
+                labels = SimpleLabel.dummyLabels.takeRandom(),
+                tasks = CompletedTask.dummyTasks.takeRandom()
+            )
+        }
+    }
+}

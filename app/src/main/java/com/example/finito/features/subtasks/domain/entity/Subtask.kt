@@ -16,7 +16,10 @@ import java.time.LocalDateTime
         )
     ],
     indices = [
-        Index(value = ["task_id"])
+        Index(
+            name = "index_subtasks_task_id",
+            value = ["task_id"]
+        )
     ]
 )
 data class Subtask(
@@ -25,8 +28,9 @@ data class Subtask(
     @ColumnInfo(name = "task_id") val taskId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
-    val description: String? = null,
-    val completed: Boolean = false,
-    val position: Int = -1,
-    @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
+    @ColumnInfo(defaultValue = "NULL") val description: String? = null,
+    @ColumnInfo(defaultValue = "0") val completed: Boolean = false,
+    @ColumnInfo(defaultValue = "-1") val position: Int = -1,
+    @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 )

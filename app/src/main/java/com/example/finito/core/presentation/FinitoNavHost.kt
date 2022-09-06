@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
+import com.example.finito.features.boards.presentation.home.HomeScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.launch
@@ -23,7 +24,7 @@ fun FinitoNavHost(
        startDestination = Screen.Home.route
    ) {
        composable(route = Screen.Home.route) {
-           // TODO: Add Home screen composable
+           HomeScreen(navHostController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }
    }

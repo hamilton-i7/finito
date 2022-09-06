@@ -1,5 +1,6 @@
 package com.example.finito.features.labels.presentation.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 
@@ -23,7 +25,7 @@ fun LabelChips(
 ) {
     val labelIds = selectedLabels.groupBy { it }
 
-    LazyRow {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (selectedLabels.isNotEmpty()) {
             item {
                 SuggestionChip(
@@ -40,10 +42,11 @@ fun LabelChips(
             }
         }
         items(labels) { label ->
+            val selected = labelIds[label.labelId] != null
             FilterChip(
-                selected = labelIds[label.labelId] != null,
+                selected = selected,
                 onClick = { onLabelClick(label.labelId) },
-                leadingIcon = if (labelIds[label.labelId] != null) {
+                leadingIcon = if (selected) {
                     {
                         Icon(
                             imageVector = Icons.Outlined.Check,

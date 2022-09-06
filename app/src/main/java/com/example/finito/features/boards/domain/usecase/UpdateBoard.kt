@@ -35,10 +35,11 @@ class UpdateBoard(
 
         return boardRepository.update(board).also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {
-                if (isEmpty()) return@with
+                if (labels.isEmpty()) return@with
                 val newRefs = labels.map {
                     BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
                 }
+                if (this == newRefs) return@with
                 // Delete refs not found in the old refs list
                 deleteRefs(oldRefs= this, newRefs = newRefs)
                 // Create the new refs

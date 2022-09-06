@@ -12,7 +12,8 @@ data class Label(
     @ColumnInfo(name = "label_id") val labelId: Int = 0,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
-    @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
+    @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 
 fun Label.toSimpleLabel(): SimpleLabel {

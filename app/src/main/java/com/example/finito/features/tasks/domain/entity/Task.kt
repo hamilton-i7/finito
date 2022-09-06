@@ -20,7 +20,10 @@ import java.time.LocalTime
         )
     ],
     indices = [
-        Index(value = ["board_id"])
+        Index(
+            name = "index_tasks_board_id",
+            value = ["board_id"]
+        )
     ]
 )
 data class Task(
@@ -29,17 +32,18 @@ data class Task(
     @ColumnInfo(name = "board_id") val boardId: Int,
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
-    val description: String? = null,
-    val completed: Boolean = false,
-    val date: LocalDate? = null,
-    val time: LocalTime? = null,
-    val reminder: Reminder? = null,
-    val priority: Priority? = null,
-    @ColumnInfo(name = "board_position") val boardPosition: Int = -1,
-    @ColumnInfo(name = "today_position") val todayPosition: Int = -1,
-    @ColumnInfo(name = "tomorrow_position") val tomorrowPosition: Int = -1,
-    @ColumnInfo(name = "urgent_position") val urgentPosition: Int = -1,
-    @ColumnInfo(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
+    @ColumnInfo(defaultValue = "NULL") val description: String? = null,
+    @ColumnInfo(defaultValue = "0") val completed: Boolean = false,
+    @ColumnInfo(defaultValue = "NULL") val date: LocalDate? = null,
+    @ColumnInfo(defaultValue = "NULL") val time: LocalTime? = null,
+    @ColumnInfo(defaultValue = "NULL") val reminder: Reminder? = null,
+    @ColumnInfo(defaultValue = "NULL") val priority: Priority? = null,
+    @ColumnInfo(name = "board_position", defaultValue = "-1") val boardPosition: Int = -1,
+    @ColumnInfo(name = "today_position", defaultValue = "-1") val todayPosition: Int = -1,
+    @ColumnInfo(name = "tomorrow_position", defaultValue = "-1") val tomorrowPosition: Int = -1,
+    @ColumnInfo(name = "urgent_position", defaultValue = "-1") val urgentPosition: Int = -1,
+    @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 
 fun Task.toTaskUpdate(): TaskUpdate {

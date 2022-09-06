@@ -20,6 +20,8 @@ object PreferencesModule {
 
     enum class TAG {
         EXPAND_BOARDS,
-        EXPAND_LABELS
+        EXPAND_LABELS,
+        GRID_LAYOUT,
+        BOARDS_ORDER
     }
 }

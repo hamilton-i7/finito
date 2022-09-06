@@ -15,7 +15,7 @@ import com.example.finito.R
 fun BottomBar(
     @StringRes fabDescription: Int,
     @StringRes searchDescription: Int,
-    showGrid: Boolean = false,
+    gridLayout: Boolean = true,
     onSearchClick: () -> Unit = {},
     onChangeLayoutClick: () -> Unit = {}
 ) {
@@ -28,15 +28,15 @@ fun BottomBar(
                 )
             }
             IconButton(onClick = onChangeLayoutClick) {
-                if (showGrid) {
+                if (gridLayout) {
                     Icon(
-                        imageVector = Icons.Outlined.GridView,
-                        contentDescription = stringResource(id = R.string.grid_view)
+                            imageVector = Icons.Outlined.ViewStream,
+                    contentDescription = stringResource(id = R.string.list_view)
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Outlined.ViewStream,
-                        contentDescription = stringResource(id = R.string.list_view)
+                        imageVector = Icons.Outlined.GridView,
+                        contentDescription = stringResource(id = R.string.grid_view)
                     )
                 }
             }

@@ -5,6 +5,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
@@ -12,11 +13,27 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 @Composable
 fun App(finishActivity: () -> Unit) {
     val navController = rememberAnimatedNavController()
-    val drawerState = rememberDrawerState(DrawerValue.Open)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val drawerViewModel = hiltViewModel<DrawerViewModel>()
 
     Drawer(
         drawerState = drawerState,
-        isSelectedScreen = { false }
+        isSelectedScreen = {
+            drawerViewModel.currentRoute == it
+        },
+        boards = drawerViewModel.boards,
+        expandBoards = drawerViewModel.boardsExpanded,
+        onExpandBoardsChange = {
+            drawerViewModel.onEvent(DrawerEvent.ToggleBoardsExpanded)
+        },
+        labels = drawerViewModel.labels,
+        expandLabels = drawerViewModel.labelsExpanded,
+        onExpandLabelsChange = {
+            drawerViewModel.onEvent(DrawerEvent.ToggleLabelsExpanded)
+        },
+        onItemSelected = {
+            drawerViewModel.onEvent(DrawerEvent.ChangeRoute(it))
+        }
     ) {
         FinitoNavHost(navController, drawerState, finishActivity)
     }

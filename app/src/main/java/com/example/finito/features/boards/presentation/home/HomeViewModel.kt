@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesModule.TAG.BOARDS_ORDER.name,
-            SortingOption.Common.NameAZ.name
+            SortingOption.Common.Default.name
         )?.let {
             when (it) {
                 SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
@@ -59,7 +59,7 @@ class HomeViewModel @Inject constructor(
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
                 else -> SortingOption.Common.NameAZ
             }
-        } ?: SortingOption.Common.NameAZ
+        } ?: SortingOption.Common.Default
     ); private set
     
     var gridLayout by mutableStateOf(preferences.getBoolean(

@@ -9,6 +9,10 @@ sealed class SortingOption(@StringRes val label: Int) {
         object NameZA : Common(R.string.z_a, name = "Z_A")
         object Newest : Common(R.string.newest, name = "NEWEST")
         object Oldest : Common(R.string.oldest, name = "OLDEST")
+
+        companion object {
+            val Default = Newest
+        }
     }
 
     sealed class Priority(label: Int) : SortingOption(label) {

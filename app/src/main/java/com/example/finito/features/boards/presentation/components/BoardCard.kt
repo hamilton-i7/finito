@@ -32,12 +32,15 @@ fun BoardCard(
     val labelNames = board.labels.joinToString { it.name }
 
     Card(onClick) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(vertical = 16.dp)) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                PercentageIndicator(progress = completedTasks)
+                PercentageIndicator(
+                    progress = completedTasks,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
                 IconButton(onClick = onOptionsClick) {
                     Icon(
                         imageVector = Icons.Outlined.MoreVert,
@@ -47,25 +50,27 @@ fun BoardCard(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(id = R.string.tasks_amount, board.tasks.size),
-                color = MaterialTheme.colorScheme.outline
-            )
-            Text(
-                text = board.board.name,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = labelNames.ifEmpty { " " },
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.labelSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.tasks_amount, board.tasks.size),
+                    color = MaterialTheme.colorScheme.outline
+                )
+                Text(
+                    text = board.board.name,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = labelNames.ifEmpty { " " },
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

@@ -14,11 +14,12 @@ import kotlin.math.floor
 
 @Composable
 fun PercentageIndicator(
-    @FloatRange(from = 0.0, to = 1.0) progress: Float
+    @FloatRange(from = 0.0, to = 1.0) progress: Float,
+    modifier: Modifier = Modifier
 ) {
     val percentage = floor((progress * 100)).toInt().toString()
 
-    Box(contentAlignment = Alignment.Center) {
+    Box(contentAlignment = Alignment.Center, modifier = modifier) {
         CircularProgressIndicator(
             progress = progress,
             color = MaterialTheme.colorScheme.tertiary,

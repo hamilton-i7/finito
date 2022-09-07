@@ -67,7 +67,6 @@ class DrawerViewModel @Inject constructor(
     }
 
     private fun changeRoute(route: String) {
-        if (currentRoute == route) return
         currentRoute = route
     }
 

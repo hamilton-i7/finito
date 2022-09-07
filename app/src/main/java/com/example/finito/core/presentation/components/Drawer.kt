@@ -74,7 +74,7 @@ fun Drawer(
     onExpandBoardsChange: () -> Unit = {},
     expandLabels: Boolean = true,
     onExpandLabelsChange: () -> Unit = {},
-    onItemSelected: (String) -> Unit = {},
+    onItemSelected: (route: String) -> Unit,
     content: @Composable () -> Unit,
 ) {
     ModalNavigationDrawer(
@@ -106,7 +106,7 @@ private fun DrawerContent(
     onExpandBoardsChange: () -> Unit,
     expandLabels: Boolean,
     onExpandLabelsChange: () -> Unit,
-    onItemSelected: (String) -> Unit
+    onItemSelected: (route: String) -> Unit
 ) {
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(
@@ -151,7 +151,10 @@ private fun DrawerContent(
                         icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
                         label = { Text(text = board.name) },
                         selected = isSelectedScreen(board.boardId.toString()),
-                        onClick = { onItemSelected(board.boardId.toString()) },
+                        onClick = {
+                            val route = "${Screen.Board.prefix}/${board.boardId}"
+                            onItemSelected(route)
+                        },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -172,7 +175,10 @@ private fun DrawerContent(
                         icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
                         label = { Text(text = label.name) },
                         selected = isSelectedScreen(label.labelId.toString()),
-                        onClick = { onItemSelected(label.labelId.toString()) },
+                        onClick = {
+                            val route = "${Screen.Label.prefix}/${label.labelId}"
+                            onItemSelected(route)
+                        },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -268,6 +274,7 @@ private fun DrawerPreview() {
                 SimpleLabel(labelId = 1, name = "Label 2"),
                 SimpleLabel(labelId = 1, name = "Label 3"),
             ),
+            onItemSelected = {},
         ) {}
     }
 }

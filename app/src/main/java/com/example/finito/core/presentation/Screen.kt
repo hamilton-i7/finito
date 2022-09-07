@@ -6,6 +6,7 @@ import androidx.navigation.navArgument
 
 sealed class Screen(
     val route: String,
+    val prefix: String? = null,
     val arguments: List<NamedNavArgument> = emptyList(),
 ) {
     object Home : Screen(route = "home")
@@ -17,8 +18,15 @@ sealed class Screen(
     object Urgent : Screen(route = "urgent")
 
     object Board : Screen(
-        route = "$BOARD_ROUTE_PREFIX/{$BOARD_ROUTE_ARGUMENT}",
+        route = "board/{$BOARD_ROUTE_ARGUMENT}",
+        prefix = "board",
         arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
+    )
+
+    object Label : Screen(
+        route = "label/{$LABEL_ROUTE_ARGUMENT}",
+        prefix = "label",
+        arguments = listOf(navArgument(LABEL_ROUTE_ARGUMENT) { type = NavType.IntType })
     )
 
     object Archive : Screen(route = "archive")
@@ -26,7 +34,7 @@ sealed class Screen(
     object Trash : Screen(route = "trash")
 
     companion object {
-        const val BOARD_ROUTE_PREFIX = "board"
         const val BOARD_ROUTE_ARGUMENT = "boardId"
+        const val LABEL_ROUTE_ARGUMENT = "labelId"
     }
 }

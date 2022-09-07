@@ -31,8 +31,10 @@ fun App(finishActivity: () -> Unit) {
         onExpandLabelsChange = {
             drawerViewModel.onEvent(DrawerEvent.ToggleLabelsExpanded)
         },
-        onItemSelected = {
-            drawerViewModel.onEvent(DrawerEvent.ChangeRoute(it))
+        onItemSelected = onItemSelected@{ route ->
+            if (drawerViewModel.currentRoute == route) return@onItemSelected
+            drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
+            navController.navigate(route)
         }
     ) {
         FinitoNavHost(navController, drawerState, finishActivity)

@@ -2,7 +2,7 @@ package com.example.finito.core.domain.util
 
 import java.text.Normalizer
 
-private val REGEX_NORMALIZE = "[^\\p{ASCII}]".toRegex()
+private val REGEX_NORMALIZE = "\\p{InCombiningDiacriticalMarks}+".toRegex()
 
 fun CharSequence.normalize(): String {
     return Normalizer

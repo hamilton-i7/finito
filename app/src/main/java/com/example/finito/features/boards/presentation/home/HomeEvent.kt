@@ -19,4 +19,6 @@ sealed class HomeEvent {
     object ChangeLayout : HomeEvent()
 
     object RestoreBoard : HomeEvent()
+
+    data class ShowSearchBar(val show: Boolean) : HomeEvent()
 }

@@ -29,5 +29,6 @@
     <string name="grid_view">Grid view</string>
     <string name="list_view">List view</string>
     <string name="add_board">Add board</string>
-    <string name="search_boards">Search boards</string>
+    <string name="search_boards">Search boards…</string>
+    <string name="close_search_bar">Close search bar</string>
 </resources>

@@ -15,6 +15,7 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -35,7 +36,17 @@ class HomeViewModel @Inject constructor(
 
     var boards by mutableStateOf<List<BoardWithLabelsAndTasks>>(emptyList())
         private set
-    
+
+    private var fetchBoardsJob: Job? = null
+
+    var showSearchBar by mutableStateOf(false)
+        private set
+
+    var searchQuery by mutableStateOf("")
+        private set
+
+    private var searchJob: Job? = null
+
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesModule.TAG.BOARDS_ORDER.name,
@@ -56,7 +67,6 @@ class HomeViewModel @Inject constructor(
     )); private set
 
     private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
-    private var fetchBoardsJob: Job? = null
 
     init {
         fetchLabels()
@@ -91,10 +101,17 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
             is HomeEvent.SearchBoards -> {
-                fetchBoards()
+                searchQuery = event.query
+
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch {
+                    delay(SEARCH_DELAY_MILLIS)
+                    fetchBoards()
+                }
             }
             HomeEvent.ChangeLayout -> changeLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
+            is HomeEvent.ShowSearchBar -> showSearchBar(event.show)
         }
     }
 
@@ -109,6 +126,7 @@ class HomeViewModel @Inject constructor(
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
             boardOrder = boardsOrder,
+            searchQuery = searchQuery,
             labelIds = labelFilters.toIntArray()
         ).onEach { boards ->
             this@HomeViewModel.boards = boards
@@ -154,7 +172,19 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun showSearchBar(show: Boolean) {
+        if (show == showSearchBar) return
+        if (!show) {
+            searchQuery = ""
+        }
+        showSearchBar = show
+    }
+
     enum class DeactivateMode {
         ARCHIVE, DELETE
+    }
+
+    companion object {
+        private const val SEARCH_DELAY_MILLIS = 300L
     }
 }

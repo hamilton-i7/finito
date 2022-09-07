@@ -23,6 +23,7 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.HomeTopBar
+import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardCard
 import com.example.finito.features.boards.utils.BOARD_COLUMNS
@@ -32,7 +33,10 @@ import com.example.finito.features.labels.presentation.components.LabelChips
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun HomeScreen(
     navHostController: NavHostController,
@@ -40,25 +44,53 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val scope = rememberCoroutineScope()
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val keyboardVisible = WindowInsets.isImeVisible
 
     Scaffold(
         topBar = {
-            HomeTopBar(onMenuClick = {
-                scope.launch { drawerState.open() }
-            }, scrollBehavior = scrollBehavior)
+            if (homeViewModel.showSearchBar) {
+                SearchTopBar(
+                    query = homeViewModel.searchQuery,
+                    onQueryChange = {
+                        homeViewModel.onEvent(HomeEvent.SearchBoards(it))
+                    },
+                    onBackClick = {
+                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
+                    },
+                    scrollBehavior = searchTopBarScrollBehavior,
+                )
+            } else {
+                HomeTopBar(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    },
+                    scrollBehavior = homeTopBarScrollBehavior
+                )
+            }
         },
-        bottomBar = {
-            BottomBar(
-                fabDescription = R.string.add_board,
-                searchDescription = R.string.search_boards,
-                onChangeLayoutClick = {
-                    homeViewModel.onEvent(HomeEvent.ChangeLayout)
-                },
-                gridLayout = homeViewModel.gridLayout
-            )
-        },
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        bottomBar = if (!keyboardVisible) {
+            {
+                BottomBar(
+                    fabDescription = R.string.add_board,
+                    searchDescription = R.string.search_boards,
+                    onChangeLayoutClick = {
+                        homeViewModel.onEvent(HomeEvent.ChangeLayout)
+                    },
+                    gridLayout = homeViewModel.gridLayout,
+                    onSearchClick = {
+                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
+                    }
+                )
+            }
+        } else {{}},
+        modifier = Modifier.nestedScroll(
+            if (homeViewModel.showSearchBar)
+                searchTopBarScrollBehavior.nestedScrollConnection
+            else
+                homeTopBarScrollBehavior.nestedScrollConnection
+        )
     ) { innerPadding ->
         HomeScreen(
             paddingValues = innerPadding,

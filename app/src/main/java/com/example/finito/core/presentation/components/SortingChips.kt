@@ -1,5 +1,8 @@
 package com.example.finito.core.presentation.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -34,7 +37,10 @@ fun SortingChips(
                         )
                     }
                 } else null,
-                label = { Text(stringResource(id = option.label)) }
+                label = { Text(stringResource(id = option.label)) },
+                modifier = Modifier.animateContentSize(
+                    animationSpec = tween(durationMillis = 100)
+                )
             )
         }
     }

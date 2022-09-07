@@ -16,9 +16,9 @@ import org.junit.Test
 import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
-class FindAllBoardsTest {
+class FindActiveBoardsTest {
 
-    private lateinit var findAllBoards: FindAllBoards
+    private lateinit var findActiveBoards: FindActiveBoards
 
     private lateinit var fakeBoardRepository: FakeBoardRepository
     private lateinit var fakeBoardLabelRepository: FakeBoardLabelRepository
@@ -29,7 +29,7 @@ class FindAllBoardsTest {
         fakeBoardLabelRepository = FakeBoardLabelRepository()
         fakeLabelRepository = FakeLabelRepository()
         fakeBoardRepository = FakeBoardRepository(fakeLabelRepository, fakeBoardLabelRepository)
-        findAllBoards = FindAllBoards(fakeBoardRepository)
+        findActiveBoards = FindActiveBoards(fakeBoardRepository)
 
         val dummyBoards = mutableListOf<Board>()
         val dummyLabels = listOf(
@@ -65,14 +65,14 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return active boards only when asked`() = runTest {
-        val boards = findAllBoards().first()
+        val boards = findActiveBoards().first()
         assertThat(boards).isNotEmpty()
         assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
     }
 
     @Test
     fun `Should return boards sorted by name ascending when asked for A_Z sorting`() = runTest {
-        val sortedBoards = findAllBoards(SortingOption.Common.NameAZ).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.NameAZ).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -83,7 +83,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by name descending when asked for Z_A`() = runTest {
-        val sortedBoards = findAllBoards(SortingOption.Common.NameZA).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.NameZA).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -94,7 +94,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by date ascending when asked for OLDEST`() = runTest {
-        val sortedBoards = findAllBoards(SortingOption.Common.Oldest).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.Oldest).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -104,7 +104,7 @@ class FindAllBoardsTest {
 
     @Test
     fun `Should return boards sorted by date descending when asked for NEWEST`() = runTest {
-        val sortedBoards = findAllBoards(SortingOption.Common.Newest).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.Newest).first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -117,15 +117,15 @@ class FindAllBoardsTest {
         val labelIds = fakeLabelRepository.findSimpleLabels().first().map {
             it.labelId
         }.toIntArray()
-        val boards = findAllBoards().first()
-        val filteredBoards = findAllBoards(labelIds = labelIds).first()
+        val boards = findActiveBoards().first()
+        val filteredBoards = findActiveBoards(labelIds = labelIds).first()
 
         assertThat(boards).isNotEmpty()
         assertThat(filteredBoards).isNotEmpty()
         assertThat(boards.size).isGreaterThan(filteredBoards.size)
         assertThat(filteredBoards.any { it.board.archived && it.board.deleted }).isFalse()
 
-        val filteredBoards2 = findAllBoards(labelIds = labelIds.take(1).toIntArray()).first()
+        val filteredBoards2 = findActiveBoards(labelIds = labelIds.take(1).toIntArray()).first()
         assertThat(filteredBoards2).isNotEmpty()
         assertThat(boards.size).isGreaterThan(filteredBoards2.size)
         assertThat(filteredBoards.size).isGreaterThan(filteredBoards2.size)

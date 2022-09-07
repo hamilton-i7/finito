@@ -36,7 +36,7 @@ object BoardModule {
     ): BoardUseCases {
         return BoardUseCases(
             createBoard = CreateBoard(boardRepository, boardLabelRepository),
-            findAllBoards = FindAllBoards(boardRepository),
+            findActiveBoards = FindActiveBoards(boardRepository),
             findArchivedBoards = FindArchivedBoards(boardRepository),
             findDeletedBoards = FindDeletedBoards(boardRepository),
             findSimpleBoards = FindSimpleBoards(boardRepository),

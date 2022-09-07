@@ -149,7 +149,9 @@ class UpdateBoardTest {
 
     @Test
     fun `Should delete board-label refs when labels changed`() = runTest {
-        val boardWithLabels = fakeBoardRepository.findActiveBoards().first().first { it.labels.isNotEmpty() }
+        val boardWithLabels = fakeBoardRepository.findActiveBoards().first().first {
+            it.labels.isNotEmpty()
+        }
         val labelId = boardWithLabels.labels.random().labelId
 
         assertThat(

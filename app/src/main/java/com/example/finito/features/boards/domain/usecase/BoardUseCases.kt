@@ -2,7 +2,7 @@ package com.example.finito.features.boards.domain.usecase
 
 data class BoardUseCases(
     val createBoard: CreateBoard,
-    val findAllBoards: FindAllBoards,
+    val findActiveBoards: FindActiveBoards,
     val findArchivedBoards: FindArchivedBoards,
     val findDeletedBoards: FindDeletedBoards,
     val findSimpleBoards: FindSimpleBoards,

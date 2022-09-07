@@ -35,7 +35,6 @@ class UpdateBoard(
 
         return boardRepository.update(board).also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {
-                if (labels.isEmpty()) return@with
                 val newRefs = labels.map {
                     BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
                 }
@@ -43,7 +42,9 @@ class UpdateBoard(
                 // Delete refs not found in the old refs list
                 deleteRefs(oldRefs= this, newRefs = newRefs)
                 // Create the new refs
-                createRefs(refs = newRefs)
+                if (labels.isNotEmpty()) {
+                    createRefs(refs = newRefs)
+                }
             }
         }
     }

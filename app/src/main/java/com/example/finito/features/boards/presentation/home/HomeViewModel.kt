@@ -60,7 +60,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         fetchLabels()
-        fetchBoards(boardsOrder)
+        fetchBoards()
     }
 
     fun onEvent(event: HomeEvent) {
@@ -72,24 +72,27 @@ class HomeViewModel @Inject constructor(
                 } else {
                     labelFilters + listOf(event.labelId)
                 }
-                fetchBoards(sortingOption = boardsOrder, filters = labelFilters)
+                fetchBoards()
             }
             HomeEvent.RemoveFilters -> {
                 labelFilters = emptyList()
-                fetchBoards(sortingOption = boardsOrder, filters = emptyList())
+                fetchBoards()
             }
             is HomeEvent.SortBoards -> {
                 if (event.sortingOption::class == boardsOrder::class) return
 
+                boardsOrder = event.sortingOption
                 with(preferences.edit()) {
                     putString(PreferencesModule.TAG.BOARDS_ORDER.name, event.sortingOption.name)
                     apply()
                 }
-                fetchBoards(event.sortingOption, filters = labelFilters)
+                fetchBoards()
             }
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
-            is HomeEvent.SearchBoards -> TODO()
+            is HomeEvent.SearchBoards -> {
+                fetchBoards()
+            }
             HomeEvent.ChangeLayout -> changeLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
         }
@@ -101,18 +104,15 @@ class HomeViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun fetchBoards(
-        sortingOption: SortingOption.Common = boardsOrder,
-        filters: List<Int> = emptyList(),
-    ) = viewModelScope.launch {
+    private fun fetchBoards() = viewModelScope.launch {
 
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
-            boardOrder = sortingOption,
-            labelIds = filters.toIntArray()
+            boardOrder = boardsOrder,
+            labelIds = labelFilters.toIntArray()
         ).onEach { boards ->
             this@HomeViewModel.boards = boards
-            boardsOrder = sortingOption
+            boardsOrder = boardsOrder
         }.launchIn(viewModelScope)
     }
 

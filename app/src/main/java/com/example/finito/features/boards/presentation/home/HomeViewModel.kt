@@ -109,7 +109,7 @@ class HomeViewModel @Inject constructor(
                     fetchBoards()
                 }
             }
-            HomeEvent.ChangeLayout -> changeLayout()
+            HomeEvent.ToggleLayout -> toggleLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
             is HomeEvent.ShowSearchBar -> {
                 showSearchBar(event.show)
@@ -159,7 +159,7 @@ class HomeViewModel @Inject constructor(
         } catch (e: ResourceException.NotFoundException) {}
     }
 
-    private fun changeLayout() {
+    private fun toggleLayout() {
         gridLayout = !gridLayout
         with(preferences.edit()) {
             putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)

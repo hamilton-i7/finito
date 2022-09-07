@@ -76,7 +76,7 @@ fun HomeScreen(
                     fabDescription = R.string.add_board,
                     searchDescription = R.string.search_boards,
                     onChangeLayoutClick = {
-                        homeViewModel.onEvent(HomeEvent.ChangeLayout)
+                        homeViewModel.onEvent(HomeEvent.ToggleLayout)
                     },
                     gridLayout = homeViewModel.gridLayout,
                     onSearchClick = {

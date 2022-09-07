@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
+import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.home.HomeScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -25,6 +26,11 @@ fun FinitoNavHost(
    ) {
        composable(route = Screen.Home.route) {
            HomeScreen(navHostController = navHostController, drawerState = drawerState)
+           HandleBackPress(drawerState, onBackPress =  finishActivity)
+       }
+
+       composable(route = Screen.Archive.route) {
+           ArchiveScreen(navHostController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }
    }

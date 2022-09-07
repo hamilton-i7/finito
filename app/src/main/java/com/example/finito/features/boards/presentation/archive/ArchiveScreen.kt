@@ -1,4 +1,4 @@
-package com.example.finito.features.boards.presentation.home
+package com.example.finito.features.boards.presentation.archive
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
@@ -14,8 +14,8 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.bars.BottomBar
-import com.example.finito.core.presentation.components.bars.HomeTopBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.components.bars.SmallTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardsGrid
 import com.example.finito.features.boards.presentation.components.BoardsList
@@ -28,35 +28,36 @@ import kotlinx.coroutines.launch
     ExperimentalLayoutApi::class
 )
 @Composable
-fun HomeScreen(
+fun ArchiveScreen(
     navHostController: NavHostController,
     drawerState: DrawerState,
-    homeViewModel: HomeViewModel = hiltViewModel(),
+    archiveViewModel: ArchiveViewModel = hiltViewModel(),
 ) {
     val scope = rememberCoroutineScope()
-    val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val simpleTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val keyboardVisible = WindowInsets.isImeVisible
 
     Scaffold(
         topBar = {
-            if (homeViewModel.showSearchBar) {
+            if (archiveViewModel.showSearchBar) {
                 SearchTopBar(
-                    query = homeViewModel.searchQuery,
+                    query = archiveViewModel.searchQuery,
                     onQueryChange = {
-                        homeViewModel.onEvent(HomeEvent.SearchBoards(it))
+                        archiveViewModel.onEvent(ArchiveEvent.SearchBoards(it))
                     },
                     onBackClick = {
-                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
+                        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
                     },
                     scrollBehavior = searchTopBarScrollBehavior,
                 )
             } else {
-                HomeTopBar(
+                SmallTopBar(
                     onMenuClick = {
                         scope.launch { drawerState.open() }
                     },
-                    scrollBehavior = homeTopBarScrollBehavior
+                    title = R.string.archive,
+                    scrollBehavior = simpleTopBarScrollBehavior
                 )
             }
         },
@@ -66,47 +67,44 @@ fun HomeScreen(
                     fabDescription = R.string.add_board,
                     searchDescription = R.string.search_boards,
                     onChangeLayoutClick = {
-                        homeViewModel.onEvent(HomeEvent.ToggleLayout)
+                        archiveViewModel.onEvent(ArchiveEvent.ToggleLayout)
                     },
-                    gridLayout = homeViewModel.gridLayout,
+                    gridLayout = archiveViewModel.gridLayout,
                     onSearchClick = {
-                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
-                    },
-                    onFabClick = {
-                        // TODO: Add create board functionality
+                        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = true))
                     }
                 )
             }
         } else {{}},
         modifier = Modifier.nestedScroll(
-            if (homeViewModel.showSearchBar)
+            if (archiveViewModel.showSearchBar)
                 searchTopBarScrollBehavior.nestedScrollConnection
             else
-                homeTopBarScrollBehavior.nestedScrollConnection
+                simpleTopBarScrollBehavior.nestedScrollConnection
         )
     ) { innerPadding ->
-        HomeScreen(
+        ArchiveScreen(
             paddingValues = innerPadding,
-            gridLayout = homeViewModel.gridLayout,
-            labels = homeViewModel.labels,
-            labelFilters = homeViewModel.labelFilters,
+            gridLayout = archiveViewModel.gridLayout,
+            labels = archiveViewModel.labels,
+            labelFilters = archiveViewModel.labelFilters,
             onLabelClick = {
-                homeViewModel.onEvent(HomeEvent.AddFilter(it))
+                archiveViewModel.onEvent(ArchiveEvent.AddFilter(it))
             },
             onRemoveFiltersClick = {
-                homeViewModel.onEvent(HomeEvent.RemoveFilters)
+                archiveViewModel.onEvent(ArchiveEvent.RemoveFilters)
             },
-            boards = homeViewModel.boards,
-            selectedSortingOption = homeViewModel.boardsOrder,
+            boards = archiveViewModel.boards,
+            selectedSortingOption = archiveViewModel.boardsOrder,
             onSortOptionClick = {
-                homeViewModel.onEvent(HomeEvent.SortBoards(it))
+                archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))
             },
         )
     }
 }
 
 @Composable
-private fun HomeScreen(
+private fun ArchiveScreen(
     paddingValues: PaddingValues = PaddingValues(),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
@@ -161,10 +159,10 @@ private fun HomeScreen(
 
 @Preview(showBackground = true)
 @Composable
-private fun HomeScreenPreview() {
+private fun ArchiveScreenPreview() {
     FinitoTheme {
         Surface {
-            HomeScreen(
+            ArchiveScreen(
                 labels = SimpleLabel.dummyLabels,
                 boards = BoardWithLabelsAndTasks.dummyBoards,
                 selectedSortingOption = SortingOption.Common.Newest
@@ -178,10 +176,10 @@ private fun HomeScreenPreview() {
     uiMode = UI_MODE_NIGHT_YES
 )
 @Composable
-private fun HomeScreenPreviewDark() {
+private fun ArchiveScreenPreviewDark() {
     FinitoTheme {
         Surface {
-            HomeScreen(
+            ArchiveScreen(
                 labels = SimpleLabel.dummyLabels,
                 boards = BoardWithLabelsAndTasks.dummyBoards,
                 selectedSortingOption = SortingOption.Common.Newest

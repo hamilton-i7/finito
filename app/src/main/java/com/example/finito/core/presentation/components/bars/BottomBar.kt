@@ -17,7 +17,8 @@ fun BottomBar(
     @StringRes searchDescription: Int,
     gridLayout: Boolean = true,
     onSearchClick: () -> Unit = {},
-    onChangeLayoutClick: () -> Unit = {}
+    onChangeLayoutClick: () -> Unit = {},
+    onFabClick: (() -> Unit)? = null
 ) {
     BottomAppBar(
         actions = {
@@ -41,17 +42,19 @@ fun BottomBar(
                 }
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /*TODO*/ },
-                containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = stringResource(id = fabDescription)
-                )
+        floatingActionButton = if (onFabClick != null) {
+            {
+                FloatingActionButton(
+                    onClick = onFabClick,
+                    containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Add,
+                        contentDescription = stringResource(id = fabDescription)
+                    )
+                }
             }
-        }
+        } else null
     )
 }

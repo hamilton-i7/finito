@@ -5,14 +5,17 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
     val navController = rememberAnimatedNavController()
+    val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
 
@@ -34,7 +37,11 @@ fun App(finishActivity: () -> Unit) {
         onItemSelected = onItemSelected@{ route ->
             if (drawerViewModel.currentRoute == route) return@onItemSelected
             drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
-            navController.navigate(route)
+
+            scope.launch {
+                drawerState.close()
+                navController.navigate(route)
+            }
         }
     ) {
         FinitoNavHost(navController, drawerState, finishActivity)

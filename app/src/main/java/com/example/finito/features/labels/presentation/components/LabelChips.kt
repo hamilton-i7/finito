@@ -1,5 +1,6 @@
 package com.example.finito.features.labels.presentation.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,16 +27,20 @@ fun LabelChips(
     val labelIds = selectedLabels.groupBy { it }
 
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (selectedLabels.isNotEmpty()) {
-            item {
+        item {
+            AnimatedVisibility(
+                visible = selectedLabels.isNotEmpty(),
+                enter = slideInHorizontally() + expandHorizontally(),
+                exit = slideOutHorizontally() + shrinkHorizontally()
+            ) {
                 SuggestionChip(
                     onClick = onRemoveFiltersClick,
                     icon = {
-                       Icon(
-                           imageVector = Icons.Outlined.Close,
-                           contentDescription = null,
-                           modifier = Modifier.size(SuggestionChipDefaults.IconSize)
-                       )
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(SuggestionChipDefaults.IconSize)
+                        )
                     },
                     label = { Text(text = stringResource(id = R.string.remove_filters)) }
                 )

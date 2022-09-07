@@ -14,6 +14,7 @@ data class Board(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(defaultValue = "0") val archived: Boolean = false,
     @ColumnInfo(defaultValue = "0") val deleted: Boolean = false,
+    @ColumnInfo(name = "trash_position", defaultValue = "-1") val trashPosition: Int = -1,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {

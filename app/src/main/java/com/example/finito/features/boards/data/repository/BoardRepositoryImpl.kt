@@ -40,7 +40,7 @@ class BoardRepositoryImpl(
         return dao.update(board)
     }
 
-    override suspend fun remove(board: Board) {
-        return dao.remove(board)
+    override suspend fun remove(vararg boards: Board) {
+        return dao.remove(*boards)
     }
 }

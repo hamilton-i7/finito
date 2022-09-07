@@ -40,5 +40,5 @@ interface BoardDao {
     suspend fun update(board: Board)
 
     @Delete
-    suspend fun remove(board: Board)
+    suspend fun remove(vararg boards: Board)
 }

@@ -31,4 +31,15 @@
     <string name="add_board">Add board</string>
     <string name="search_boards">Search boards…</string>
     <string name="close_search_bar">Close search bar</string>
+    <string name="empty_trash">Empty trash</string>
+    <string name="restore">Restore</string>
+    <string name="delete_forever">Delete forever</string>
+    <string name="unarchive">Unarchive</string>
+    <string name="delete">Delete</string>
+    <string name="edit_board">Edit board</string>
+    <string name="archive_board">Archive board</string>
+    <string name="delete_board">Delete board</string>
+    <string name="delete_completed_tasks">Delete completed tasks</string>
+    <string name="rename_label">Rename label</string>
+    <string name="delete_label">Delete label</string>
 </resources>

@@ -12,11 +12,15 @@ class DeleteBoard(
         ResourceException.NegativeIdException::class,
         ResourceException.NotFoundException::class
     )
-    suspend operator fun invoke(board: Board) {
-        if (!isValidId(board.boardId)) {
+    suspend operator fun invoke(vararg boards: Board) {
+        if (boards.any { !isValidId(it.boardId) }) {
             throw ResourceException.NegativeIdException
         }
-        repository.findOne(board.boardId) ?: throw ResourceException.NotFoundException
-        return repository.remove(board)
+
+        with(repository.findAll()) {
+            val idsMap = groupBy { it.boardId }
+            if (boards.any { idsMap[it.boardId] == null }) throw ResourceException.NotFoundException
+            return repository.remove(*boards)
+        }
     }
 }

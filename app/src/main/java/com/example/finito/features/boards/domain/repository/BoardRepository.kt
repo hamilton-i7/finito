@@ -21,5 +21,5 @@ interface BoardRepository {
 
     suspend fun update(board: Board)
 
-    suspend fun remove(board: Board)
+    suspend fun remove(vararg boards: Board)
 }

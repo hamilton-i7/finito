@@ -20,15 +20,15 @@ import com.example.finito.features.labels.presentation.components.LabelChips
 @Composable
 fun BoardsList(
     contentPadding: PaddingValues,
-    labels: List<SimpleLabel>,
-    labelFilters: List<Int>,
-    onLabelClick: (labelId: Int) -> Unit,
-    onRemoveFiltersClick: () -> Unit,
-    sortingOptions: List<SortingOption.Common>,
-    selectedSortingOption: SortingOption.Common,
-    onSortOptionClick: (option: SortingOption.Common) -> Unit,
+    labels: List<SimpleLabel> = emptyList(),
+    labelFilters: List<Int> = emptyList(),
+    onLabelClick: (labelId: Int) -> Unit = {},
+    onRemoveFiltersClick: () -> Unit = {},
+    sortingOptions: List<SortingOption.Common> = emptyList(),
+    selectedSortingOption: SortingOption.Common = SortingOption.Common.Newest,
+    onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     boards: List<BoardWithLabelsAndTasks>,
-    onBoardClick: (boardId: Int) -> Unit,
+    onBoardClick: (boardId: Int) -> Unit = {},
 ) {
     LazyColumn(
         contentPadding = contentPadding,
@@ -53,21 +53,23 @@ fun BoardsList(
                 }
             }
         }
-        item(contentType = ContentType.SORTING_OPTIONS) {
-            Column {
-                Text(
-                    text = stringResource(id = R.string.sort_by),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                SortingChips(
-                    options = sortingOptions,
-                    selectedOption = selectedSortingOption,
-                    onOptionClick = {
-                        onSortOptionClick(it as SortingOption.Common)
-                    }
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+        if (sortingOptions.isNotEmpty()) {
+            item(contentType = ContentType.SORTING_OPTIONS) {
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.sort_by),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    SortingChips(
+                        options = sortingOptions,
+                        selectedOption = selectedSortingOption,
+                        onOptionClick = {
+                            onSortOptionClick(it as SortingOption.Common)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
         }
         items(boards) {

@@ -20,7 +20,8 @@ object AppModule {
         return Room.databaseBuilder(
             context,
             FinitoDatabase::class.java,
-            FinitoDatabase.DATABASE_NAME
-        ).createFromAsset("database/kanban.db").build()
+            FinitoDatabase.DATABASE_NAME)
+            .fallbackToDestructiveMigration()
+            .createFromAsset("database/kanban.db").build()
     }
 }

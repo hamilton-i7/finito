@@ -67,12 +67,13 @@ class FindDeletedBoardsTest {
     }
 
     @Test
-    fun `Should return deleted boards sorted by name ascending when asked`() = runTest {
+    fun `Should return deleted boards sorted by trash position`() = runTest {
         val sortedBoards = findDeletedBoards().first()
 
         for (i in 0..sortedBoards.size - 2) {
-            assertThat(sortedBoards[i].board.normalizedName)
-                .isLessThan(sortedBoards[i+1].board.normalizedName)
+            assertThat(
+                sortedBoards[i].board.trashPosition == sortedBoards[i+1].board.trashPosition + 1
+            ).isTrue()
         }
     }
 }

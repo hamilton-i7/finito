@@ -4,9 +4,11 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -37,7 +39,13 @@ fun ArchiveScreen(
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val keyboardVisible = WindowInsets.isImeVisible
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val unarchivedMessage = stringResource(id = R.string.board_moved_out_of_archive)
+    val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
+    val snackbarAction = stringResource(id = R.string.undo)
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             if (archiveViewModel.showSearchBar) {
                 SearchTopBar(
@@ -114,9 +122,32 @@ fun ArchiveScreen(
                 when (option) {
                     ArchivedBoardMenuOption.Unarchive -> {
                         archiveViewModel.onEvent(ArchiveEvent.UnarchiveBoard(board))
+                        // Dismiss current Snackbar to avoid having multiple instances
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = unarchivedMessage,
+                                actionLabel = snackbarAction
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
+                            }
+                        }
                     }
                     ArchivedBoardMenuOption.Delete -> {
                         archiveViewModel.onEvent(ArchiveEvent.DeleteBoard(board))
+                        // Dismiss current Snackbar to avoid having multiple instances
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = deletedMessage,
+                                actionLabel = snackbarAction,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
+                            }
+                        }
                     }
                 }
             }

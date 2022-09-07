@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.finito.R
 import com.example.finito.core.domain.util.DeletedBoardMenuOption
 import com.example.finito.core.domain.util.TrashScreenMenuOption
 import com.example.finito.core.presentation.components.bars.TrashTopBar
@@ -27,9 +30,14 @@ fun TrashScreen(
     trashViewModel: TrashViewModel = hiltViewModel(),
 ) {
     val scope = rememberCoroutineScope()
-    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val restoredMessage = stringResource(id = R.string.board_was_restored)
+    val snackbarAction = stringResource(id = R.string.undo)
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TrashTopBar(
                 onMenuClick = {
@@ -75,6 +83,18 @@ fun TrashScreen(
                 when (option) {
                     DeletedBoardMenuOption.Restore -> {
                         trashViewModel.onEvent(TrashEvent.RestoreBoard(board))
+
+                        // Dismiss current Snackbar to avoid having multiple instances
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = restoredMessage,
+                                actionLabel = snackbarAction
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                trashViewModel.onEvent(TrashEvent.UndoRestore)
+                            }
+                        }
                     }
                     DeletedBoardMenuOption.DeleteForever -> {
                         trashViewModel.onEvent(TrashEvent.DeleteForever(board.board))

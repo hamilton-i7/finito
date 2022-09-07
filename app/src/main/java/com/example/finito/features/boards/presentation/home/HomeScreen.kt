@@ -4,9 +4,11 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -37,7 +39,13 @@ fun HomeScreen(
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val keyboardVisible = WindowInsets.isImeVisible
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val archivedMessage = stringResource(id = R.string.board_archived)
+    val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
+    val snackbarAction = stringResource(id = R.string.undo)
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             if (homeViewModel.showSearchBar) {
                 SearchTopBar(
@@ -116,9 +124,32 @@ fun HomeScreen(
                 when (option) {
                     ActiveBoardMenuOption.Archive -> {
                         homeViewModel.onEvent(HomeEvent.ArchiveBoard(board))
+                        // Dismiss current Snackbar to avoid having multiple instances
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        scope.launch { 
+                            val result = snackbarHostState.showSnackbar(
+                                message = archivedMessage,
+                                actionLabel = snackbarAction
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                homeViewModel.onEvent(HomeEvent.RestoreBoard)
+                            }
+                        }
                     }
                     ActiveBoardMenuOption.Delete -> {
                         homeViewModel.onEvent(HomeEvent.DeleteBoard(board))
+                        // Dismiss current Snackbar to avoid having multiple instances
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = deletedMessage,
+                                actionLabel = snackbarAction,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                homeViewModel.onEvent(HomeEvent.RestoreBoard)
+                            }
+                        }
                     }
                 }
             }

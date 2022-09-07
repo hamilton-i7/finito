@@ -42,4 +42,9 @@
     <string name="delete_completed_tasks">Delete completed tasks</string>
     <string name="rename_label">Rename label</string>
     <string name="delete_label">Delete label</string>
+    <string name="board_archived">Board archived</string>
+    <string name="undo">Undo</string>
+    <string name="board_moved_to_trash">Board moved to trash</string>
+    <string name="board_moved_out_of_archive">Board moved out of archive</string>
+    <string name="board_was_restored">Board was restored</string>
 </resources>

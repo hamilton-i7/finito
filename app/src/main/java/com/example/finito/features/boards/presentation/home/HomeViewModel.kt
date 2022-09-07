@@ -111,7 +111,9 @@ class HomeViewModel @Inject constructor(
             }
             HomeEvent.ChangeLayout -> changeLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
-            is HomeEvent.ShowSearchBar -> showSearchBar(event.show)
+            is HomeEvent.ShowSearchBar -> {
+                showSearchBar(event.show)
+            }
         }
     }
 
@@ -176,6 +178,7 @@ class HomeViewModel @Inject constructor(
         if (show == showSearchBar) return
         if (!show) {
             searchQuery = ""
+            fetchBoards()
         }
         showSearchBar = show
     }

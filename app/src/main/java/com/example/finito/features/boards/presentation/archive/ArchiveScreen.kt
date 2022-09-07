@@ -117,10 +117,10 @@ private fun ArchiveScreen(
     onBoardClick: (boardId: Int) -> Unit = {}
 ) {
     val sortingOptions = listOf(
-        SortingOption.Common.NameAZ,
-        SortingOption.Common.NameZA,
         SortingOption.Common.Newest,
         SortingOption.Common.Oldest,
+        SortingOption.Common.NameAZ,
+        SortingOption.Common.NameZA,
     )
     val contentPadding = PaddingValues(
         vertical = 12.dp,

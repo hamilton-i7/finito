@@ -1,6 +1,5 @@
 package com.example.finito.core.data
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -20,10 +19,8 @@ import com.example.finito.features.tasks.domain.entity.Task
 
 @Database(
     entities = [Board::class, Label::class, BoardLabelCrossRef::class, Task::class, Subtask::class],
-    version = 2,
-    autoMigrations = [
-        AutoMigration(from = 1, to = 2)
-    ]
+    version = 1,
+    autoMigrations = []
 )
 @TypeConverters(DateTimeConverters::class, DateConverters::class, TimeConverters::class)
 abstract class FinitoDatabase : RoomDatabase() {

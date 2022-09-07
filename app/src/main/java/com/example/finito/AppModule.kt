@@ -21,7 +21,6 @@ object AppModule {
             context,
             FinitoDatabase::class.java,
             FinitoDatabase.DATABASE_NAME)
-            .fallbackToDestructiveMigration()
-            .createFromAsset("database/kanban.db").build()
+            .createFromAsset("database/finito.db").build()
     }
 }

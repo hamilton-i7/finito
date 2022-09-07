@@ -21,6 +21,7 @@ object AppModule {
             context,
             FinitoDatabase::class.java,
             FinitoDatabase.DATABASE_NAME)
-            .createFromAsset("database/finito.db").build()
+            .createFromAsset("database/finito.db")
+            .build()
     }
 }

@@ -8,17 +8,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
+import com.example.finito.core.domain.util.ArchivedBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.SmallTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.boards.presentation.components.BoardsGrid
-import com.example.finito.features.boards.presentation.components.BoardsList
+import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
@@ -99,6 +98,28 @@ fun ArchiveScreen(
             onSortOptionClick = {
                 archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))
             },
+            onCardOptionsClick = {
+                archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(boardId = it, show = true))
+            },
+            showCardMenu = { archiveViewModel.selectedBoardId == it },
+            onDismissMenu = {
+                archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(show = false))
+            },
+            options = listOf(
+                ArchivedBoardMenuOption.Unarchive,
+                ArchivedBoardMenuOption.Delete,
+            ),
+            onMenuItemClick = { board, option ->
+                archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(show = false))
+                when (option) {
+                    ArchivedBoardMenuOption.Unarchive -> {
+                        archiveViewModel.onEvent(ArchiveEvent.UnarchiveBoard(board))
+                    }
+                    ArchivedBoardMenuOption.Delete -> {
+                        archiveViewModel.onEvent(ArchiveEvent.DeleteBoard(board))
+                    }
+                }
+            }
         )
     }
 }
@@ -114,7 +135,15 @@ private fun ArchiveScreen(
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
     selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
-    onBoardClick: (boardId: Int) -> Unit = {}
+    onBoardClick: (boardId: Int) -> Unit = {},
+    showCardMenu: (boardId: Int) -> Boolean = { false },
+    onDismissMenu: (boardId: Int) -> Unit = {},
+    options: List<ArchivedBoardMenuOption> = emptyList(),
+    onCardOptionsClick: (boardId: Int) -> Unit = {},
+    onMenuItemClick: (
+        board: BoardWithLabelsAndTasks,
+        option: ArchivedBoardMenuOption,
+    ) -> Unit = { _, _ ->}
 ) {
     val sortingOptions = listOf(
         SortingOption.Common.Newest,
@@ -122,38 +151,27 @@ private fun ArchiveScreen(
         SortingOption.Common.NameAZ,
         SortingOption.Common.NameZA,
     )
-    val contentPadding = PaddingValues(
-        vertical = 12.dp,
-        horizontal = 16.dp
-    )
+
     Surface(modifier = Modifier.padding(paddingValues)) {
-        if (gridLayout) {
-            BoardsGrid(
-                contentPadding = contentPadding,
-                labels = labels,
-                labelFilters = labelFilters,
-                onLabelClick = onLabelClick,
-                onRemoveFiltersClick = onRemoveFiltersClick,
-                sortingOptions = sortingOptions,
-                selectedSortingOption = selectedSortingOption,
-                onSortOptionClick = onSortOptionClick,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        } else {
-            BoardsList(
-                contentPadding = contentPadding,
-                labels = labels,
-                labelFilters = labelFilters,
-                onLabelClick = onLabelClick,
-                onRemoveFiltersClick = onRemoveFiltersClick,
-                sortingOptions = sortingOptions,
-                selectedSortingOption = selectedSortingOption,
-                onSortOptionClick = onSortOptionClick,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        }
+        BoardLayout(
+            gridLayout = gridLayout,
+            labels = labels,
+            labelFilters = labelFilters,
+            onLabelClick = onLabelClick,
+            onRemoveFiltersClick = onRemoveFiltersClick,
+            boards = boards,
+            selectedSortingOption = selectedSortingOption,
+            sortingOptions = sortingOptions,
+            onSortOptionClick = onSortOptionClick,
+            onBoardClick = onBoardClick,
+            showCardMenu = showCardMenu,
+            onDismissMenu = onDismissMenu,
+            options = options,
+            onCardOptionsClick = onCardOptionsClick,
+            onMenuItemClick = { boardId, option ->
+                onMenuItemClick(boardId, option as ArchivedBoardMenuOption)
+            }
+        )
     }
 }
 

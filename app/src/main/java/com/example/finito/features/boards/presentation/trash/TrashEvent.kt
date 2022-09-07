@@ -13,4 +13,6 @@ sealed class TrashEvent {
     object EmptyTrash : TrashEvent()
 
     data class ShowMenu(val show: Boolean) : TrashEvent()
+
+    data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : TrashEvent()
 }

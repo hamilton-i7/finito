@@ -21,4 +21,6 @@ sealed class HomeEvent {
     object RestoreBoard : HomeEvent()
 
     data class ShowSearchBar(val show: Boolean) : HomeEvent()
+
+    data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : HomeEvent()
 }

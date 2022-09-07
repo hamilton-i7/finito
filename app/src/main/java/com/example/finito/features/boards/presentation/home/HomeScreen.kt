@@ -8,17 +8,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
+import com.example.finito.core.domain.util.ActiveBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.HomeTopBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.boards.presentation.components.BoardsGrid
-import com.example.finito.features.boards.presentation.components.BoardsList
+import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
@@ -101,6 +100,28 @@ fun HomeScreen(
             onSortOptionClick = {
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))
             },
+            onCardOptionsClick = {
+                homeViewModel.onEvent(HomeEvent.ShowCardMenu(boardId = it, show = true))
+            },
+            showCardMenu = { homeViewModel.selectedBoardId == it },
+            onDismissMenu = {
+                homeViewModel.onEvent(HomeEvent.ShowCardMenu(show = false))
+            },
+            options = listOf(
+                ActiveBoardMenuOption.Archive,
+                ActiveBoardMenuOption.Delete,
+            ),
+            onMenuItemClick = { board, option ->
+                homeViewModel.onEvent(HomeEvent.ShowCardMenu(show = false))
+                when (option) {
+                    ActiveBoardMenuOption.Archive -> {
+                        homeViewModel.onEvent(HomeEvent.ArchiveBoard(board))
+                    }
+                    ActiveBoardMenuOption.Delete -> {
+                        homeViewModel.onEvent(HomeEvent.DeleteBoard(board))
+                    }
+                }
+            }
         )
     }
 }
@@ -116,7 +137,15 @@ private fun HomeScreen(
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
     selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
-    onBoardClick: (boardId: Int) -> Unit = {}
+    onBoardClick: (boardId: Int) -> Unit = {},
+    showCardMenu: (boardId: Int) -> Boolean = { false },
+    onDismissMenu: (boardId: Int) -> Unit = {},
+    options: List<ActiveBoardMenuOption> = emptyList(),
+    onCardOptionsClick: (boardId: Int) -> Unit = {},
+    onMenuItemClick: (
+        board: BoardWithLabelsAndTasks,
+        option: ActiveBoardMenuOption,
+    ) -> Unit = { _, _ ->}
 ) {
     val sortingOptions = listOf(
         SortingOption.Common.Newest,
@@ -124,38 +153,27 @@ private fun HomeScreen(
         SortingOption.Common.NameAZ,
         SortingOption.Common.NameZA,
     )
-    val contentPadding = PaddingValues(
-        vertical = 12.dp,
-        horizontal = 16.dp
-    )
+
     Surface(modifier = Modifier.padding(paddingValues)) {
-        if (gridLayout) {
-            BoardsGrid(
-                contentPadding = contentPadding,
-                labels = labels,
-                labelFilters = labelFilters,
-                onLabelClick = onLabelClick,
-                onRemoveFiltersClick = onRemoveFiltersClick,
-                sortingOptions = sortingOptions,
-                selectedSortingOption = selectedSortingOption,
-                onSortOptionClick = onSortOptionClick,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        } else {
-            BoardsList(
-                contentPadding = contentPadding,
-                labels = labels,
-                labelFilters = labelFilters,
-                onLabelClick = onLabelClick,
-                onRemoveFiltersClick = onRemoveFiltersClick,
-                sortingOptions = sortingOptions,
-                selectedSortingOption = selectedSortingOption,
-                onSortOptionClick = onSortOptionClick,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        }
+        BoardLayout(
+            gridLayout = gridLayout,
+            labels = labels,
+            labelFilters = labelFilters,
+            onLabelClick = onLabelClick,
+            onRemoveFiltersClick = onRemoveFiltersClick,
+            boards = boards,
+            sortingOptions = sortingOptions,
+            selectedSortingOption = selectedSortingOption,
+            onSortOptionClick = onSortOptionClick,
+            onBoardClick = onBoardClick,
+            showCardMenu = showCardMenu,
+            onDismissMenu = onDismissMenu,
+            options = options,
+            onCardOptionsClick = onCardOptionsClick,
+            onMenuItemClick = { boardId, option ->
+                onMenuItemClick(boardId, option as ActiveBoardMenuOption)
+            }
+        )
     }
 }
 

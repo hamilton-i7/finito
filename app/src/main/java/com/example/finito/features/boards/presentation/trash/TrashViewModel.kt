@@ -35,6 +35,12 @@ class TrashViewModel @Inject constructor(
     var showMenu by mutableStateOf(false)
         private set
 
+    var showCardMenu by mutableStateOf(false)
+        private set
+
+    var selectedBoardId by mutableStateOf(0)
+        private set
+
     init {
         fetchBoards()
     }
@@ -46,6 +52,7 @@ class TrashViewModel @Inject constructor(
             is TrashEvent.RestoreBoard -> restoreBoard(event.board)
             TrashEvent.UndoRestore -> undoRestore()
             is TrashEvent.ShowMenu -> onShowDialogChange(event.show)
+            is TrashEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
     }
 
@@ -87,4 +94,10 @@ class TrashViewModel @Inject constructor(
         if (show == showMenu) return
         showMenu = show
     }
+
+    private fun onShowCardMenu(id: Int, show: Boolean) {
+        selectedBoardId = if (!show) 0 else id
+        showCardMenu = show
+    }
+
 }

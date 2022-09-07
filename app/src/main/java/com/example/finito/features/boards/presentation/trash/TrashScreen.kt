@@ -9,14 +9,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.finito.core.domain.util.DeletedBoardMenuOption
 import com.example.finito.core.domain.util.TrashScreenMenuOption
 import com.example.finito.core.presentation.components.bars.TrashTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.boards.presentation.components.BoardsGrid
-import com.example.finito.features.boards.presentation.components.BoardsList
+import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
 
@@ -60,6 +59,28 @@ fun TrashScreen(
             paddingValues = innerPadding,
             gridLayout = trashViewModel.gridLayout,
             boards = trashViewModel.boards,
+            onCardOptionsClick = {
+                trashViewModel.onEvent(TrashEvent.ShowCardMenu(boardId = it, show = true))
+            },
+            showCardMenu = { trashViewModel.selectedBoardId == it },
+            onDismissMenu = {
+                trashViewModel.onEvent(TrashEvent.ShowCardMenu(show = false))
+            },
+            options = listOf(
+                DeletedBoardMenuOption.Restore,
+                DeletedBoardMenuOption.DeleteForever,
+            ),
+            onMenuItemClick = { board, option ->
+                trashViewModel.onEvent(TrashEvent.ShowCardMenu(show = false))
+                when (option) {
+                    DeletedBoardMenuOption.Restore -> {
+                        trashViewModel.onEvent(TrashEvent.RestoreBoard(board))
+                    }
+                    DeletedBoardMenuOption.DeleteForever -> {
+                        trashViewModel.onEvent(TrashEvent.DeleteForever(board.board))
+                    }
+                }
+            }
         )
     }
 }
@@ -69,26 +90,29 @@ private fun TrashScreen(
     paddingValues: PaddingValues = PaddingValues(),
     gridLayout: Boolean = true,
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    onBoardClick: (boardId: Int) -> Unit = {}
+    onBoardClick: (boardId: Int) -> Unit = {},
+    showCardMenu: (boardId: Int) -> Boolean = { false },
+    onDismissMenu: (boardId: Int) -> Unit = {},
+    options: List<DeletedBoardMenuOption> = emptyList(),
+    onCardOptionsClick: (boardId: Int) -> Unit = {},
+    onMenuItemClick: (
+        board: BoardWithLabelsAndTasks,
+        option: DeletedBoardMenuOption,
+    ) -> Unit = { _, _ ->}
 ) {
-    val contentPadding = PaddingValues(
-        vertical = 12.dp,
-        horizontal = 16.dp
-    )
     Surface(modifier = Modifier.padding(paddingValues)) {
-        if (gridLayout) {
-            BoardsGrid(
-                contentPadding = contentPadding,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        } else {
-            BoardsList(
-                contentPadding = contentPadding,
-                boards = boards,
-                onBoardClick = onBoardClick
-            )
-        }
+        BoardLayout(
+            gridLayout = gridLayout,
+            boards = boards,
+            onBoardClick = onBoardClick,
+            showCardMenu = showCardMenu,
+            onDismissMenu = onDismissMenu,
+            options = options,
+            onCardOptionsClick = onCardOptionsClick,
+            onMenuItemClick = { boardId, option ->
+                onMenuItemClick(boardId, option as DeletedBoardMenuOption)
+            }
+        )
     }
 }
 

@@ -20,6 +20,7 @@ import com.example.finito.features.tasks.domain.entity.Task
 @Database(
     entities = [Board::class, Label::class, BoardLabelCrossRef::class, Task::class, Subtask::class],
     version = 1,
+    exportSchema = false,
     autoMigrations = []
 )
 @TypeConverters(DateTimeConverters::class, DateConverters::class, TimeConverters::class)

@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.util.TopBarMenuOption
+import com.example.finito.core.presentation.MENU_MIN_WIDTH
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +47,7 @@ fun SmallTopBarWithMenu(
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = onDismissMenu,
-                    modifier = Modifier.widthIn(min = 192.dp)
+                    modifier = Modifier.widthIn(min = MENU_MIN_WIDTH)
                 ) {
                     options.forEach { option ->
                         DropdownMenuItem(

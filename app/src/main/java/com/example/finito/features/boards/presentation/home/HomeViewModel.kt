@@ -69,6 +69,12 @@ class HomeViewModel @Inject constructor(
 
     private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
 
+    var showCardMenu by mutableStateOf(false)
+        private set
+
+    var selectedBoardId by mutableStateOf(0)
+        private set
+
     init {
         fetchLabels()
         fetchBoards()
@@ -115,6 +121,7 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.ShowSearchBar -> {
                 showSearchBar(event.show)
             }
+            is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
     }
 
@@ -184,6 +191,11 @@ class HomeViewModel @Inject constructor(
             fetchBoards()
         }
         showSearchBar = show
+    }
+
+    private fun onShowCardMenu(id: Int, show: Boolean) {
+        selectedBoardId = if (!show) 0 else id
+        showCardMenu = show
     }
 
     enum class DeactivateMode {

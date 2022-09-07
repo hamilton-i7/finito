@@ -69,6 +69,12 @@ class ArchiveViewModel @Inject constructor(
 
     private var recentlyMovedBoard: BoardWithLabelsAndTasks? = null
 
+    var showCardMenu by mutableStateOf(false)
+        private set
+
+    var selectedBoardId by mutableStateOf(0)
+        private set
+
     init {
         fetchLabels()
         fetchBoards()
@@ -115,6 +121,7 @@ class ArchiveViewModel @Inject constructor(
             is ArchiveEvent.ShowSearchBar -> {
                 showSearchBar(event.show)
             }
+            is ArchiveEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
     }
 
@@ -187,6 +194,11 @@ class ArchiveViewModel @Inject constructor(
             fetchBoards()
         }
         showSearchBar = show
+    }
+
+    private fun onShowCardMenu(id: Int, show: Boolean) {
+        selectedBoardId = if (!show) 0 else id
+        showCardMenu = show
     }
 
     enum class EditMode {

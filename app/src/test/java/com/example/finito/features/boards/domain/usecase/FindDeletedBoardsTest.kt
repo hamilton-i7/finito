@@ -39,13 +39,25 @@ class FindDeletedBoardsTest {
             Label(name = "Label name"),
         )
 
+        val timestamps = listOf(
+            LocalDateTime.now(),
+            LocalDateTime.now().plusYears(2),
+            LocalDateTime.now().plusHours(1),
+            LocalDateTime.now().plusHours(2),
+            LocalDateTime.now().minusMonths(1),
+            LocalDateTime.now().plusWeeks(2),
+            LocalDateTime.now().minusDays(2),
+            LocalDateTime.now().plusMinutes(2),
+        )
+
         ('A'..'Z').forEachIndexed { index, c ->
             dummyBoards.add(
                 Board(
                     name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
                     archived = index % 3 == 0,
                     deleted = index % 2 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
+                    createdAt = LocalDateTime.now().plusMinutes(index.toLong()),
+                    removedAt = if (index % 2 == 0) timestamps.random() else null
                 )
             )
         }
@@ -67,13 +79,20 @@ class FindDeletedBoardsTest {
     }
 
     @Test
-    fun `Should return deleted boards sorted by trash position`() = runTest {
+    fun `Should return deleted boards sorted by removed date descending`() = runTest {
         val sortedBoards = findDeletedBoards().first()
 
         for (i in 0..sortedBoards.size - 2) {
             assertThat(
-                sortedBoards[i].board.trashPosition == sortedBoards[i+1].board.trashPosition + 1
+                sortedBoards[i].board.removedAt?.isAfterOrEquals(sortedBoards[i+1].board.removedAt)
             ).isTrue()
         }
+    }
+
+    private fun LocalDateTime?.isAfterOrEquals(timestamp2: LocalDateTime?): Boolean {
+        if (this == null && timestamp2 == null) return true
+        if (this == null) return false
+        if (timestamp2 == null) return true
+        return isAfter(timestamp2) || isEqual(timestamp2)
     }
 }

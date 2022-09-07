@@ -23,15 +23,7 @@ class ArrangeTomorrowTasks(
                 message = "All tasks must be from tomorrow's date"
             )
         }
-
-        // Set old tomorrow's tasks to default value
-        taskRepository.findTodayTasks().first().map {
-            it.task.copy(tomorrowPosition = -1)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
-
-        tasks.mapIndexed { index, task ->
-            task.copy(tomorrowPosition = index)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
+        taskRepository.updateMany(*tasks.toTypedArray())
         arrangeSubtasks(subtasks)
     }
 

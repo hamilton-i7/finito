@@ -20,15 +20,9 @@ class FakeBoardRepository(
 ) : BoardRepository {
     private val boards = mutableListOf<Board>()
     private var boardId = 1
-    private var trashPosition = 0
 
     override suspend fun create(board: Board): Long {
-        boards.add(
-            board.copy(
-                boardId = boardId,
-                trashPosition = if (board.deleted) trashPosition++ else -1
-            )
-        )
+        boards.add(board.copy(boardId = boardId))
         boardId++
         return boardId.toLong()
     }

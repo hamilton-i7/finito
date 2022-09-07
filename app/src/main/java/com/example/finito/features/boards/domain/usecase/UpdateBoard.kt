@@ -2,7 +2,6 @@ package com.example.finito.features.boards.domain.usecase
 
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.isValidId
-import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.repository.BoardLabelRepository
@@ -32,10 +31,9 @@ class UpdateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        val oldBoard = boardRepository.findOne(board.boardId) ?: throw ResourceException.NotFoundException
-        val result = setupTrashPosition(oldBoard.board, board)
+        boardRepository.findOne(board.boardId) ?: throw ResourceException.NotFoundException
 
-        return boardRepository.update(result).also {
+        return boardRepository.update(board).also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {
                 val newRefs = labels.map {
                     BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
@@ -64,13 +62,5 @@ class UpdateBoard(
             val deletedAmount = boardLabelRepository.remove(*it.toTypedArray())
             if (deletedAmount != it.size) throw ResourceException.NotFoundException
         }
-    }
-
-    private suspend fun setupTrashPosition(oldBoard: Board, newBoard: Board): Board {
-        if (oldBoard.deleted == newBoard.deleted) return newBoard
-        return if (newBoard.deleted) {
-            val boardsInTrashAmount = boardRepository.findAll().filter { it.deleted }.size
-            newBoard.copy(trashPosition = boardsInTrashAmount)
-        } else newBoard.copy(trashPosition = -1)
     }
 }

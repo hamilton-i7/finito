@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -153,7 +154,10 @@ class HomeViewModel @Inject constructor(
                 boardUseCases.updateBoard(
                     when (mode) {
                         DeactivateMode.ARCHIVE -> copy(board = this.board.copy(archived = true))
-                        DeactivateMode.DELETE -> copy(board = this.board.copy(deleted = true))
+                        DeactivateMode.DELETE -> copy(board = this.board.copy(
+                            deleted = true,
+                            removedAt = LocalDateTime.now()
+                        ))
                     }
                 )
                 recentlyDeactivatedBoard = this
@@ -178,7 +182,7 @@ class HomeViewModel @Inject constructor(
     private fun restoreBoard() = viewModelScope.launch {
         recentlyDeactivatedBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(archived = false, deleted = false))
+                it.copy(board = it.board.copy(archived = false, deleted = false, removedAt = null))
             )
             recentlyDeactivatedBoard = null
         }

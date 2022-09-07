@@ -10,7 +10,7 @@ class FindDeletedBoards(
 ) {
     operator fun invoke(): Flow<List<BoardWithLabelsAndTasks>> {
         return repository.findDeletedBoards().map { boards ->
-            boards.sortedByDescending { it.board.trashPosition }
+            boards.sortedByDescending { it.board.removedAt }
         }
     }
 }

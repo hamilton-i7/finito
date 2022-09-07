@@ -6,7 +6,6 @@ import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
-import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
 class ArrangeTodayTasks(
@@ -23,15 +22,7 @@ class ArrangeTodayTasks(
                 message = "All tasks must be from today's date"
             )
         }
-
-        // Set old today's tasks to default value
-        taskRepository.findTodayTasks().first().map {
-            it.task.copy(todayPosition = -1)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
-
-        tasks.mapIndexed { index, task ->
-            task.copy(todayPosition = index)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
+        taskRepository.updateMany(*tasks.toTypedArray())
         arrangeSubtasks(subtasks)
     }
 

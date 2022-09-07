@@ -31,6 +31,8 @@ data class Subtask(
     @ColumnInfo(defaultValue = "NULL") val description: String? = null,
     @ColumnInfo(defaultValue = "0") val completed: Boolean = false,
     @ColumnInfo(defaultValue = "-1") val position: Int = -1,
+    @ColumnInfo(name = "completed_at", defaultValue = "NULL")
+    val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
 )

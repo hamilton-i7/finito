@@ -7,7 +7,6 @@ import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
-import kotlinx.coroutines.flow.first
 
 class ArrangeUrgentTasks(
     private val taskRepository: TaskRepository,
@@ -23,15 +22,7 @@ class ArrangeUrgentTasks(
                 message = "All tasks must have urgent priority"
             )
         }
-
-        // Set old urgent tasks to default value
-        taskRepository.findTodayTasks().first().map {
-            it.task.copy(urgentPosition = -1)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
-
-        tasks.mapIndexed { index, task ->
-            task.copy(urgentPosition = index)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
+        taskRepository.updateMany(*tasks.toTypedArray())
         arrangeSubtasks(subtasks)
     }
 

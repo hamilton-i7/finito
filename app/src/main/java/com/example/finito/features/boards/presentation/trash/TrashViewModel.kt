@@ -75,7 +75,7 @@ class TrashViewModel @Inject constructor(
     private fun restoreBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
         with(board) {
             boardUseCases.updateBoard(
-                copy(board = this.board.copy(deleted = false))
+                copy(board = this.board.copy(deleted = false, removedAt = null))
             )
             recentlyRestoredBoard = this
         }
@@ -84,7 +84,7 @@ class TrashViewModel @Inject constructor(
     private fun undoRestore() = viewModelScope.launch {
         recentlyRestoredBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(deleted = true))
+                it.copy(board = it.board.copy(deleted = true, removedAt = it.board.removedAt))
             )
             recentlyRestoredBoard = null
         }

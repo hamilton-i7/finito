@@ -7,6 +7,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
+import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenExitTransition
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.home.HomeScreen
 import com.example.finito.features.boards.presentation.trash.TrashScreen
@@ -25,17 +27,29 @@ fun FinitoNavHost(
        navController = navHostController,
        startDestination = Screen.Home.route
    ) {
-       composable(route = Screen.Home.route) {
+       composable(
+           route = Screen.Home.route,
+           enterTransition = mainScreenEnterTransition,
+           exitTransition = mainScreenExitTransition
+       ) {
            HomeScreen(navHostController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }
 
-       composable(route = Screen.Archive.route) {
+       composable(
+           route = Screen.Archive.route,
+           enterTransition = mainScreenEnterTransition,
+           exitTransition = mainScreenExitTransition
+       ) {
            ArchiveScreen(navHostController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }
 
-       composable(route = Screen.Trash.route) {
+       composable(
+           route = Screen.Trash.route,
+           enterTransition = mainScreenEnterTransition,
+           exitTransition = mainScreenExitTransition
+       ) {
            TrashScreen(navHostController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }

@@ -172,7 +172,7 @@ private fun DrawerContent(
             if (expandLabels) {
                 items(labels) { label ->
                     NavigationDrawerItem(
-                        icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
+                        icon = { Icon(imageVector = Icons.Outlined.Label, contentDescription = null) },
                         label = { Text(text = label.name) },
                         selected = isSelectedScreen(label.labelId.toString()),
                         onClick = {

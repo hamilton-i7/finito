@@ -3,6 +3,7 @@ package com.example.finito.core.presentation
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,7 +36,10 @@ fun App(finishActivity: () -> Unit) {
             drawerViewModel.onEvent(DrawerEvent.ToggleLabelsExpanded)
         },
         onItemSelected = onItemSelected@{ route ->
-            if (drawerViewModel.currentRoute == route) return@onItemSelected
+            if (drawerViewModel.currentRoute == route) {
+                scope.launch { drawerState.close() }
+                return@onItemSelected
+            }
             drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
 
             scope.launch {
@@ -44,6 +48,8 @@ fun App(finishActivity: () -> Unit) {
             }
         }
     ) {
-        FinitoNavHost(navController, drawerState, finishActivity)
+        Surface {
+            FinitoNavHost(navController, drawerState, finishActivity)
+        }
     }
 }

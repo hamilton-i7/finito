@@ -2,6 +2,7 @@ package com.example.finito.features.boards.presentation.trash
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -38,7 +39,9 @@ fun TrashScreen(
     val snackbarAction = stringResource(id = R.string.undo)
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState, modifier = Modifier.navigationBarsPadding())
+        },
         topBar = {
             TrashTopBar(
                 onMenuClick = {

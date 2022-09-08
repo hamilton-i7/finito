@@ -19,6 +19,7 @@ import com.example.finito.core.domain.util.TrashScreenMenuOption
 import com.example.finito.core.presentation.components.bars.TrashTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
+import com.example.finito.features.boards.presentation.trash.components.TrashDialogs
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
 
@@ -55,7 +56,10 @@ fun TrashScreen(
                     trashViewModel.onEvent(TrashEvent.ShowMenu(show = false))
                     when (it) {
                         TrashScreenMenuOption.EmptyTrash -> trashViewModel.onEvent(
-                            TrashEvent.EmptyTrash
+                            TrashEvent.ShowDeleteDialog(
+                                show = true,
+                                type = TrashEvent.DialogType.EmptyTrash
+                            )
                         )
                     }
                 }
@@ -63,6 +67,10 @@ fun TrashScreen(
         },
         modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
+        if (trashViewModel.showDialog) {
+            TrashDialogs(trashViewModel)
+        }
+
         TrashScreen(
             paddingValues = innerPadding,
             gridLayout = trashViewModel.gridLayout,
@@ -97,7 +105,10 @@ fun TrashScreen(
                         }
                     }
                     DeletedBoardMenuOption.DeleteForever -> {
-                        trashViewModel.onEvent(TrashEvent.DeleteForever(board.board))
+                        trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(
+                            show = true,
+                            type = TrashEvent.DialogType.DeleteBoard(board.board)
+                        ))
                     }
                 }
             }

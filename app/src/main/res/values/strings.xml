@@ -47,4 +47,8 @@
     <string name="board_moved_to_trash">Board moved to trash</string>
     <string name="board_moved_out_of_archive">Board moved out of archive</string>
     <string name="board_was_restored">Board was restored</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_board_confirmation">This board will be permanently deleted</string>
+    <string name="empty_trash_confirmation">All boards in trash will be permanently deleted</string>
+    <string name="empty_trash_confirmation_title">Empty trash?</string>
 </resources>

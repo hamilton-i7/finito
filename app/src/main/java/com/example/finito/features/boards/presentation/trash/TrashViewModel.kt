@@ -41,6 +41,12 @@ class TrashViewModel @Inject constructor(
     var selectedBoardId by mutableStateOf(0)
         private set
 
+    var showDialog by mutableStateOf(false)
+        private set
+
+    var dialogType by mutableStateOf<TrashEvent.DialogType>(TrashEvent.DialogType.EmptyTrash)
+        private set
+
     init {
         fetchBoards()
     }
@@ -53,6 +59,20 @@ class TrashViewModel @Inject constructor(
             TrashEvent.UndoRestore -> undoRestore()
             is TrashEvent.ShowMenu -> onShowDialogChange(event.show)
             is TrashEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
+            is TrashEvent.ShowDeleteDialog -> {
+                if (!event.show) {
+                    showDialog = false
+                    return
+                }
+                showDialog = true
+
+                when (event.type) {
+                    is TrashEvent.DialogType.DeleteBoard -> {
+                        onShowDeleteSingleDialog(board = event.type.board)
+                    }
+                    TrashEvent.DialogType.EmptyTrash -> onShowEmptyTrashDialog()
+                }
+            }
         }
     }
 
@@ -100,4 +120,11 @@ class TrashViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    private fun onShowEmptyTrashDialog() {
+        dialogType = TrashEvent.DialogType.EmptyTrash
+    }
+
+    private fun onShowDeleteSingleDialog(board: Board) {
+        dialogType = TrashEvent.DialogType.DeleteBoard(board)
+    }
 }

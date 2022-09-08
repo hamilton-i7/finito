@@ -2,11 +2,9 @@ package com.example.finito.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -70,6 +68,28 @@ private val LightColorScheme = lightColorScheme(
     inverseSurface = DarkCharcoal
 )
 
+private val FinitoLightScheme = FinitoColors(
+    colorScheme = LightColorScheme,
+    lowPriorityContainer = Water,
+    onLowPriorityContainer = MaastrichtBlue,
+    mediumPriorityContainer = Dandelion,
+    onMediumPriorityContainer = BlackChocolate,
+    urgentPriorityContainer = UnbleachedSilk,
+    onUrgentPriorityContainer = DarkChocolateVariant
+)
+
+private val FinitoDarkScheme = FinitoColors(
+    colorScheme = DarkColorScheme,
+    lowPriorityContainer = DarkCerulean,
+    onLowPriorityContainer = Water,
+    mediumPriorityContainer = DarkBronzeCoin,
+    onMediumPriorityContainer = Dandelion,
+    urgentPriorityContainer = Kobe,
+    onUrgentPriorityContainer = UnbleachedSilk
+)
+
+private val LocalColors = staticCompositionLocalOf { FinitoLightScheme }
+
 @Composable
 fun FinitoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -77,19 +97,23 @@ fun FinitoTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
+    val colors = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) {
+                FinitoDarkScheme.copy(colorScheme =  dynamicDarkColorScheme(context))
+            } else {
+                FinitoLightScheme.copy(colorScheme =  dynamicLightColorScheme(context))
+            }
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> FinitoDarkScheme
+        else -> FinitoLightScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = colors.colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
@@ -103,9 +127,16 @@ fun FinitoTheme(
         )
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalColors provides colors) {
+        MaterialTheme(
+            colorScheme = colors.colorScheme,
+            typography = Typography,
+            content = content,
+        )
+    }
 }
+
+val MaterialTheme.finitoColors: FinitoColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalColors.current

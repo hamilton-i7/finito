@@ -1,5 +1,6 @@
 package com.example.finito.ui.theme
 
+import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 
 // Primary
@@ -46,3 +47,51 @@ val DarkCharcoal = Color(0xFF323033)
 val White = Color.White
 val LavenderGray = Color(0xFFC7C5D0)
 val SpanishGray = Color(0xFF91909A)
+
+// Extras
+val Water = Color(0xFFD1E4FF)
+val MaastrichtBlue = Color(0xFF001C38)
+val Dandelion = Color(0xFFE7EA3C)
+val BlackChocolate = Color(0xFF1c1d00)
+val UnbleachedSilk = Color(0xFFFFDAD3)
+val DarkChocolateVariant = Color(0xFF410000)
+
+val DarkCerulean = Color(0xFF004882)
+val DarkBronzeCoin = Color(0xFF484A00)
+val Kobe = Color(0xFF7D2B20)
+
+data class FinitoColors(
+    val colorScheme: ColorScheme,
+    val lowPriorityContainer: Color,
+    val onLowPriorityContainer: Color,
+    val mediumPriorityContainer: Color,
+    val onMediumPriorityContainer: Color,
+    val urgentPriorityContainer: Color,
+    val onUrgentPriorityContainer: Color,
+) {
+    val primary: Color get() = colorScheme.primary
+    val onPrimary: Color get() = colorScheme.onPrimary
+    val primaryContainer: Color get() = colorScheme.primaryContainer
+    val onPrimaryContainer: Color get() = colorScheme.onPrimaryContainer
+    val secondary: Color get() = colorScheme.secondary
+    val onSecondary: Color get() = colorScheme.onSecondary
+    val secondaryContainer: Color get() = colorScheme.secondaryContainer
+    val onSecondaryContainer: Color get() = colorScheme.onSecondaryContainer
+    val tertiary: Color get() = colorScheme.tertiary
+    val onTertiary: Color get() = colorScheme.onTertiary
+    val tertiaryContainer: Color get() = colorScheme.tertiaryContainer
+    val onTertiaryContainer: Color get() = colorScheme.onTertiaryContainer
+    val error: Color get() = colorScheme.error
+    val errorContainer: Color get() = colorScheme.errorContainer
+    val onError: Color get() = colorScheme.onError
+    val onErrorContainer: Color get() = colorScheme.onErrorContainer
+    val background: Color get() = colorScheme.background
+    val onBackground: Color get() = colorScheme.onBackground
+    val surface: Color get() = colorScheme.surface
+    val onSurface: Color get() = colorScheme.onSurface
+    val surfaceVariant: Color get() = colorScheme.surfaceVariant
+    val onSurfaceVariant: Color get() = colorScheme.onSurfaceVariant
+    val outline: Color get() = colorScheme.outline
+    val inverseOnSurface: Color get() = colorScheme.inverseOnSurface
+    val inverseSurface: Color get() = colorScheme.inverseSurface
+}

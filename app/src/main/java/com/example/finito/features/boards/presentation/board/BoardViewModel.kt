@@ -63,8 +63,16 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ShowDateTimeDialog -> TODO()
             is BoardEvent.ShowPriorityDialog -> TODO()
             is BoardEvent.ShowScreenMenu -> TODO()
-            BoardEvent.ToggleCompletedTasksVisibility -> TODO()
+            BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.UncheckTask -> TODO()
+        }
+    }
+
+    private fun onShowCompletedTasksChange() {
+        showCompletedTasks = !showCompletedTasks
+        with(preferences.edit()) {
+            putBoolean(PreferencesModule.TAG.SHOW_COMPLETED_TASKS.name, showCompletedTasks)
+            apply()
         }
     }
 

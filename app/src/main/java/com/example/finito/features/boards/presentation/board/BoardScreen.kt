@@ -1,6 +1,8 @@
 package com.example.finito.features.boards.presentation.board
 
 import android.content.res.Configuration
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -15,6 +17,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +75,10 @@ fun BoardScreen(
             paddingValues = innerPadding,
             listState = listState,
             tasks = boardViewModel.board?.tasks ?: emptyList(),
-            showCompletedTasks = boardViewModel.showCompletedTasks
+            showCompletedTasks = boardViewModel.showCompletedTasks,
+            onToggleShowCompletedTasks = {
+                boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
+            }
         )
     }
 }
@@ -109,6 +115,8 @@ private fun BoardScreen(
                 TaskItem(detailedTask = it)
             }
             item {
+                val rotate: Float by animateFloatAsState(if (showCompletedTasks) 0f else -180f)
+
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
@@ -123,21 +131,24 @@ private fun BoardScreen(
                     Text(
                         text = stringResource(id = R.string.completed, completedTasks.size)
                     )
-                    if (showCompletedTasks) {
-                        Icon(
-                            imageVector = Icons.Outlined.ExpandLess,
-                            contentDescription = stringResource(id = R.string.hide_completed_tasks)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Outlined.ExpandMore,
-                            contentDescription = stringResource(id = R.string.show_completed_tasks)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Outlined.ExpandLess,
+                        contentDescription = stringResource(
+                            id = if (showCompletedTasks)
+                                R.string.hide_completed_tasks
+                            else
+                                R.string.show_completed_tasks
+                        ),
+                        modifier = Modifier.rotate(rotate)
+                    )
                 }
             }
             items(completedTasks, contentType = { "completed tasks" }) {
-                TaskItem(detailedTask = it)
+                AnimatedVisibility(
+                    visible = showCompletedTasks,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) { TaskItem(detailedTask = it) }
             }
         }
     }

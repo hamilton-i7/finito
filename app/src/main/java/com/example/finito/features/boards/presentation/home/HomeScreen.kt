@@ -17,7 +17,7 @@ import com.example.finito.R
 import com.example.finito.core.domain.util.ActiveBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.bars.BottomBar
-import com.example.finito.core.presentation.components.bars.HomeTopBar
+import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout

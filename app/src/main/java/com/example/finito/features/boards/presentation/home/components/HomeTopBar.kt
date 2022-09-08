@@ -1,4 +1,4 @@
-package com.example.finito.core.presentation.components.bars
+package com.example.finito.features.boards.presentation.home.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu

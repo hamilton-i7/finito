@@ -17,7 +17,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.DeletedBoardMenuOption
 import com.example.finito.core.domain.util.TrashScreenMenuOption
-import com.example.finito.core.presentation.components.bars.TrashTopBar
+import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.trash.components.TrashDialogs

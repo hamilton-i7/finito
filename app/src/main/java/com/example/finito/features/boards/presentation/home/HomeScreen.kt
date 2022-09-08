@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class
+    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class
 )
 @Composable
 fun HomeScreen(
@@ -47,24 +48,35 @@ fun HomeScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            if (homeViewModel.showSearchBar) {
-                SearchTopBar(
-                    query = homeViewModel.searchQuery,
-                    onQueryChange = {
-                        homeViewModel.onEvent(HomeEvent.SearchBoards(it))
-                    },
-                    onBackClick = {
-                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
-                    },
-                    scrollBehavior = searchTopBarScrollBehavior,
-                )
-            } else {
-                HomeTopBar(
-                    onMenuClick = {
-                        scope.launch { drawerState.open() }
-                    },
-                    scrollBehavior = homeTopBarScrollBehavior
-                )
+            AnimatedContent(
+                targetState = homeViewModel.showSearchBar,
+                transitionSpec = {
+                    (slideIntoContainer(
+                        towards = AnimatedContentScope.SlideDirection.Start
+                    ) with slideOutOfContainer(
+                        towards = AnimatedContentScope.SlideDirection.End)
+                    ).using(SizeTransform(clip = false))
+                }
+            ) { showSearchBar ->
+                if (showSearchBar) {
+                    SearchTopBar(
+                        query = homeViewModel.searchQuery,
+                        onQueryChange = {
+                            homeViewModel.onEvent(HomeEvent.SearchBoards(it))
+                        },
+                        onBackClick = {
+                            homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
+                        },
+                        scrollBehavior = searchTopBarScrollBehavior,
+                    )
+                } else {
+                    HomeTopBar(
+                        onMenuClick = {
+                            scope.launch { drawerState.open() }
+                        },
+                        scrollBehavior = homeTopBarScrollBehavior
+                    )
+                }
             }
         },
         bottomBar = if (!keyboardVisible) {

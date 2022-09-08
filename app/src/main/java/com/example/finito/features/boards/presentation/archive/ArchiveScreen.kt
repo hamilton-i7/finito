@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.archive
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class
+    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class
 )
 @Composable
 fun ArchiveScreen(
@@ -47,25 +48,36 @@ fun ArchiveScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            if (archiveViewModel.showSearchBar) {
-                SearchTopBar(
-                    query = archiveViewModel.searchQuery,
-                    onQueryChange = {
-                        archiveViewModel.onEvent(ArchiveEvent.SearchBoards(it))
-                    },
-                    onBackClick = {
-                        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
-                    },
-                    scrollBehavior = searchTopBarScrollBehavior,
-                )
-            } else {
-                SmallTopBar(
-                    onMenuClick = {
-                        scope.launch { drawerState.open() }
-                    },
-                    title = R.string.archive,
-                    scrollBehavior = simpleTopBarScrollBehavior
-                )
+            AnimatedContent(
+                targetState = archiveViewModel.showSearchBar,
+                transitionSpec = {
+                    (slideIntoContainer(
+                        towards = AnimatedContentScope.SlideDirection.Start
+                    ) with slideOutOfContainer(
+                        towards = AnimatedContentScope.SlideDirection.End)
+                    ).using(SizeTransform(clip = false))
+                }
+            ) { showSearchBar ->
+                if (showSearchBar) {
+                    SearchTopBar(
+                        query = archiveViewModel.searchQuery,
+                        onQueryChange = {
+                            archiveViewModel.onEvent(ArchiveEvent.SearchBoards(it))
+                        },
+                        onBackClick = {
+                            archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
+                        },
+                        scrollBehavior = searchTopBarScrollBehavior,
+                    )
+                } else {
+                    SmallTopBar(
+                        onMenuClick = {
+                            scope.launch { drawerState.open() }
+                        },
+                        title = R.string.archive,
+                        scrollBehavior = simpleTopBarScrollBehavior
+                    )
+                }
             }
         },
         bottomBar = if (!keyboardVisible) {

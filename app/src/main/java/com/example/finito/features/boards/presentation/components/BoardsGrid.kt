@@ -16,7 +16,6 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.utils.BOARD_COLUMNS
-import com.example.finito.features.boards.utils.ContentType
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelChips
 
@@ -46,7 +45,7 @@ fun BoardsGrid(
         modifier = Modifier.fillMaxSize()
     ) {
         if (labels.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.LABEL_FILTERS) {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = "label filters") {
                 LabelChips(
                     labels,
                     selectedLabels = labelFilters,
@@ -57,7 +56,7 @@ fun BoardsGrid(
             }
         }
         if (sortingOptions.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentType.SORTING_OPTIONS) {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = "sorting options") {
                 SortingChips(
                     options = sortingOptions,
                     selectedOption = selectedSortingOption,
@@ -68,7 +67,7 @@ fun BoardsGrid(
                 )
             }
         }
-        items(boards) {
+        items(boards, contentType = { "boards" }) {
             BoardCard(
                 onClick = { onBoardClick(it.board.boardId) },
                 board = it,

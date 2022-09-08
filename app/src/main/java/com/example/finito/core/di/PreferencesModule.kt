@@ -22,6 +22,7 @@ object PreferencesModule {
         EXPAND_BOARDS,
         EXPAND_LABELS,
         GRID_LAYOUT,
-        BOARDS_ORDER
+        BOARDS_ORDER,
+        SHOW_COMPLETED_TASKS
     }
 }

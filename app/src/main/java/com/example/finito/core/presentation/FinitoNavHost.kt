@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenEnterTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenExitTransition
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
+import com.example.finito.features.boards.presentation.board.BoardScreen
 import com.example.finito.features.boards.presentation.home.HomeScreen
 import com.example.finito.features.boards.presentation.trash.TrashScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -51,6 +52,16 @@ fun FinitoNavHost(
            exitTransition = mainScreenExitTransition
        ) {
            TrashScreen(navHostController = navHostController, drawerState = drawerState)
+           HandleBackPress(drawerState, onBackPress =  finishActivity)
+       }
+
+       composable(
+           route = Screen.Board.route,
+           arguments = Screen.Board.arguments,
+           enterTransition = mainScreenEnterTransition,
+           exitTransition = mainScreenExitTransition
+       ) {
+           BoardScreen(navController = navHostController, drawerState = drawerState)
            HandleBackPress(drawerState, onBackPress =  finishActivity)
        }
    }

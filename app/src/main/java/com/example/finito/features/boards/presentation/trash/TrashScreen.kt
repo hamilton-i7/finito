@@ -2,6 +2,7 @@ package com.example.finito.features.boards.presentation.trash
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -134,7 +135,7 @@ private fun TrashScreen(
         option: DeletedBoardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
-    Surface(modifier = Modifier.padding(paddingValues)) {
+    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
             boards = boards,

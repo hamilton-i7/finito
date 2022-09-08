@@ -147,14 +147,13 @@ private fun DrawerContent(
             }
             if (expandBoards) {
                 items(boards) { board ->
+                    val route = "${Screen.Board.prefix}/${board.boardId}"
+
                     NavigationDrawerItem(
                         icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
                         label = { Text(text = board.name) },
-                        selected = isSelectedScreen(board.boardId.toString()),
-                        onClick = {
-                            val route = "${Screen.Board.prefix}/${board.boardId}"
-                            onItemSelected(route)
-                        },
+                        selected = isSelectedScreen(route),
+                        onClick = { onItemSelected(route) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -171,14 +170,13 @@ private fun DrawerContent(
             }
             if (expandLabels) {
                 items(labels) { label ->
+                    val route = "${Screen.Label.prefix}/${label.labelId}"
+
                     NavigationDrawerItem(
                         icon = { Icon(imageVector = Icons.Outlined.Label, contentDescription = null) },
                         label = { Text(text = label.name) },
-                        selected = isSelectedScreen(label.labelId.toString()),
-                        onClick = {
-                            val route = "${Screen.Label.prefix}/${label.labelId}"
-                            onItemSelected(route)
-                        },
+                        selected = isSelectedScreen(route),
+                        onClick = { onItemSelected(route) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }

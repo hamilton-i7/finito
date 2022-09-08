@@ -12,6 +12,7 @@ import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
+import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -202,7 +203,4 @@ class HomeViewModel @Inject constructor(
         showCardMenu = show
     }
 
-    enum class DeactivateMode {
-        ARCHIVE, DELETE
-    }
 }

@@ -136,7 +136,7 @@ fun FinitoTheme(
     }
 }
 
-val MaterialTheme.finitoColors: FinitoColors
+val finitoColors: FinitoColors
     @Composable
     @ReadOnlyComposable
     get() = LocalColors.current

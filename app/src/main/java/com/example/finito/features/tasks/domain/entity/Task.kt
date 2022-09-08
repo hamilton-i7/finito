@@ -43,7 +43,36 @@ data class Task(
     val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+    companion object {
+        private val reminders = listOf(
+            Reminder.FIVE_MINUTES,
+            Reminder.TEN_MINUTES,
+            Reminder.FIFTEEN_MINUTES,
+            Reminder.THIRTY_MINUTES,
+        )
+        private val priorities = listOf(
+            Priority.LOW,
+            Priority.MEDIUM,
+            Priority.URGENT,
+        )
+
+        val dummyTasks = ('A'..'Z').mapIndexed { index, c ->
+            Task(
+                taskId = index + 1,
+                name = "Task $c",
+                description = if (index % 2 == 0) "Lorem ipsum dolor sit amet, consectetur adipiscing elit." else null,
+                boardId = Board.dummyBoards.random().boardId,
+                completed = index % 5 == 0,
+                date = if (index % 3 == 0) LocalDate.now().plusDays((0..100).random().toLong()) else null,
+                time = if (index % 6 == 0) LocalTime.now().plusHours((0..200).random().toLong()) else null,
+                completedAt = if (index % 5 == 0) LocalDateTime.now().plusMinutes((0..1_500).random().toLong()) else null,
+                reminder = if (index % 7 == 0) reminders.random() else null,
+                priority = if (index % 9 == 0) priorities.random() else null,
+            )
+        }.shuffled()
+    }
+}
 
 fun Task.toTaskUpdate(): TaskUpdate {
     return TaskUpdate(

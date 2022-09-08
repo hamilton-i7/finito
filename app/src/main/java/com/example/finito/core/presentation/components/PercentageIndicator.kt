@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.finito.ui.theme.finitoColors
 import kotlin.math.floor
 
 @Composable
@@ -22,13 +23,13 @@ fun PercentageIndicator(
     Box(contentAlignment = Alignment.Center, modifier = modifier) {
         CircularProgressIndicator(
             progress = progress,
-            color = MaterialTheme.colorScheme.tertiary,
+            color = finitoColors.tertiary,
             modifier = Modifier.size(50.dp)
         )
         Text(
             text = "$percentage%",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = finitoColors.onSurfaceVariant
         )
     }
 }

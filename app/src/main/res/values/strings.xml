@@ -51,4 +51,18 @@
     <string name="delete_board_confirmation">This board will be permanently deleted</string>
     <string name="empty_trash_confirmation">All boards in trash will be permanently deleted</string>
     <string name="empty_trash_confirmation_title">Empty trash?</string>
+    <string name="tasks_completed">Tasks completed</string>
+    <string name="mark_as_uncompleted">Mark as uncompleted</string>
+    <string name="low">Low</string>
+    <string name="medium">Medium</string>
+    <string name="next_week">Next week</string>
+    <string name="next_month">Next month</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="last_week">Last week</string>
+    <string name="two_weeks_ago">2 weeks ago</string>
+    <string name="last_month">Last month</string>
+    <string name="completed">Completed (%1$d)</string>
+    <string name="hide_completed_tasks">Hide completed tasks</string>
+    <string name="show_completed_tasks">Show completed tasks</string>
+    <string name="create_task">Create task</string>
 </resources>

@@ -35,4 +35,17 @@ data class Subtask(
     val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+    companion object {
+        val dummySubtasks = ('A'..'Z').mapIndexed { index, c ->
+            Subtask(
+                subtaskId = index + 1,
+                name = "Subtask $c",
+                description = if (index % 2 == 0) "Lorem ipsum dolor sit amet, consectetur adipiscing elit." else null,
+                taskId = Task.dummyTasks.random().taskId,
+                completed = index % 5 == 0,
+                completedAt = if (index % 5 == 0) LocalDateTime.now().plusMinutes((0..1_500).random().toLong()) else null,
+            )
+        }.shuffled()
+    }
+}

@@ -197,7 +197,7 @@ private fun HomeScreen(
         SortingOption.Common.NameZA,
     )
 
-    Surface(modifier = Modifier.padding(paddingValues)) {
+    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
             labels = labels,

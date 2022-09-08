@@ -21,6 +21,7 @@ import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.core.presentation.components.PercentageIndicator
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.ui.theme.FinitoTheme
+import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +57,7 @@ fun BoardCard(
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,
                             contentDescription = stringResource(id = R.string.more_options),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = finitoColors.onSurfaceVariant
                         )
                         DropdownMenu(
                             expanded = showMenu,
@@ -78,7 +79,7 @@ fun BoardCard(
                                     modifier = Modifier.indication(
                                         interactionSource,
                                         indication = rememberRipple(
-                                            color = MaterialTheme.colorScheme.primary.copy(
+                                            color = finitoColors.primary.copy(
                                                 alpha = 0.12f
                                             )
                                         )
@@ -93,11 +94,11 @@ fun BoardCard(
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
                     text = stringResource(id = R.string.tasks_amount, board.tasks.size),
-                    color = MaterialTheme.colorScheme.outline
+                    color = finitoColors.outline
                 )
                 Text(
                     text = board.board.name,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = finitoColors.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyLarge
@@ -105,7 +106,7 @@ fun BoardCard(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = labelNames.ifEmpty { " " },
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = finitoColors.onPrimaryContainer,
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

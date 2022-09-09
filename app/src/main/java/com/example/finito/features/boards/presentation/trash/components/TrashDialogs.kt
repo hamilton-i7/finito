@@ -11,7 +11,7 @@ fun TrashDialogs(trashViewModel: TrashViewModel) {
     when (trashViewModel.dialogType) {
         is TrashEvent.DialogType.DeleteBoard -> {
             DeleteDialog(
-                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(show = false)) },
+                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDialog()) },
                 description = R.string.delete_board_confirmation,
                 onConfirmClick = {
                     trashViewModel.onEvent(TrashEvent.DeleteForever(
@@ -19,20 +19,21 @@ fun TrashDialogs(trashViewModel: TrashViewModel) {
                     )
                 },
                 onDismissClick = {
-                    trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(show = false))
+                    trashViewModel.onEvent(TrashEvent.ShowDialog())
                 }
             )
         }
         TrashEvent.DialogType.EmptyTrash -> {
             DeleteDialog(
-                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(show = false)) },
+                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDialog()) },
                 title = R.string.empty_trash_confirmation_title,
                 description = R.string.empty_trash_confirmation,
                 onConfirmClick = { trashViewModel.onEvent(TrashEvent.EmptyTrash) },
                 onDismissClick = {
-                    trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(show = false))
+                    trashViewModel.onEvent(TrashEvent.ShowDialog())
                 }
             )
         }
+        null -> Unit
     }
 }

@@ -28,9 +28,7 @@ fun DeleteDialog(
             FilledTonalButton(onClick = {
                 onConfirmClick()
                 onDismiss()
-            }) {
-                Text(text = stringResource(id = confirmButtonText))
-            }
+            }) { Text(text = stringResource(id = confirmButtonText)) }
         },
         dismissButton = {
             TextButton(onClick = onDismissClick) {

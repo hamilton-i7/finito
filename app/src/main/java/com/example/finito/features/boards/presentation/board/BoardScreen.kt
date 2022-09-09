@@ -1,8 +1,10 @@
 package com.example.finito.features.boards.presentation.board
 
 import android.content.res.Configuration
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -12,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
 import com.example.finito.core.presentation.components.CreateFab
+import com.example.finito.features.boards.presentation.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.DetailedTask
@@ -71,6 +73,10 @@ fun BoardScreen(
         floatingActionButtonPosition = FabPosition.Center,
         modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
+        if (boardViewModel.showDialog) {
+            BoardDialogs(boardViewModel)
+        }
+
         BoardScreen(
             paddingValues = innerPadding,
             listState = listState,
@@ -78,6 +84,11 @@ fun BoardScreen(
             showCompletedTasks = boardViewModel.showCompletedTasks,
             onToggleShowCompletedTasks = {
                 boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
+            },
+            onPriorityClick = {
+                boardViewModel.onEvent(BoardEvent.ShowDialog(
+                    type = BoardEvent.DialogType.Priority(it)
+                ))
             }
         )
     }
@@ -90,6 +101,7 @@ private fun BoardScreen(
     tasks: List<DetailedTask> = emptyList(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
+    onPriorityClick: (DetailedTask) -> Unit = {},
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
@@ -99,8 +111,8 @@ private fun BoardScreen(
         .fillMaxSize()
         .padding(paddingValues)) {
         LazyColumn(
-            contentPadding = PaddingValues(vertical = 12.dp),
-            state = listState
+            contentPadding = PaddingValues(top = 12.dp, bottom = 72.dp),
+            state = listState,
         ) {
             item(contentType = "progress bar") {
                 CompletedTasksProgressBar(
@@ -112,7 +124,10 @@ private fun BoardScreen(
                 )
             }
             items(uncompletedTasks, contentType = { "uncompleted tasks" }) {
-                TaskItem(detailedTask = it)
+                TaskItem(
+                    detailedTask = it,
+                    onPriorityClick = { onPriorityClick(it) }
+                )
             }
             item {
                 val rotate: Float by animateFloatAsState(if (showCompletedTasks) 0f else -180f)

@@ -136,7 +136,7 @@ private fun DrawerContent(
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
-            item { Divider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
+            item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             item {
                 DrawerSectionHeader(
@@ -159,7 +159,7 @@ private fun DrawerContent(
                 }
             }
             item { DrawerItemButton(text = R.string.create_new_board) }
-            item { Divider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
+            item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             item {
                 DrawerSectionHeader(
@@ -182,7 +182,7 @@ private fun DrawerContent(
                 }
             }
             item { DrawerItemButton(text = R.string.create_new_label) }
-            item { Divider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
+            item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             items(otherScreens) { item ->
                 NavigationDrawerItem(

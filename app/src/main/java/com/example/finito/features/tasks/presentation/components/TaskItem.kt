@@ -103,7 +103,7 @@ fun TaskItem(
                                     onClick = onPriorityClick,
                                     selected = false,
                                     label = {
-                                        Text(text = stringResource(id = R.string.low))
+                                        Text(text = stringResource(id = detailedTask.task.priority.label))
                                     },
                                     colors = InputChipDefaults.inputChipColors(
                                         labelColor = finitoColors.onLowPriorityContainer,
@@ -119,7 +119,7 @@ fun TaskItem(
                                     onClick = onPriorityClick,
                                     selected = false,
                                     label = {
-                                        Text(text = stringResource(id = R.string.medium))
+                                        Text(text = stringResource(id = detailedTask.task.priority.label))
                                     },
                                     colors = InputChipDefaults.inputChipColors(
                                         labelColor = finitoColors.onMediumPriorityContainer,
@@ -135,7 +135,7 @@ fun TaskItem(
                                     onClick = onPriorityClick,
                                     selected = false,
                                     label = {
-                                        Text(text = stringResource(id = R.string.urgent))
+                                        Text(text = stringResource(id = detailedTask.task.priority.label))
                                     },
                                     colors = InputChipDefaults.inputChipColors(
                                         labelColor = finitoColors.onUrgentPriorityContainer,

@@ -45,18 +45,6 @@ data class Task(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
     companion object {
-        private val reminders = listOf(
-            Reminder.FIVE_MINUTES,
-            Reminder.TEN_MINUTES,
-            Reminder.FIFTEEN_MINUTES,
-            Reminder.THIRTY_MINUTES,
-        )
-        private val priorities = listOf(
-            Priority.LOW,
-            Priority.MEDIUM,
-            Priority.URGENT,
-        )
-
         val dummyTasks = ('A'..'Z').mapIndexed { index, c ->
             Task(
                 taskId = index + 1,
@@ -67,8 +55,8 @@ data class Task(
                 date = if (index % 3 == 0) LocalDate.now().plusDays((0..100).random().toLong()) else null,
                 time = if (index % 6 == 0) LocalTime.now().plusHours((0..200).random().toLong()) else null,
                 completedAt = if (index % 5 == 0) LocalDateTime.now().plusMinutes((0..1_500).random().toLong()) else null,
-                reminder = if (index % 7 == 0) reminders.random() else null,
-                priority = if (index % 9 == 0) priorities.random() else null,
+                reminder = if (index % 7 == 0) enumValues<Reminder>().random() else null,
+                priority = if (index % 9 == 0) enumValues<Priority>().random() else null,
             )
         }.shuffled()
     }

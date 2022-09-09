@@ -65,4 +65,11 @@
     <string name="hide_completed_tasks">Hide completed tasks</string>
     <string name="show_completed_tasks">Show completed tasks</string>
     <string name="create_task">Create task</string>
+    <string name="choose_priority">Choose priority</string>
+    <string name="five_minutes_before">5 minutes befores</string>
+    <string name="ten_minutes_before">10 minutes befores</string>
+    <string name="fifteen_minutes_before">15 minutes before</string>
+    <string name="thirty_minutes_before">30 minutes before</string>
+    <string name="confirm">Confirm</string>
+    <string name="none">None</string>
 </resources>

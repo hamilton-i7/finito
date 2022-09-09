@@ -16,10 +16,7 @@ sealed class TrashEvent {
 
     data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : TrashEvent()
 
-    data class ShowDeleteDialog(
-        val show: Boolean,
-        val type: DialogType = DialogType.EmptyTrash,
-    ) : TrashEvent()
+    data class ShowDialog(val type: DialogType? = null) : TrashEvent()
 
     sealed class DialogType {
         data class DeleteBoard(val board: Board) : DialogType()

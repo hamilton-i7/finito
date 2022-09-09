@@ -1,10 +1,8 @@
 package com.example.finito.features.boards.presentation.board
 
 import com.example.finito.core.domain.Priority
-import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.DetailedTask
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -15,20 +13,20 @@ sealed class BoardEvent {
 
     data class DeleteBoard(val board: BoardWithLabelsAndTasks) : BoardEvent()
 
-    object DeleteCompletedTas : BoardEvent()
+    object DeleteCompletedTasks : BoardEvent()
 
-    data class CheckTask(val task: TaskWithSubtasks) : BoardEvent()
+    data class CheckTask(val task: DetailedTask) : BoardEvent()
 
-    data class UncheckTask(val task: TaskWithSubtasks) : BoardEvent()
+    data class UncheckTask(val task: DetailedTask) : BoardEvent()
 
-    data class ShowPriorityDialog(val show: Boolean) : BoardEvent()
+    data class ShowDialog(val type: DialogType? = null) : BoardEvent()
 
-    data class ChangeTaskPriority(val task: Task, val priority: Priority) : BoardEvent()
+    data class ChangeTaskPriorityConfirm(val task: DetailedTask) : BoardEvent()
 
-    data class ShowDateTimeDialog(val show: Boolean) : BoardEvent()
+    data class ChangeTaskPriority(val priority: Priority?) : BoardEvent()
 
     data class ChangeTaskDateTime(
-        val task: Task,
+        val task: DetailedTask,
         val date: LocalDate?,
         val time: LocalTime? = null,
     ) : BoardEvent()
@@ -37,5 +35,9 @@ sealed class BoardEvent {
 
     sealed class DialogType {
         object DeleteCompletedTasks : DialogType()
+
+        data class Priority(val detailedTask: DetailedTask) : DialogType()
+
+        data class DateTime(val detailedTask: DetailedTask) : DialogType()
     }
 }

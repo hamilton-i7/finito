@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -15,6 +16,8 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
+import com.example.finito.features.tasks.domain.entity.DetailedTask
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -44,9 +47,11 @@ class BoardViewModel @Inject constructor(
     var showDialog by mutableStateOf(false)
         private set
 
-    var dialogType by mutableStateOf<BoardEvent.DialogType>(
-        BoardEvent.DialogType.DeleteCompletedTasks
-    ); private set
+    var dialogType by mutableStateOf<BoardEvent.DialogType?>(null)
+        private set
+
+    var selectedPriority by mutableStateOf<Priority?>(null)
+        private set
 
     init {
         fetchBoard()
@@ -57,15 +62,39 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is BoardEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
             is BoardEvent.ChangeTaskDateTime -> TODO()
-            is BoardEvent.ChangeTaskPriority -> TODO()
+            is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
+            is BoardEvent.ChangeTaskPriorityConfirm -> changeTaskPriorityConfirm(event.task)
             is BoardEvent.CheckTask -> TODO()
-            BoardEvent.DeleteCompletedTas -> TODO()
-            is BoardEvent.ShowDateTimeDialog -> TODO()
-            is BoardEvent.ShowPriorityDialog -> TODO()
+            BoardEvent.DeleteCompletedTasks -> TODO()
             is BoardEvent.ShowScreenMenu -> TODO()
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.UncheckTask -> TODO()
+            is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
         }
+    }
+
+    private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
+        dialogType?.let {
+            showDialog = true
+            this.dialogType = it
+            selectedPriority = if (it is BoardEvent.DialogType.Priority) {
+                it.detailedTask.task.priority
+            } else null
+        } ?: run {
+            showDialog = false
+            selectedPriority = null
+        }
+    }
+
+    private fun changeTaskPriorityConfirm(task: DetailedTask) = viewModelScope.launch {
+        if (task.task.priority == selectedPriority) return@launch
+        taskUseCases.updateTask(
+            TaskWithSubtasks(
+                task = task.task.copy(priority = selectedPriority),
+                subtasks = task.subtasks
+            )
+        )
+        fetchBoard()
     }
 
     private fun onShowCompletedTasksChange() {

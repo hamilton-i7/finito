@@ -60,8 +60,7 @@ fun TrashScreen(
                     trashViewModel.onEvent(TrashEvent.ShowMenu(show = false))
                     when (it) {
                         TrashScreenMenuOption.EmptyTrash -> trashViewModel.onEvent(
-                            TrashEvent.ShowDeleteDialog(
-                                show = true,
+                            TrashEvent.ShowDialog(
                                 type = TrashEvent.DialogType.EmptyTrash
                             )
                         )
@@ -109,8 +108,7 @@ fun TrashScreen(
                         }
                     }
                     DeletedBoardMenuOption.DeleteForever -> {
-                        trashViewModel.onEvent(TrashEvent.ShowDeleteDialog(
-                            show = true,
+                        trashViewModel.onEvent(TrashEvent.ShowDialog(
                             type = TrashEvent.DialogType.DeleteBoard(board.board)
                         ))
                     }

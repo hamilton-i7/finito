@@ -28,11 +28,12 @@ import com.example.finito.ui.theme.finitoColors
 fun BoardCard(
     onClick: () -> Unit,
     board: BoardWithLabelsAndTasks,
+    modifier: Modifier = Modifier,
     onOptionsClick: () -> Unit = {},
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
     options: List<BoardCardMenuOption> = emptyList(),
-    onMenuItemClick: (BoardCardMenuOption) -> Unit = {}
+    onMenuItemClick: (BoardCardMenuOption) -> Unit = {},
 ) {
     val completedTasks = board.tasks.let {
         if (it.isEmpty()) return@let 0F
@@ -42,7 +43,10 @@ fun BoardCard(
     }
     val labelNames = board.labels.joinToString { it.name }
 
-    Card(onClick) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+    ) {
         Column(modifier = Modifier.padding(vertical = 16.dp)) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,

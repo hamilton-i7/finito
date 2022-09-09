@@ -1,5 +1,6 @@
 package com.example.finito.features.boards.presentation.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import com.example.finito.features.boards.utils.BOARD_COLUMNS
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelChips
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BoardsGrid(
     contentPadding: PaddingValues,
@@ -67,7 +69,7 @@ fun BoardsGrid(
                 )
             }
         }
-        items(boards, contentType = { "boards" }) {
+        items(boards, contentType = { "boards" }, key = { it.board.boardId }) {
             BoardCard(
                 onClick = { onBoardClick(it.board.boardId) },
                 board = it,
@@ -75,7 +77,8 @@ fun BoardsGrid(
                 showMenu = showCardMenu(it.board.boardId),
                 onDismissMenu = { onDismissMenu(it.board.boardId) },
                 options = options,
-                onMenuItemClick = { option -> onMenuItemClick(it, option) }
+                onMenuItemClick = { option -> onMenuItemClick(it, option) },
+                modifier = Modifier.animateItemPlacement(),
             )
         }
     }

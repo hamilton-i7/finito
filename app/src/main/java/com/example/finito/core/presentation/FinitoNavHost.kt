@@ -33,8 +33,11 @@ fun FinitoNavHost(
            enterTransition = mainScreenEnterTransition,
            exitTransition = mainScreenExitTransition
        ) {
-           HomeScreen(navHostController = navHostController, drawerState = drawerState)
-           HandleBackPress(drawerState, onBackPress =  finishActivity)
+           HomeScreen(
+               navHostController = navHostController,
+               drawerState = drawerState,
+               finishActivity = finishActivity
+           )
        }
 
        composable(
@@ -42,8 +45,11 @@ fun FinitoNavHost(
            enterTransition = mainScreenEnterTransition,
            exitTransition = mainScreenExitTransition
        ) {
-           ArchiveScreen(navHostController = navHostController, drawerState = drawerState)
-           HandleBackPress(drawerState, onBackPress =  finishActivity)
+           ArchiveScreen(
+               navHostController = navHostController,
+               drawerState = drawerState,
+               finishActivity = finishActivity
+           )
        }
 
        composable(
@@ -51,8 +57,11 @@ fun FinitoNavHost(
            enterTransition = mainScreenEnterTransition,
            exitTransition = mainScreenExitTransition
        ) {
-           TrashScreen(navHostController = navHostController, drawerState = drawerState)
-           HandleBackPress(drawerState, onBackPress =  finishActivity)
+           TrashScreen(
+               navHostController = navHostController,
+               drawerState = drawerState,
+               finishActivity = finishActivity
+           )
        }
 
        composable(
@@ -61,22 +70,27 @@ fun FinitoNavHost(
            enterTransition = mainScreenEnterTransition,
            exitTransition = mainScreenExitTransition
        ) {
-           BoardScreen(navController = navHostController, drawerState = drawerState)
-           HandleBackPress(drawerState, onBackPress =  finishActivity)
+           BoardScreen(
+               navController = navHostController,
+               drawerState = drawerState,
+               finishActivity = finishActivity
+           )
        }
    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HandleBackPress(
-    drawerState: DrawerState,
+fun HandleBackPress(
+    drawerState: DrawerState? = null,
     onBackPress: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     BackHandler {
-        if (drawerState.isOpen) {
-            scope.launch { drawerState.close() }
-        } else onBackPress()
+        drawerState?.let {
+            if (drawerState.isOpen) {
+                scope.launch { drawerState.close() }
+            } else onBackPress()
+        } ?: onBackPress()
     }
 }

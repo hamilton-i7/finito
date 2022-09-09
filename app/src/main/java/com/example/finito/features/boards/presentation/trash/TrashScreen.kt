@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.DeletedBoardMenuOption
 import com.example.finito.core.domain.util.TrashScreenMenuOption
+import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
@@ -31,6 +32,7 @@ fun TrashScreen(
     navHostController: NavHostController,
     drawerState: DrawerState,
     trashViewModel: TrashViewModel = hiltViewModel(),
+    finishActivity: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -38,6 +40,8 @@ fun TrashScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val restoredMessage = stringResource(id = R.string.board_was_restored)
     val snackbarAction = stringResource(id = R.string.undo)
+
+    HandleBackPress(drawerState, onBackPress =  finishActivity)
 
     Scaffold(
         snackbarHost = {

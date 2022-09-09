@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ViewStream
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 
@@ -15,6 +16,7 @@ import com.example.finito.R
 fun BottomBar(
     @StringRes fabDescription: Int,
     @StringRes searchDescription: Int,
+    modifier: Modifier = Modifier,
     gridLayout: Boolean = true,
     onSearchClick: () -> Unit = {},
     onChangeLayoutClick: () -> Unit = {},
@@ -55,6 +57,7 @@ fun BottomBar(
                     )
                 }
             }
-        } else null
+        } else null,
+        modifier = modifier
     )
 }

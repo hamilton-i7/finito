@@ -2,13 +2,17 @@ package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -16,34 +20,46 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.ActiveBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.bars.BottomBar
-import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
+import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class
+    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class
 )
 @Composable
 fun HomeScreen(
     navHostController: NavHostController,
     drawerState: DrawerState,
     homeViewModel: HomeViewModel = hiltViewModel(),
+    finishActivity: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val keyboardVisible = WindowInsets.isImeVisible
+    val isKeyboardVisible = WindowInsets.isImeVisible
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val archivedMessage = stringResource(id = R.string.board_archived)
     val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
     val snackbarAction = stringResource(id = R.string.undo)
+
+    HandleBackPress(drawerState) {
+        if (homeViewModel.showSearchBar) {
+            homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
+        } else {
+            finishActivity()
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -79,24 +95,23 @@ fun HomeScreen(
                 }
             }
         },
-        bottomBar = if (!keyboardVisible) {
-            {
-                BottomBar(
-                    fabDescription = R.string.add_board,
-                    searchDescription = R.string.search_boards,
-                    onChangeLayoutClick = {
-                        homeViewModel.onEvent(HomeEvent.ToggleLayout)
-                    },
-                    gridLayout = homeViewModel.gridLayout,
-                    onSearchClick = {
-                        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
-                    },
-                    onFabClick = {
-                        // TODO: Add create board functionality
-                    }
-                )
-            }
-        } else {{}},
+        bottomBar = bottomBar@{
+            if (isKeyboardVisible) return@bottomBar
+            BottomBar(
+                fabDescription = R.string.add_board,
+                searchDescription = R.string.search_boards,
+                onChangeLayoutClick = {
+                    homeViewModel.onEvent(HomeEvent.ToggleLayout)
+                },
+                gridLayout = homeViewModel.gridLayout,
+                onSearchClick = {
+                    homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
+                },
+                onFabClick = {
+                    // TODO: Add create board functionality
+                }
+            )
+        },
         modifier = Modifier.nestedScroll(
             if (homeViewModel.showSearchBar)
                 searchTopBarScrollBehavior.nestedScrollConnection
@@ -105,6 +120,11 @@ fun HomeScreen(
         )
     ) { innerPadding ->
         HomeScreen(
+            modifier = Modifier.clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = { keyboardController?.hide() }
+            ),
             paddingValues = innerPadding,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,
@@ -171,6 +191,7 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreen(
+    modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
@@ -197,7 +218,9 @@ private fun HomeScreen(
         SortingOption.Common.NameZA,
     )
 
-    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+    Surface(modifier = modifier
+        .fillMaxSize()
+        .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
             labels = labels,

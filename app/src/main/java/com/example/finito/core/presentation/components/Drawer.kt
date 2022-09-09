@@ -127,7 +127,7 @@ private fun DrawerContent(
             }
             item { DrawerSectionHeader(text = R.string.main) }
 
-            items(mainScreens) { item ->
+            items(mainScreens, key = { it.screen.route }) { item ->
                 NavigationDrawerItem(
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { Text(text = stringResource(id = item.label)) },
@@ -146,7 +146,7 @@ private fun DrawerContent(
                 )
             }
             if (expandBoards) {
-                items(boards) { board ->
+                items(boards, key = { it.boardId }) { board ->
                     val route = "${Screen.Board.prefix}/${board.boardId}"
 
                     NavigationDrawerItem(
@@ -169,7 +169,7 @@ private fun DrawerContent(
                 )
             }
             if (expandLabels) {
-                items(labels) { label ->
+                items(labels, key = { it.labelId }) { label ->
                     val route = "${Screen.Label.prefix}/${label.labelId}"
 
                     NavigationDrawerItem(
@@ -184,7 +184,7 @@ private fun DrawerContent(
             item { DrawerItemButton(text = R.string.create_new_label) }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
-            items(otherScreens) { item ->
+            items(otherScreens, key = { it.screen.route }) { item ->
                 NavigationDrawerItem(
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { Text(text = stringResource(id = item.label)) },

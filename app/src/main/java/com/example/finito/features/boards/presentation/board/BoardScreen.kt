@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
+import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.board.components.BoardTopBar
@@ -42,6 +43,7 @@ fun BoardScreen(
     navController: NavController,
     drawerState: DrawerState,
     boardViewModel: BoardViewModel = hiltViewModel(),
+    finishActivity: () -> Unit = {}
 ) {
     val detailedBoard = boardViewModel.board
 
@@ -52,6 +54,8 @@ fun BoardScreen(
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
+
+    HandleBackPress(drawerState, onBackPress =  finishActivity)
 
     Scaffold(
         topBar = {
@@ -123,7 +127,11 @@ private fun BoardScreen(
                         .padding(bottom = 24.dp)
                 )
             }
-            items(uncompletedTasks, contentType = { "uncompleted tasks" }) {
+            items(
+                items = uncompletedTasks,
+                contentType = { "uncompleted tasks" },
+                key = { it.task.taskId }
+            ) {
                 TaskItem(
                     detailedTask = it,
                     onPriorityClick = { onPriorityClick(it) }
@@ -158,7 +166,11 @@ private fun BoardScreen(
                     )
                 }
             }
-            items(completedTasks, contentType = { "completed tasks" }) {
+            items(
+                items = completedTasks,
+                contentType = { "completed tasks" },
+                key = { it.task.taskId }
+            ) {
                 AnimatedVisibility(
                     visible = showCompletedTasks,
                     enter = fadeIn(),

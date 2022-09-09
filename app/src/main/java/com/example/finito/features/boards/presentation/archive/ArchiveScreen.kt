@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.ArchivedBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.SmallTopBar
@@ -34,16 +35,19 @@ fun ArchiveScreen(
     navHostController: NavHostController,
     drawerState: DrawerState,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
+    finishActivity: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val simpleTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val keyboardVisible = WindowInsets.isImeVisible
+    val isKeyboardVisible = WindowInsets.isImeVisible
 
     val snackbarHostState = remember { SnackbarHostState() }
     val unarchivedMessage = stringResource(id = R.string.board_moved_out_of_archive)
     val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
     val snackbarAction = stringResource(id = R.string.undo)
+
+    HandleBackPress(drawerState, onBackPress =  finishActivity)
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -80,21 +84,20 @@ fun ArchiveScreen(
                 }
             }
         },
-        bottomBar = if (!keyboardVisible) {
-            {
-                BottomBar(
-                    fabDescription = R.string.add_board,
-                    searchDescription = R.string.search_boards,
-                    onChangeLayoutClick = {
-                        archiveViewModel.onEvent(ArchiveEvent.ToggleLayout)
-                    },
-                    gridLayout = archiveViewModel.gridLayout,
-                    onSearchClick = {
-                        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = true))
-                    }
-                )
-            }
-        } else {{}},
+        bottomBar = bottomBar@{
+            if (isKeyboardVisible) return@bottomBar
+            BottomBar(
+                fabDescription = R.string.add_board,
+                searchDescription = R.string.search_boards,
+                onChangeLayoutClick = {
+                    archiveViewModel.onEvent(ArchiveEvent.ToggleLayout)
+                },
+                gridLayout = archiveViewModel.gridLayout,
+                onSearchClick = {
+                    archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = true))
+                }
+            )
+        },
         modifier = Modifier.nestedScroll(
             if (archiveViewModel.showSearchBar)
                 searchTopBarScrollBehavior.nestedScrollConnection

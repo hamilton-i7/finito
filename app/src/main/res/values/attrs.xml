@@ -1,0 +1,18 @@
+
+<resources>
+    <attr name="colorLowpriority" format="color" />
+    <attr name="colorOnLowpriority" format="color" />
+    <attr name="colorLowpriorityContainer" format="color" />
+    <attr name="colorOnLowpriorityContainer" format="color" />
+    <attr name="harmonizeLowpriority" format="boolean" />
+    <attr name="colorMediumpriority" format="color" />
+    <attr name="colorOnMediumpriority" format="color" />
+    <attr name="colorMediumpriorityContainer" format="color" />
+    <attr name="colorOnMediumpriorityContainer" format="color" />
+    <attr name="harmonizeMediumpriority" format="boolean" />
+    <attr name="colorUrgentpriority" format="color" />
+    <attr name="colorOnUrgentpriority" format="color" />
+    <attr name="colorUrgentpriorityContainer" format="color" />
+    <attr name="colorOnUrgentpriorityContainer" format="color" />
+    <attr name="harmonizeUrgentpriority" format="boolean" />
+</resources>

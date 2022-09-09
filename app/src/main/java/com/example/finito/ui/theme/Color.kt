@@ -1,7 +1,9 @@
 package com.example.finito.ui.theme
 
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 
 // Primary
 val Liberty = Color(0xFF4A56AF)
@@ -94,4 +96,6 @@ data class FinitoColors(
     val outline: Color get() = colorScheme.outline
     val inverseOnSurface: Color get() = colorScheme.inverseOnSurface
     val inverseSurface: Color get() = colorScheme.inverseSurface
+
+    fun surfaceColorAtElevation(elevation: Dp) = colorScheme.surfaceColorAtElevation(elevation)
 }

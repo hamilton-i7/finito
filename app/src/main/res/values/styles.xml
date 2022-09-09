@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ThemeOverlay.Finito.DatePicker" parent="@style/ThemeOverlay.Material3.MaterialCalendar">
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Finito.MediumComponent</item>
+    </style>
+
+    <style name="ShapeAppearance.Finito.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">28dp</item>
+    </style>
+</resources>

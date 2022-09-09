@@ -21,6 +21,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -53,6 +54,9 @@ class BoardViewModel @Inject constructor(
     var selectedPriority by mutableStateOf<Priority?>(null)
         private set
 
+    var selectedDate by mutableStateOf<LocalDate?>(null)
+        private set
+
     init {
         fetchBoard()
     }
@@ -70,6 +74,7 @@ class BoardViewModel @Inject constructor(
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.UncheckTask -> TODO()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
+            is BoardEvent.ChangeTaskDate -> TODO()
         }
     }
 

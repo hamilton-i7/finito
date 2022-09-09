@@ -24,6 +24,8 @@ sealed class BoardEvent {
     data class ChangeTaskPriorityConfirm(val task: DetailedTask) : BoardEvent()
 
     data class ChangeTaskPriority(val priority: Priority?) : BoardEvent()
+    
+    data class ChangeTaskDate(val date: LocalDate?) : BoardEvent()
 
     data class ChangeTaskDateTime(
         val task: DetailedTask,

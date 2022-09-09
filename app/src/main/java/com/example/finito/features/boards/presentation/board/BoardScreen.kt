@@ -93,6 +93,11 @@ fun BoardScreen(
                 boardViewModel.onEvent(BoardEvent.ShowDialog(
                     type = BoardEvent.DialogType.Priority(it)
                 ))
+            },
+            onDateTimeClick = {
+                boardViewModel.onEvent((BoardEvent.ShowDialog(
+                    type = BoardEvent.DialogType.DateTime(it)
+                )))
             }
         )
     }
@@ -106,6 +111,7 @@ private fun BoardScreen(
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
     onPriorityClick: (DetailedTask) -> Unit = {},
+    onDateTimeClick: (DetailedTask) -> Unit = {},
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
@@ -134,7 +140,8 @@ private fun BoardScreen(
             ) {
                 TaskItem(
                     detailedTask = it,
-                    onPriorityClick = { onPriorityClick(it) }
+                    onPriorityClick = { onPriorityClick(it) },
+                    onDateTimeClick = { onDateTimeClick(it) }
                 )
             }
             item {

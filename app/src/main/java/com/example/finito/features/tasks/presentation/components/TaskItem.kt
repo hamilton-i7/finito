@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +34,9 @@ fun TaskItem(
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val context = LocalContext.current
+    val isSimpleTask = detailedTask.task.description == null
+            && detailedTask.task.date == null
+            && detailedTask.task.priority == null
 
     Surface(
         onClick = onTaskClick,
@@ -57,7 +61,7 @@ fun TaskItem(
                     modifier = Modifier.offset(y = (-12).dp)
                 )
             }
-            Column {
+            Column(modifier = if (isSimpleTask) Modifier.align(Alignment.CenterVertically) else Modifier) {
                 Text(
                     text = detailedTask.task.name,
                     overflow = TextOverflow.Ellipsis,
@@ -78,90 +82,92 @@ fun TaskItem(
                         else null
                     )
                 }
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    mainAxisSpacing = 8.dp,
-                    crossAxisSpacing = 8.dp
-                ) {
-                    if (onBoardNameClick != null) {
-                        InputChip(
-                            selected = true,
-                            onClick = onBoardNameClick,
-                            label = {
-                                Text(
-                                    text = detailedTask.board.name,
-                                    color = finitoColors.primary
-                                )
-                            },
-                            enabled = !detailedTask.task.completed,
-                        )
-                    }
-                    if (detailedTask.task.priority != null) {
-                        when (detailedTask.task.priority) {
-                            Priority.LOW -> {
-                                InputChip(
-                                    onClick = onPriorityClick,
-                                    selected = false,
-                                    label = {
-                                        Text(text = stringResource(id = detailedTask.task.priority.label))
-                                    },
-                                    colors = InputChipDefaults.inputChipColors(
-                                        labelColor = finitoColors.onLowPriorityContainer,
-                                        containerColor = finitoColors.lowPriorityContainer,
-                                        disabledContainerColor = finitoColors.lowPriorityContainer.copy(alpha = 0.25f),
-                                    ),
-                                    enabled = !detailedTask.task.completed,
-                                    border = null
-                                )
-                            }
-                            Priority.MEDIUM -> {
-                                InputChip(
-                                    onClick = onPriorityClick,
-                                    selected = false,
-                                    label = {
-                                        Text(text = stringResource(id = detailedTask.task.priority.label))
-                                    },
-                                    colors = InputChipDefaults.inputChipColors(
-                                        labelColor = finitoColors.onMediumPriorityContainer,
-                                        containerColor = finitoColors.mediumPriorityContainer,
-                                        disabledContainerColor = finitoColors.mediumPriorityContainer.copy(alpha = 0.25f),
-                                    ),
-                                    enabled = !detailedTask.task.completed,
-                                    border = null
-                                )
-                            }
-                            Priority.URGENT -> {
-                                InputChip(
-                                    onClick = onPriorityClick,
-                                    selected = false,
-                                    label = {
-                                        Text(text = stringResource(id = detailedTask.task.priority.label))
-                                    },
-                                    colors = InputChipDefaults.inputChipColors(
-                                        labelColor = finitoColors.onUrgentPriorityContainer,
-                                        containerColor = finitoColors.urgentPriorityContainer,
-                                        disabledContainerColor = finitoColors.urgentPriorityContainer.copy(alpha = 0.25f),
-                                    ),
-                                    enabled = !detailedTask.task.completed,
-                                    border = null
-                                )
+                if (!isSimpleTask) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        mainAxisSpacing = 8.dp,
+                        crossAxisSpacing = 8.dp
+                    ) {
+                        if (onBoardNameClick != null) {
+                            InputChip(
+                                selected = true,
+                                onClick = onBoardNameClick,
+                                label = {
+                                    Text(
+                                        text = detailedTask.board.name,
+                                        color = finitoColors.primary
+                                    )
+                                },
+                                enabled = !detailedTask.task.completed,
+                            )
+                        }
+                        if (detailedTask.task.priority != null) {
+                            when (detailedTask.task.priority) {
+                                Priority.LOW -> {
+                                    InputChip(
+                                        onClick = onPriorityClick,
+                                        selected = false,
+                                        label = {
+                                            Text(text = stringResource(id = detailedTask.task.priority.label))
+                                        },
+                                        colors = InputChipDefaults.inputChipColors(
+                                            labelColor = finitoColors.onLowPriorityContainer,
+                                            containerColor = finitoColors.lowPriorityContainer,
+                                            disabledContainerColor = finitoColors.lowPriorityContainer.copy(alpha = 0.25f),
+                                        ),
+                                        enabled = !detailedTask.task.completed,
+                                        border = null
+                                    )
+                                }
+                                Priority.MEDIUM -> {
+                                    InputChip(
+                                        onClick = onPriorityClick,
+                                        selected = false,
+                                        label = {
+                                            Text(text = stringResource(id = detailedTask.task.priority.label))
+                                        },
+                                        colors = InputChipDefaults.inputChipColors(
+                                            labelColor = finitoColors.onMediumPriorityContainer,
+                                            containerColor = finitoColors.mediumPriorityContainer,
+                                            disabledContainerColor = finitoColors.mediumPriorityContainer.copy(alpha = 0.25f),
+                                        ),
+                                        enabled = !detailedTask.task.completed,
+                                        border = null
+                                    )
+                                }
+                                Priority.URGENT -> {
+                                    InputChip(
+                                        onClick = onPriorityClick,
+                                        selected = false,
+                                        label = {
+                                            Text(text = stringResource(id = detailedTask.task.priority.label))
+                                        },
+                                        colors = InputChipDefaults.inputChipColors(
+                                            labelColor = finitoColors.onUrgentPriorityContainer,
+                                            containerColor = finitoColors.urgentPriorityContainer,
+                                            disabledContainerColor = finitoColors.urgentPriorityContainer.copy(alpha = 0.25f),
+                                        ),
+                                        enabled = !detailedTask.task.completed,
+                                        border = null
+                                    )
+                                }
                             }
                         }
-                    }
-                    if (detailedTask.task.date != null) {
-                        InputChip(
-                            selected = false,
-                            onClick = onDateTimeClick,
-                            label = {
-                                Text(text = toFormattedChipDate(
-                                    date = detailedTask.task.date,
-                                    time = detailedTask.task.time,
-                                    context = context,
-                                    locale = locale
-                                ))
-                            },
-                            enabled = !detailedTask.task.completed,
-                        )
+                        if (detailedTask.task.date != null) {
+                            InputChip(
+                                selected = false,
+                                onClick = onDateTimeClick,
+                                label = {
+                                    Text(text = toFormattedChipDate(
+                                        date = detailedTask.task.date,
+                                        time = detailedTask.task.time,
+                                        context = context,
+                                        locale = locale
+                                    ))
+                                },
+                                enabled = !detailedTask.task.completed,
+                            )
+                        }
                     }
                 }
             }

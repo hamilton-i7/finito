@@ -10,7 +10,7 @@ import com.example.finito.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SmallTopBar(
+fun TopBar(
     onMenuClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     @StringRes title: Int,

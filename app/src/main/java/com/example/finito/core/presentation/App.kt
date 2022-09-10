@@ -12,6 +12,21 @@ import com.example.finito.core.presentation.components.Drawer
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.launch
 
+private val staticDrawerRoutes = listOf(
+    Screen.Home.route,
+    Screen.Today.route,
+    Screen.Tomorrow.route,
+    Screen.Urgent.route,
+    Screen.Archive.route,
+    Screen.Trash.route,
+)
+private val dynamicDrawerRoutes = listOf(
+    Screen.Board.route,
+    Screen.Label.route
+)
+
+private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
@@ -19,6 +34,23 @@ fun App(finishActivity: () -> Unit) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
+
+    navController.addOnDestinationChangedListener(
+        listener = { _, destination, arguments ->
+            if (!drawerRoutes.contains(destination.route)) {
+                return@addOnDestinationChangedListener
+            }
+
+            val route: String = if (staticDrawerRoutes.contains(destination.route)) {
+                destination.route!!
+            } else if (destination.route == Screen.Board.route) {
+                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ROUTE_ARGUMENT)}"
+            } else {
+                "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ROUTE_ARGUMENT)}"
+            }
+            drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
+        }
+    )
 
     Drawer(
         drawerState = drawerState,
@@ -40,8 +72,6 @@ fun App(finishActivity: () -> Unit) {
                 scope.launch { drawerState.close() }
                 return@onItemSelected
             }
-            drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
-
             scope.launch {
                 drawerState.close()
                 navController.navigate(route)

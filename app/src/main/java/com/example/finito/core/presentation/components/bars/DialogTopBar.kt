@@ -18,7 +18,7 @@ fun DialogTopBar(
     saveButtonEnabled: Boolean = true,
     onSave: () -> Unit = {},
 ) {
-    SmallTopAppBar(
+    TopAppBar(title = { Text(text = stringResource(id = title)) },
         navigationIcon = {
             IconButton(onClick = onCloseClick) {
                 Icon(
@@ -27,14 +27,11 @@ fun DialogTopBar(
                 )
             }
         },
-        title = { Text(text = stringResource(id = title)) },
         actions = {
             TextButton(onClick = onSave, enabled = saveButtonEnabled) {
                 Text(text = stringResource(id = R.string.save))
             }
-        },
-        colors = TopAppBarDefaults.smallTopAppBarColors(
+        }, colors = TopAppBarDefaults.smallTopAppBarColors(
             containerColor = finitoColors.surfaceColorAtElevation(3.dp)
-        ),
-    )
+        ))
 }

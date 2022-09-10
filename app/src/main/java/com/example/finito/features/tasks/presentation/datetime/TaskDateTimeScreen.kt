@@ -118,7 +118,7 @@ private fun TaskDateTimeScreen(
             .padding(paddingValues)
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 32.dp, horizontal = 16.dp)

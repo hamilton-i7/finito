@@ -15,7 +15,8 @@ fun SmallTopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     @StringRes title: Int,
 ) {
-    SmallTopAppBar(
+    TopAppBar(
+        title = { Text(text = stringResource(id = title)) },
         navigationIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(
@@ -24,7 +25,5 @@ fun SmallTopBar(
                 )
             }
         },
-        title = { Text(text = stringResource(id = title)) },
-        scrollBehavior = scrollBehavior,
-    )
+        scrollBehavior = scrollBehavior)
 }

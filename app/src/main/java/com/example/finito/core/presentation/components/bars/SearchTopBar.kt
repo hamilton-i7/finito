@@ -28,7 +28,24 @@ fun SearchTopBar(
         focusRequester.requestFocus()
     }
 
-    SmallTopAppBar(
+    TopAppBar(title = {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = {
+                Text(text = stringResource(id = R.string.search_boards))
+            },
+            singleLine = true,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent
+            ),
+            textStyle = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+        )
+    },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
@@ -36,24 +53,6 @@ fun SearchTopBar(
                     contentDescription = stringResource(id = R.string.close_search_bar)
                 )
             }
-        },
-        title = {
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = {
-                    Text(text = stringResource(id = R.string.search_boards))
-                },
-                singleLine = true,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
-                ),
-                textStyle = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester)
-            )
         },
         scrollBehavior = scrollBehavior
     )

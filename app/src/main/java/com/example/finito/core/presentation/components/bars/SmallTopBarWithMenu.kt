@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.util.TopBarMenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
@@ -26,7 +25,7 @@ fun SmallTopBarWithMenu(
     options: List<TopBarMenuOption> = emptyList(),
     onOptionClick: (TopBarMenuOption) -> Unit = {},
 ) {
-    SmallTopAppBar(
+    TopAppBar(title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(
@@ -35,7 +34,6 @@ fun SmallTopBarWithMenu(
                 )
             }
         },
-        title = { Text(title) },
         actions = {
             Box {
                 IconButton(onClick = onMoreOptionsClick) {
@@ -57,7 +55,6 @@ fun SmallTopBarWithMenu(
                     }
                 }
             }
-        },
-        scrollBehavior = scrollBehavior
+        }, scrollBehavior = scrollBehavior
     )
 }

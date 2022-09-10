@@ -37,7 +37,7 @@ class AddEditBoardViewModel @Inject constructor(
     var nameState by mutableStateOf(TextFieldState())
         private set
 
-    var showLabels by mutableStateOf(true)
+    var showLabels by mutableStateOf(false)
         private set
 
     init {
@@ -47,7 +47,14 @@ class AddEditBoardViewModel @Inject constructor(
 
     fun onEvent(event: AddEditBoardEvent) {
         when (event) {
-            is AddEditBoardEvent.SelectLabel -> TODO()
+            is AddEditBoardEvent.SelectLabel -> {
+                val exists = selectedLabels.contains(event.label)
+                selectedLabels = if (exists) {
+                    selectedLabels.filter { it != event.label }
+                } else {
+                    selectedLabels + listOf(event.label)
+                }
+            }
             is AddEditBoardEvent.ChangeName -> {
                 nameState = nameState.copy(
                     value = event.name

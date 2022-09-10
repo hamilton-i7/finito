@@ -25,7 +25,7 @@ fun LabelItem(
         trailingContent = {
             Checkbox(
                 checked = selected,
-                onCheckedChange = {},
+                onCheckedChange = { onLabelClick() },
                 colors = CheckboxDefaults.colors(
                     checkedColor = finitoColors.tertiary
                 )

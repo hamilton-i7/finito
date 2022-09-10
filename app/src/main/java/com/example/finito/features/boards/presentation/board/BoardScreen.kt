@@ -27,11 +27,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
 import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
-import com.example.finito.features.tasks.domain.entity.DetailedTask
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
 import com.example.finito.features.tasks.presentation.components.TaskItem
 import com.example.finito.ui.theme.FinitoTheme
@@ -43,7 +44,7 @@ fun BoardScreen(
     navController: NavController,
     drawerState: DrawerState,
     boardViewModel: BoardViewModel = hiltViewModel(),
-    finishActivity: () -> Unit = {}
+    finishActivity: () -> Unit = {},
 ) {
     val detailedBoard = boardViewModel.board
 
@@ -94,11 +95,7 @@ fun BoardScreen(
                     type = BoardEvent.DialogType.Priority(it)
                 ))
             },
-            onDateTimeClick = {
-                boardViewModel.onEvent((BoardEvent.ShowDialog(
-                    type = BoardEvent.DialogType.DateTime(it)
-                )))
-            }
+            onDateTimeClick = { navController.navigate(it) }
         )
     }
 }
@@ -107,11 +104,11 @@ fun BoardScreen(
 private fun BoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     listState: LazyListState = rememberLazyListState(),
-    tasks: List<DetailedTask> = emptyList(),
+    tasks: List<TaskWithSubtasks> = emptyList(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
-    onPriorityClick: (DetailedTask) -> Unit = {},
-    onDateTimeClick: (DetailedTask) -> Unit = {},
+    onPriorityClick: (TaskWithSubtasks) -> Unit = {},
+    onDateTimeClick: (route: String) -> Unit = {},
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
@@ -139,10 +136,12 @@ private fun BoardScreen(
                 key = { it.task.taskId }
             ) {
                 TaskItem(
-                    detailedTask = it,
-                    onPriorityClick = { onPriorityClick(it) },
-                    onDateTimeClick = { onDateTimeClick(it) }
-                )
+                    task = it.task,
+                    onPriorityClick = { onPriorityClick(it) }
+                ) {
+                    val route = "${Screen.TaskDateTime.prefix}/${it.task.taskId}"
+                    onDateTimeClick(route)
+                }
             }
             item {
                 val rotate: Float by animateFloatAsState(if (showCompletedTasks) 0f else -180f)
@@ -182,7 +181,7 @@ private fun BoardScreen(
                     visible = showCompletedTasks,
                     enter = fadeIn(),
                     exit = fadeOut()
-                ) { TaskItem(detailedTask = it) }
+                ) { TaskItem(task = it.task) }
             }
         }
     }
@@ -193,7 +192,7 @@ private fun BoardScreen(
 private fun BoardScreenPreview() {
     FinitoTheme {
         Surface {
-            BoardScreen(tasks = DetailedTask.dummyTasks)
+            BoardScreen(tasks = TaskWithSubtasks.dummyTasks)
         }
     }
 }
@@ -206,7 +205,7 @@ private fun BoardScreenPreview() {
 private fun BoardScreenPreviewDark() {
     FinitoTheme {
         Surface {
-            BoardScreen(tasks = DetailedTask.dummyTasks)
+            BoardScreen(tasks = TaskWithSubtasks.dummyTasks)
         }
     }
 }

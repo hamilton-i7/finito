@@ -28,7 +28,7 @@ private fun setupResult(
     formattedDate: String,
     time: LocalTime?,
 ): String {
-    return time?.let { "$formattedDate - ${it.toChipFormat()}" } ?: formattedDate
+    return time?.let { "$formattedDate - ${it.formatted()}" } ?: formattedDate
 }
 
 private fun LocalDate.toFutureFormat(today: LocalDate, context: Context, locale: Locale): String {
@@ -44,7 +44,12 @@ private fun LocalDate.toFutureFormat(today: LocalDate, context: Context, locale:
 
 private fun LocalDate.toPastFormat(today: LocalDate, context: Context, locale: Locale): String {
     val result: String = when {
-        isYesterday(today) -> context.getString(R.string.yesterday)
+        isDaysAgo(today, days = 1) -> context.getString(R.string.yesterday)
+        isDaysAgo(today, days = 2) -> context.getString(R.string.two_days_ago)
+        isDaysAgo(today, days = 3) -> context.getString(R.string.three_days_ago)
+        isDaysAgo(today, days = 4) -> context.getString(R.string.four_days_ago)
+        isDaysAgo(today, days = 5) -> context.getString(R.string.five_days_ago)
+        isDaysAgo(today, days = 6) -> context.getString(R.string.six_days_ago)
         isLastWeek(today) -> context.getString(R.string.last_week)
         isTwoWeeksAgo(today) -> context.getString(R.string.two_weeks_ago)
         isLastMonth(today) -> context.getString(R.string.last_month)
@@ -54,26 +59,31 @@ private fun LocalDate.toPastFormat(today: LocalDate, context: Context, locale: L
     return result
 }
 
-private fun LocalDate.toCurrentYearFormat(locale: Locale): String {
+@Suppress("SpellCheckingInspection")
+fun LocalDate.toCurrentYearFormat(locale: Locale, complete: Boolean = false): String {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
-        "ccc LLL d",
+        if (complete) "cccc LLLL d" else "ccc LLL d",
         locale
     )
     return formatter.format(this)
 }
 
-private fun LocalDate.toFullFormat(locale: Locale): String {
-    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("ccc LLL d, yyyy", locale)
+@Suppress("SpellCheckingInspection")
+fun LocalDate.toFullFormat(locale: Locale, complete: Boolean = false): String {
+    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(
+        if (complete) "cccc LLLL d, yyyy" else "ccc LLL d, yyyy",
+        locale
+    )
     return formatter.format(this)
 }
 
-private fun LocalTime.toChipFormat(): String {
+fun LocalTime.formatted(): String {
     return format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
 }
 
 private fun LocalDate.isTomorrow(today: LocalDate): Boolean = isEqual(today.plusDays(1))
 
-private fun LocalDate.isYesterday(today: LocalDate): Boolean = isEqual(today.minusDays(1))
+private fun LocalDate.isDaysAgo(today: LocalDate, days: Long): Boolean = isEqual(today.minusDays(days))
 
 private fun LocalDate.isNextWeek(today: LocalDate): Boolean {
     val nextWeek = today.plusWeeks(1)
@@ -100,4 +110,4 @@ private fun LocalDate.isLastMonth(today: LocalDate): Boolean {
     return (isEqual(lastMonth) || isBefore(lastMonth)) && isAfter(lastMonth.minusMonths(1))
 }
 
-private fun LocalDate.isCurrentYear(today: LocalDate): Boolean = year == today.year
+fun LocalDate.isCurrentYear(today: LocalDate): Boolean = year == today.year

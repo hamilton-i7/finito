@@ -63,13 +63,28 @@ object FinitoTextFieldDefaults {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun clickableTextFieldColors() = TextFieldDefaults.textFieldColors(
-        unfocusedIndicatorColor = Color.Transparent,
-        focusedIndicatorColor = Color.Transparent,
-        containerColor = finitoColors.surfaceColorAtElevation(1.dp),
-        disabledIndicatorColor = Color.Transparent,
-        disabledTextColor = finitoColors.onSurface,
-        disabledLeadingIconColor = finitoColors.onSurfaceVariant,
-        disabledTrailingIconColor = finitoColors.onSurfaceVariant,
-    )
+    fun clickableTextFieldColors(enabled: Boolean = true): TextFieldColors {
+        return if (enabled) {
+            TextFieldDefaults.textFieldColors(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+                disabledIndicatorColor = Color.Transparent,
+                disabledTextColor = finitoColors.onSurface,
+                disabledLeadingIconColor = finitoColors.onSurfaceVariant,
+                disabledTrailingIconColor = finitoColors.onSurfaceVariant,
+            )
+        } else {
+            val disabledAlpha = 0.38f
+            TextFieldDefaults.textFieldColors(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+                disabledIndicatorColor = Color.Transparent,
+                disabledTextColor = finitoColors.onSurface.copy(alpha = disabledAlpha),
+                disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
+                disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
+            )
+        }
+    }
 }

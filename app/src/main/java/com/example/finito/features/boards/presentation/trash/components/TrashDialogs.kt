@@ -2,7 +2,7 @@ package com.example.finito.features.boards.presentation.trash.components
 
 import androidx.compose.runtime.Composable
 import com.example.finito.R
-import com.example.finito.core.presentation.components.DeleteDialog
+import com.example.finito.core.presentation.components.dialogs.DeleteDialog
 import com.example.finito.features.boards.presentation.trash.TrashEvent
 import com.example.finito.features.boards.presentation.trash.TrashViewModel
 

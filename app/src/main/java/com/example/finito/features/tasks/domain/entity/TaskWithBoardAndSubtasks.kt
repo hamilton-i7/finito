@@ -6,7 +6,7 @@ import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.subtasks.domain.entity.Subtask
 
-data class DetailedTask(
+data class TaskWithBoardAndSubtasks(
     @Embedded val task: Task,
     @Relation(
         parentColumn = "board_id",
@@ -22,7 +22,7 @@ data class DetailedTask(
 ) {
     companion object {
         val dummyTasks = ('A'..'Z').mapIndexed { index, _ ->
-            DetailedTask(
+            TaskWithBoardAndSubtasks(
                 task = Task.dummyTasks.random(),
                 board = Board.dummyBoards.random().let {
                     SimpleBoard(boardId = it.boardId, name = it.name)

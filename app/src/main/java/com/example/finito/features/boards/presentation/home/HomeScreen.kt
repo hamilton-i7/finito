@@ -2,8 +2,6 @@ package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.*
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,6 +21,7 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.components.util.noRippleClickable
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
@@ -46,7 +45,6 @@ fun HomeScreen(
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val isKeyboardVisible = WindowInsets.isImeVisible
     val keyboardController = LocalSoftwareKeyboardController.current
-    val interactionSource = remember { MutableInteractionSource() }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val archivedMessage = stringResource(id = R.string.board_archived)
@@ -120,11 +118,7 @@ fun HomeScreen(
         )
     ) { innerPadding ->
         HomeScreen(
-            modifier = Modifier.clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = { keyboardController?.hide() }
-            ),
+            modifier = Modifier.noRippleClickable { keyboardController?.hide() },
             paddingValues = innerPadding,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,

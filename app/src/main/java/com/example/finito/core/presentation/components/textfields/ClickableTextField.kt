@@ -11,6 +11,7 @@ fun ClickableTextField(
     onClick: () -> Unit,
     value: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     label: (@Composable () -> Unit)? = null,
@@ -25,9 +26,12 @@ fun ClickableTextField(
         label = label,
         placeholder = placeholder,
         enabled = false,
-        colors = FinitoTextFieldDefaults.clickableTextFieldColors(),
+        colors = FinitoTextFieldDefaults.clickableTextFieldColors(enabled),
         modifier = modifier
             .clip(FinitoTextFieldDefaults.Shape)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = onClick,
+                enabled = enabled
+            ),
     )
 }

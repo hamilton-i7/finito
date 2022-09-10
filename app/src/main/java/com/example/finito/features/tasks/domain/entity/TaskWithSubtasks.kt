@@ -11,4 +11,13 @@ data class TaskWithSubtasks(
         entityColumn = "task_id",
     )
     val subtasks: List<Subtask> = emptyList()
-)
+) {
+    companion object {
+        val dummyTasks = ('A'..'Z').mapIndexed { index, _ ->
+            TaskWithSubtasks(
+                task = Task.dummyTasks.random(),
+                subtasks = Subtask.dummySubtasks.take(index)
+            )
+        }
+    }
+}

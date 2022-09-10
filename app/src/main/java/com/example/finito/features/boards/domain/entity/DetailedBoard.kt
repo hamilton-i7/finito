@@ -5,8 +5,8 @@ import androidx.room.Junction
 import androidx.room.Relation
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.entity.SimpleLabel
-import com.example.finito.features.tasks.domain.entity.DetailedTask
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 
 data class DetailedBoard(
     @Embedded val board: Board,
@@ -22,5 +22,5 @@ data class DetailedBoard(
         entityColumn = "board_id",
         entity = Task::class
     )
-    val tasks: List<DetailedTask> = emptyList()
+    val tasks: List<TaskWithSubtasks> = emptyList()
 )

@@ -34,4 +34,12 @@ object NavigationTransitions  {
             )
         )
     }
+
+    val dialogScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        slideInVertically { it / 2 } + fadeIn()
+    }
+
+    val dialogScreenExistTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        slideOutVertically { it / 2 } + fadeOut()
+    }
 }

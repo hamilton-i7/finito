@@ -15,6 +15,7 @@ fun TimeTextField(
     time: String,
     onTimeRemove: () -> Unit = {},
     onClick: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     ClickableTextField(
         onClick = onClick,
@@ -23,7 +24,7 @@ fun TimeTextField(
             Icon(imageVector = Icons.Outlined.Schedule, contentDescription = null)
         },
         trailingIcon = {
-            IconButton(onClick = onTimeRemove) {
+            IconButton(onClick = onTimeRemove, enabled = enabled) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
                     contentDescription = stringResource(id = R.string.remove_time)
@@ -31,5 +32,6 @@ fun TimeTextField(
             }
         },
         placeholder = { Text(text = stringResource(id = R.string.time)) },
+        enabled = enabled
     )
 }

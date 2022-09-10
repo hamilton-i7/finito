@@ -15,6 +15,7 @@ fun DateTextField(
     date: String,
     onDateRemove: () -> Unit = {},
     onClick: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     ClickableTextField(
         onClick = onClick,
@@ -23,7 +24,7 @@ fun DateTextField(
             Icon(imageVector = Icons.Outlined.CalendarToday, contentDescription = null)
         },
         trailingIcon = {
-            IconButton(onClick = onDateRemove) {
+            IconButton(onClick = onDateRemove, enabled = enabled) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
                     contentDescription = stringResource(id = R.string.remove_date)
@@ -31,5 +32,6 @@ fun DateTextField(
             }
         },
         placeholder = { Text(text = stringResource(id = R.string.date)) },
+        enabled = enabled
     )
 }

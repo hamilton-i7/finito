@@ -9,8 +9,8 @@ import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.entity.toSimpleLabel
 import com.example.finito.features.subtasks.domain.entity.Subtask
-import com.example.finito.features.tasks.domain.entity.DetailedTask
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -103,7 +103,7 @@ class FakeBoardRepository(
                     createdAt = it.createdAt,
                 ),
                 tasks = listOf(
-                    DetailedTask(
+                    TaskWithSubtasks(
                         task = Task(
                             taskId = 1,
                             boardId = it.boardId,
@@ -112,7 +112,7 @@ class FakeBoardRepository(
                         ),
                         subtasks = emptyList(),
                     ),
-                    DetailedTask(
+                    TaskWithSubtasks(
                         task = Task(
                             taskId = 2,
                             boardId = it.boardId,

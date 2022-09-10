@@ -7,12 +7,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
+import com.example.finito.core.presentation.components.util.NavigationTransitions.dialogScreenEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.dialogScreenExistTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenEnterTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenExitTransition
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.board.BoardScreen
 import com.example.finito.features.boards.presentation.home.HomeScreen
 import com.example.finito.features.boards.presentation.trash.TrashScreen
+import com.example.finito.features.tasks.presentation.datetime.TaskDateTimeScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import kotlinx.coroutines.launch
@@ -68,13 +71,23 @@ fun FinitoNavHost(
            route = Screen.Board.route,
            arguments = Screen.Board.arguments,
            enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition
+           exitTransition = mainScreenExitTransition,
+           popEnterTransition = null
        ) {
            BoardScreen(
                navController = navHostController,
                drawerState = drawerState,
                finishActivity = finishActivity
            )
+       }
+
+       composable(
+           route = Screen.TaskDateTime.route,
+           arguments = Screen.TaskDateTime.arguments,
+           enterTransition = dialogScreenEnterTransition,
+           exitTransition = dialogScreenExistTransition
+       ) {
+           TaskDateTimeScreen(navController = navHostController)
        }
    }
 }

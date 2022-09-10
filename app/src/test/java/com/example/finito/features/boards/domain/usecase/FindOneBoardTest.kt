@@ -10,6 +10,7 @@ import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -77,7 +78,7 @@ class FindOneBoardTest {
     @Test
     fun `Should throw NotFoundException when no board is found`() {
         assertThrows(ResourceException.NotFoundException::class.java) {
-            runTest { findOneBoard(10_000) }
+            runTest { findOneBoard(10_000).lastOrNull() }
         }
     }
 

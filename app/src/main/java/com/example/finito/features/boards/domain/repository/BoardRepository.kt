@@ -17,7 +17,7 @@ interface BoardRepository {
 
     fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
-    suspend fun findOne(id: Int): DetailedBoard?
+    fun findOne(id: Int): Flow<DetailedBoard?>
 
     suspend fun update(board: Board)
 

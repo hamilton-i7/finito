@@ -145,7 +145,7 @@ class BoardRepositoryImplTest {
 
     @Test
     fun should_return_null_when_not_found() = runTest {
-        val board = boardRepositoryImpl.findOne(10_000)
+        val board = boardRepositoryImpl.findOne(10_000).first()
         assertThat(board).isNull()
     }
 
@@ -170,7 +170,7 @@ class BoardRepositoryImplTest {
             Subtask(taskId = taskIds.random().taskId, name = "Subtask name"),
         ).also { db.subtaskDao.createMany(*it.toTypedArray()) }
 
-        val detailedBoard = boardRepositoryImpl.findOne(board.boardId)
+        val detailedBoard = boardRepositoryImpl.findOne(board.boardId).first()
         assertThat(detailedBoard).isNotNull()
         assertThat(detailedBoard?.tasks).isNotEmpty()
         assertThat(detailedBoard?.tasks?.map { it.subtasks }).isNotEmpty()
@@ -182,16 +182,16 @@ class BoardRepositoryImplTest {
         assertThat(board.name).startsWith("Board")
 
         boardRepositoryImpl.update(board.copy(name = "Updated name"))
-        assertThat(db.boardDao.findOne(board.boardId)?.board?.name).isEqualTo("Updated name")
+        assertThat(db.boardDao.findOne(board.boardId).first()?.board?.name).isEqualTo("Updated name")
     }
 
     @Test
     fun should_remove_board_from_list_when_asked() = runTest {
         val board = dummyBoards.random()
-        assertThat(db.boardDao.findOne(board.boardId)).isNotNull()
+        assertThat(db.boardDao.findOne(board.boardId).first()).isNotNull()
 
         boardRepositoryImpl.remove(board)
-        assertThat(db.boardDao.findOne(board.boardId)).isNull()
+        assertThat(db.boardDao.findOne(board.boardId).first()).isNull()
         assertThat(db.boardDao.findAll().size).isLessThan(dummyBoards.size)
     }
 }

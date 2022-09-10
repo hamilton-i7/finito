@@ -11,6 +11,7 @@ import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -137,13 +138,13 @@ class UpdateBoardTest {
     fun `Should update board when it's found and its state is valid`() = runTest {
         val board = fakeBoardRepository.findActiveBoards().first().random().board
         assertThat(
-            fakeBoardRepository.findOne(board.boardId)?.board?.normalizedName
+            fakeBoardRepository.findOne(board.boardId).lastOrNull()?.board?.normalizedName
         ).startsWith("board")
 
         updateBoard(
             BoardWithLabelsAndTasks(board = board.copy(name = "Updated board"))
         )
-        assertThat(fakeBoardRepository.findOne(board.boardId)?.board?.name)
+        assertThat(fakeBoardRepository.findOne(board.boardId).lastOrNull()?.board?.name)
             .isEqualTo("Updated board")
     }
 

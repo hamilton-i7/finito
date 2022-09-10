@@ -93,38 +93,45 @@ class FakeBoardRepository(
         }
     }
 
-    override suspend fun findOne(id: Int): DetailedBoard? {
-        val board = boards.find { it.boardId == id } ?: return null
-        return board.let {
-            DetailedBoard(
-                board = Board(
-                    boardId = it.boardId,
-                    name = it.name,
-                    createdAt = it.createdAt,
-                ),
-                tasks = listOf(
-                    TaskWithSubtasks(
-                        task = Task(
-                            taskId = 1,
+    override fun findOne(id: Int): Flow<DetailedBoard?> {
+        return flow {
+            val board = boards.find { it.boardId == id } ?: run {
+                emit(null)
+                return@flow
+            }
+            emit(
+                board.let {
+                    DetailedBoard(
+                        board = Board(
                             boardId = it.boardId,
-                            name = "Task name",
-                            boardPosition = 0
+                            name = it.name,
+                            createdAt = it.createdAt,
                         ),
-                        subtasks = emptyList(),
-                    ),
-                    TaskWithSubtasks(
-                        task = Task(
-                            taskId = 2,
-                            boardId = it.boardId,
-                            name = "Task name",
-                            boardPosition = 1
-                        ),
-                        subtasks = listOf(
-                            Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),
-                            Subtask(subtaskId = 2, name = "Subtask name", taskId = 2),
-                        ),
-                    ),
-                )
+                        tasks = listOf(
+                            TaskWithSubtasks(
+                                task = Task(
+                                    taskId = 1,
+                                    boardId = it.boardId,
+                                    name = "Task name",
+                                    boardPosition = 0
+                                ),
+                                subtasks = emptyList(),
+                            ),
+                            TaskWithSubtasks(
+                                task = Task(
+                                    taskId = 2,
+                                    boardId = it.boardId,
+                                    name = "Task name",
+                                    boardPosition = 1
+                                ),
+                                subtasks = listOf(
+                                    Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),
+                                    Subtask(subtaskId = 2, name = "Subtask name", taskId = 2),
+                                ),
+                            ),
+                        )
+                    )
+                }
             )
         }
     }

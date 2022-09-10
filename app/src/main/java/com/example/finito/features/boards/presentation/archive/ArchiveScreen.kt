@@ -19,7 +19,7 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
-import com.example.finito.core.presentation.components.bars.SmallTopBar
+import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -74,7 +74,7 @@ fun ArchiveScreen(
                         scrollBehavior = searchTopBarScrollBehavior,
                     )
                 } else {
-                    SmallTopBar(
+                    TopBar(
                         onMenuClick = {
                             scope.launch { drawerState.open() }
                         },
@@ -142,7 +142,8 @@ fun ArchiveScreen(
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(
                                 message = unarchivedMessage,
-                                actionLabel = snackbarAction
+                                actionLabel = snackbarAction,
+                                duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
                                 archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)

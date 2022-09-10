@@ -104,7 +104,8 @@ fun TrashScreen(
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(
                                 message = restoredMessage,
-                                actionLabel = snackbarAction
+                                actionLabel = snackbarAction,
+                                duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
                                 trashViewModel.onEvent(TrashEvent.UndoRestore)

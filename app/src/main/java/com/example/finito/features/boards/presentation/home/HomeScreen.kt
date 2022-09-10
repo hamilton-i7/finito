@@ -155,7 +155,8 @@ fun HomeScreen(
                         scope.launch { 
                             val result = snackbarHostState.showSnackbar(
                                 message = archivedMessage,
-                                actionLabel = snackbarAction
+                                actionLabel = snackbarAction,
+                                duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
                                 homeViewModel.onEvent(HomeEvent.RestoreBoard)

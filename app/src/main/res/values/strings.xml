@@ -87,4 +87,9 @@
     <string name="time">Time</string>
     <string name="discard_changes_question">Discard changes?</string>
     <string name="discard">Discard</string>
+    <string name="name">Name</string>
+    <string name="show_labels">Show labels</string>
+    <string name="hide_labels">Hide labels</string>
+    <string name="create_board">Create board</string>
+    <string name="go_back">Go back</string>
 </resources>

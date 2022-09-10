@@ -11,6 +11,9 @@ import com.example.finito.core.presentation.components.util.NavigationTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.dialogScreenExistTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenEnterTransition
 import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenExitTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.secondaryScreenEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.secondaryScreenExitTransition
+import com.example.finito.features.boards.presentation.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.board.BoardScreen
 import com.example.finito.features.boards.presentation.home.HomeScreen
@@ -34,10 +37,10 @@ fun FinitoNavHost(
        composable(
            route = Screen.Home.route,
            enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition
+           exitTransition = mainScreenExitTransition,
        ) {
            HomeScreen(
-               navHostController = navHostController,
+               navController = navHostController,
                drawerState = drawerState,
                finishActivity = finishActivity
            )
@@ -79,6 +82,14 @@ fun FinitoNavHost(
                drawerState = drawerState,
                finishActivity = finishActivity
            )
+       }
+
+       composable(
+           route = Screen.CreateBoard.route,
+           enterTransition = secondaryScreenEnterTransition,
+           exitTransition = secondaryScreenExitTransition
+       ) {
+           AddEditBoardScreen(navController = navHostController)
        }
 
        composable(

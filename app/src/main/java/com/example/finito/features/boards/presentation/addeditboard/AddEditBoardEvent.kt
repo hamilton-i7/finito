@@ -7,7 +7,7 @@ sealed class AddEditBoardEvent {
 
     object ToggleLabelsVisibility : AddEditBoardEvent()
 
-    data class AddLabel(val label: SimpleLabel) : AddEditBoardEvent()
+    data class SelectLabel(val label: SimpleLabel) : AddEditBoardEvent()
 
     data class RemoveLabel(val label: SimpleLabel) : AddEditBoardEvent()
 

@@ -75,7 +75,7 @@ fun ArchiveScreen(
                     )
                 } else {
                     TopBar(
-                        onMenuClick = {
+                        onNavigationIconClick = {
                             scope.launch { drawerState.open() }
                         },
                         title = R.string.archive,

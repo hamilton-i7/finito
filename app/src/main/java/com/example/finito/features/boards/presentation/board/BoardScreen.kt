@@ -2,23 +2,19 @@ package com.example.finito.features.boards.presentation.board
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +25,7 @@ import com.example.finito.R
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
+import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
@@ -112,7 +109,6 @@ private fun BoardScreen(
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
-    val interactionSource = remember { MutableInteractionSource() }
 
     Surface(modifier = Modifier
         .fillMaxSize()
@@ -144,33 +140,13 @@ private fun BoardScreen(
                 }
             }
             item {
-                val rotate: Float by animateFloatAsState(if (showCompletedTasks) 0f else -180f)
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = rememberRipple(),
-                            onClick = onToggleShowCompletedTasks
-                        )
-                        .padding(16.dp),
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.completed, completedTasks.size)
-                    )
-                    Icon(
-                        imageVector = Icons.Outlined.ExpandLess,
-                        contentDescription = stringResource(
-                            id = if (showCompletedTasks)
-                                R.string.hide_completed_tasks
-                            else
-                                R.string.show_completed_tasks
-                        ),
-                        modifier = Modifier.rotate(rotate)
-                    )
-                }
+                RowToggle(
+                    showContent = showCompletedTasks,
+                    onShowContentToggle = onToggleShowCompletedTasks,
+                    label = stringResource(id = R.string.show_completed_tasks, completedTasks.size),
+                    showContentDescription = R.string.show_completed_tasks,
+                    hideContentDescription = R.string.hide_completed_tasks
+                )
             }
             items(
                 items = completedTasks,

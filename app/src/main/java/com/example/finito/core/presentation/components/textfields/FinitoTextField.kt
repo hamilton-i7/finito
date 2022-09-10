@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ fun FinitoTextField(
     trailingIcon: (@Composable () -> Unit)? = null,
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
+    error: Boolean = false,
     @StringRes errorFeedback: Int? = null,
     colors: TextFieldColors = FinitoTextFieldDefaults.textFieldColors(),
 ) {
@@ -55,7 +57,12 @@ fun FinitoTextField(
                     shape = FinitoTextFieldDefaults.Shape
                 ),
         )
-        Text(text = errorFeedback?.let { stringResource(id = it) } ?: " ")
+        Text(
+            text = if (errorFeedback != null && error) stringResource(id = errorFeedback) else " ",
+            color = finitoColors.error,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(start = 16.dp)
+        )
     }
 }
 

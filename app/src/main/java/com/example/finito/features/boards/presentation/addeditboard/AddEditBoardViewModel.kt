@@ -47,13 +47,19 @@ class AddEditBoardViewModel @Inject constructor(
 
     fun onEvent(event: AddEditBoardEvent) {
         when (event) {
-            is AddEditBoardEvent.AddLabel -> TODO()
-            is AddEditBoardEvent.ChangeName -> TODO()
+            is AddEditBoardEvent.SelectLabel -> TODO()
+            is AddEditBoardEvent.ChangeName -> {
+                nameState = nameState.copy(
+                    value = event.name
+                )
+            }
             AddEditBoardEvent.CreateBoard -> TODO()
             AddEditBoardEvent.DeleteBoard -> TODO()
             AddEditBoardEvent.EditBoard -> TODO()
             is AddEditBoardEvent.RemoveLabel -> TODO()
-            AddEditBoardEvent.ToggleLabelsVisibility -> TODO()
+            AddEditBoardEvent.ToggleLabelsVisibility -> {
+                showLabels = !showLabels
+            }
         }
     }
 

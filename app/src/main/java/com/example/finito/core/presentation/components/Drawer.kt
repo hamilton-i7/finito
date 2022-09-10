@@ -158,14 +158,23 @@ private fun DrawerContent(
                     )
                 }
             }
-            item { DrawerItemButton(text = R.string.create_new_board) }
+            item {
+                DrawerItemButton(
+                    text = R.string.create_new_board,
+                    onClick = {
+                        onItemSelected(Screen.CreateBoard.route)
+                    }
+                )
+            }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             item {
                 DrawerSectionHeader(
                     text = R.string.labels,
                     onExpandChange = onExpandLabelsChange,
-                    expanded = expandLabels
+                    expanded = expandLabels,
+                    showContentDescription = R.string.show_labels,
+                    hideContentDescription = R.string.hide_labels
                 )
             }
             if (expandLabels) {
@@ -181,7 +190,7 @@ private fun DrawerContent(
                     )
                 }
             }
-            item { DrawerItemButton(text = R.string.create_new_label) }
+            item { DrawerItemButton(text = R.string.create_new_label) {} }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             items(otherScreens, key = { it.screen.route }) { item ->
@@ -202,7 +211,9 @@ private fun DrawerContent(
 private fun DrawerSectionHeader(
     @StringRes text: Int,
     expanded: Boolean = false,
-    onExpandChange: (() -> Unit)? = null
+    onExpandChange: (() -> Unit)? = null,
+    showContentDescription: Int? = null,
+    hideContentDescription: Int? = null,
 ) {
     if (onExpandChange == null) {
         Text(
@@ -226,12 +237,16 @@ private fun DrawerSectionHeader(
             if (expanded) {
                 Icon(
                     imageVector = Icons.Outlined.ExpandLess,
-                    contentDescription = stringResource(id = R.string.hide_boards)
+                    contentDescription = hideContentDescription?.let {
+                        stringResource(id = it)
+                    }
                 )
             } else {
                 Icon(
                     imageVector = Icons.Outlined.ExpandMore,
-                    contentDescription = stringResource(id = R.string.show_more)
+                    contentDescription = showContentDescription?.let {
+                        stringResource(id = it)
+                    }
                 )
             }
         },
@@ -243,12 +258,15 @@ private fun DrawerSectionHeader(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DrawerItemButton(@StringRes text: Int) {
+private fun DrawerItemButton(
+    @StringRes text: Int,
+    onClick: () -> Unit,
+) {
     NavigationDrawerItem(
         icon = { Icon(imageVector = Icons.Outlined.Add, contentDescription = null) },
         label = { Text(text = stringResource(id = text)) },
         selected = false,
-        onClick = { /*TODO*/ },
+        onClick = onClick,
         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
     )
 }

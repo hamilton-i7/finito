@@ -21,9 +21,8 @@ fun SearchTopBar(
     query: String,
     onQueryChange: (String) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
-    val focusRequester = remember { FocusRequester() }
-
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }

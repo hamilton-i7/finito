@@ -84,7 +84,7 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            is HomeEvent.AddFilter -> {
+            is HomeEvent.SelectFilter -> {
                 val exists = labelFilters.contains(event.labelId)
                 labelFilters = if (exists) {
                     labelFilters.filter { it != event.labelId }

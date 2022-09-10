@@ -5,25 +5,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    onMenuClick: () -> Unit = {},
+    navigationIcon: ImageVector = Icons.Outlined.Menu,
+    @StringRes navigationIconDescription: Int = R.string.open_menu,
+    onNavigationIconClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     @StringRes title: Int,
 ) {
     TopAppBar(
         title = { Text(text = stringResource(id = title)) },
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
+            IconButton(onClick = onNavigationIconClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Menu,
-                    contentDescription = stringResource(id = R.string.open_menu)
+                    imageVector = navigationIcon,
+                    contentDescription = stringResource(id = navigationIconDescription)
                 )
             }
         },
-        scrollBehavior = scrollBehavior)
+        scrollBehavior = scrollBehavior
+    )
 }

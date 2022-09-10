@@ -11,9 +11,9 @@ data class SimpleLabel(
     companion object {
         val dummyLabels = listOf(
             SimpleLabel(labelId = 1, name = "School"),
-            SimpleLabel(labelId = 1, name = "Gym"),
-            SimpleLabel(labelId = 1, name = "Work"),
-            SimpleLabel(labelId = 1, name = "Personal"),
+            SimpleLabel(labelId = 2, name = "Gym"),
+            SimpleLabel(labelId = 3, name = "Work"),
+            SimpleLabel(labelId = 4, name = "Personal"),
         )
     }
 }

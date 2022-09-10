@@ -7,10 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,6 +19,7 @@ import com.example.finito.R
 import com.example.finito.core.domain.util.ActiveBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.util.noRippleClickable
@@ -31,20 +32,22 @@ import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class
+    ExperimentalLayoutApi::class,
+    ExperimentalAnimationApi::class
 )
 @Composable
 fun HomeScreen(
-    navHostController: NavHostController,
+    navController: NavHostController,
     drawerState: DrawerState,
     homeViewModel: HomeViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {}
 ) {
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val isKeyboardVisible = WindowInsets.isImeVisible
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     val snackbarHostState = remember { SnackbarHostState() }
     val archivedMessage = stringResource(id = R.string.board_archived)
@@ -82,6 +85,7 @@ fun HomeScreen(
                             homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
                         },
                         scrollBehavior = searchTopBarScrollBehavior,
+                        focusRequester = focusRequester
                     )
                 } else {
                     HomeTopBar(
@@ -106,25 +110,25 @@ fun HomeScreen(
                     homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
                 },
                 onFabClick = {
-                    // TODO: Add create board functionality
+                    navController.navigate(route = Screen.CreateBoard.route)
                 }
             )
         },
-        modifier = Modifier.nestedScroll(
-            if (homeViewModel.showSearchBar)
-                searchTopBarScrollBehavior.nestedScrollConnection
-            else
-                homeTopBarScrollBehavior.nestedScrollConnection
-        )
+        modifier = Modifier
+            .nestedScroll(
+                if (homeViewModel.showSearchBar)
+                    searchTopBarScrollBehavior.nestedScrollConnection
+                else
+                    homeTopBarScrollBehavior.nestedScrollConnection
+        ).noRippleClickable { focusManager.clearFocus() },
     ) { innerPadding ->
         HomeScreen(
-            modifier = Modifier.noRippleClickable { keyboardController?.hide() },
             paddingValues = innerPadding,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,
             labelFilters = homeViewModel.labelFilters,
             onLabelClick = {
-                homeViewModel.onEvent(HomeEvent.AddFilter(it))
+                homeViewModel.onEvent(HomeEvent.SelectFilter(it))
             },
             onRemoveFiltersClick = {
                 homeViewModel.onEvent(HomeEvent.RemoveFilters)
@@ -186,7 +190,6 @@ fun HomeScreen(
 
 @Composable
 private fun HomeScreen(
-    modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
@@ -213,7 +216,7 @@ private fun HomeScreen(
         SortingOption.Common.NameZA,
     )
 
-    Surface(modifier = modifier
+    Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
         BoardLayout(

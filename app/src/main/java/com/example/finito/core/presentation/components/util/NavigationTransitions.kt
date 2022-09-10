@@ -8,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.navigation.NavBackStackEntry
 import com.example.finito.core.presentation.components.util.AnimationDurationConstants.RegularDurationMillis
 import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortDurationMillis
-import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortestDurationMillis
 
 @OptIn(ExperimentalAnimationApi::class)
 object NavigationTransitions  {

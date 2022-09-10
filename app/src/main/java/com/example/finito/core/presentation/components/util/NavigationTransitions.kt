@@ -2,11 +2,13 @@ package com.example.finito.core.presentation.components.util
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.navigation.NavBackStackEntry
 import com.example.finito.core.presentation.components.util.AnimationDurationConstants.RegularDurationMillis
 import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortDurationMillis
+import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortestDurationMillis
 
 @OptIn(ExperimentalAnimationApi::class)
 object NavigationTransitions  {
@@ -30,7 +32,7 @@ object NavigationTransitions  {
         fadeOut(
             animationSpec = tween(
                 durationMillis = RegularDurationMillis,
-                easing = FastOutLinearInEasing
+                easing = FastOutLinearInEasing,
             )
         )
     }
@@ -41,5 +43,35 @@ object NavigationTransitions  {
 
     val dialogScreenExistTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
         slideOutVertically { it / 2 } + fadeOut()
+    }
+
+    val secondaryScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        slideInHorizontally(
+            animationSpec = tween(
+                durationMillis = ShortDurationMillis,
+                easing = LinearOutSlowInEasing,
+                delayMillis = RegularDurationMillis
+            ),
+        ) { it / 2 } + fadeIn(
+            animationSpec = tween(
+                durationMillis = ShortDurationMillis,
+                easing = LinearOutSlowInEasing,
+                delayMillis = RegularDurationMillis
+            ),
+        )
+    }
+
+    val secondaryScreenExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        slideOutHorizontally(
+            animationSpec = tween(
+                durationMillis =  ShortDurationMillis,
+                easing = LinearEasing
+            )
+        ) { it / 2 } + fadeOut(
+            animationSpec = tween(
+                durationMillis = ShortDurationMillis,
+                easing = LinearEasing
+            )
+        )
     }
 }

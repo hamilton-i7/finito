@@ -23,6 +23,14 @@ sealed class Screen(
         arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
     )
 
+    object CreateBoard : Screen(route = "create_board")
+
+    object EditBoard : Screen(
+        route = "edit_board/{$BOARD_ROUTE_ARGUMENT}",
+        prefix = "edit_board",
+        arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
+    )
+
     object Label : Screen(
         route = "label/{$LABEL_ROUTE_ARGUMENT}",
         prefix = "label",

@@ -134,7 +134,6 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
-
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
             boardOrder = boardsOrder,

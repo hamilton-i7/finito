@@ -49,7 +49,7 @@ fun TaskDateTimeDialogs(
                 },
                 onConfirmClick = {
                     taskDateTimeViewModel.onEvent(TaskDateTimeEvent.DiscardChanges)
-                    navController.popBackStack()
+                    navController.navigateUp()
                 }
             )
         }

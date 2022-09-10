@@ -63,7 +63,8 @@ fun AddEditBoardScreen(
                 title = R.string.create_board,
                 navigationIcon = Icons.Outlined.ArrowBack,
                 navigationIconDescription = R.string.go_back,
-                scrollBehavior = topBarScrollBehavior
+                scrollBehavior = topBarScrollBehavior,
+                onNavigationIconClick = { navController.navigateUp() },
             )
         },
         modifier = Modifier

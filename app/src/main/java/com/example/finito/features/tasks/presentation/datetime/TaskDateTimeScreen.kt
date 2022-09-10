@@ -51,7 +51,7 @@ fun TaskDateTimeScreen(
 
     HandleBackPress {
         if (!dataChanged(task, taskDateTimeViewModel.date, taskDateTimeViewModel.time)) {
-            navController.popBackStack()
+            navController.navigateUp()
             return@HandleBackPress
         }
         taskDateTimeViewModel.onEvent(TaskDateTimeEvent.ShowDialog(
@@ -65,7 +65,7 @@ fun TaskDateTimeScreen(
                 title = R.string.edit_date_time,
                 onCloseClick = onCloseClick@{
                     if (!dataChanged(task, taskDateTimeViewModel.date, taskDateTimeViewModel.time)) {
-                        navController.popBackStack()
+                        navController.navigateUp()
                         return@onCloseClick
                     }
                     taskDateTimeViewModel.onEvent(TaskDateTimeEvent.ShowDialog(
@@ -75,7 +75,7 @@ fun TaskDateTimeScreen(
                 saveButtonEnabled = task != null,
                 onSave = {
                     taskDateTimeViewModel.onEvent(TaskDateTimeEvent.SaveChanges)
-                    navController.popBackStack()
+                    navController.navigateUp()
                 }
             )
         },

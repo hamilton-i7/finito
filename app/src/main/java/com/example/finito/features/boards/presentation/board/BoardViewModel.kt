@@ -19,10 +19,10 @@ import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -62,8 +62,6 @@ class BoardViewModel @Inject constructor(
         when (event) {
             is BoardEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is BoardEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
-            is BoardEvent.ChangeTaskDate -> changeTaskDate(event.date, event.task)
-            is BoardEvent.ChangeTaskTime -> changeTaskTime(event.time, event.task)
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> changeTaskPriorityConfirm(event.task)
             is BoardEvent.CheckTask -> TODO()
@@ -72,30 +70,6 @@ class BoardViewModel @Inject constructor(
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.UncheckTask -> TODO()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
-        }
-    }
-
-    private fun changeTaskTime(time: LocalTime, task: TaskWithSubtasks) {
-        fetchBoardAfterUpdate {
-            if (task.task.time == time) return@fetchBoardAfterUpdate
-            taskUseCases.updateTask(
-                TaskWithSubtasks(
-                    task = task.task.copy(time = time),
-                    subtasks = task.subtasks
-                )
-            )
-        }
-    }
-
-    private fun changeTaskDate(date: LocalDate, task: TaskWithSubtasks) {
-        fetchBoardAfterUpdate {
-            if (task.task.date == date) return@fetchBoardAfterUpdate
-            taskUseCases.updateTask(
-                TaskWithSubtasks(
-                    task = task.task.copy(date = date),
-                    subtasks = task.subtasks
-                )
-            )
         }
     }
 
@@ -112,16 +86,14 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun changeTaskPriorityConfirm(task: TaskWithSubtasks) {
-        fetchBoardAfterUpdate {
-            if (task.task.priority == selectedPriority) return@fetchBoardAfterUpdate
-            taskUseCases.updateTask(
-                TaskWithSubtasks(
-                    task = task.task.copy(priority = selectedPriority),
-                    subtasks = task.subtasks
-                )
+    private fun changeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
+        if (task.task.priority == selectedPriority) return@launch
+        taskUseCases.updateTask(
+            TaskWithSubtasks(
+                task = task.task.copy(priority = selectedPriority),
+                subtasks = task.subtasks
             )
-        }
+        )
     }
 
     private fun onShowCompletedTasksChange() {
@@ -135,7 +107,9 @@ class BoardViewModel @Inject constructor(
     private fun fetchBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ARGUMENT)?.let { boardId ->
             viewModelScope.launch {
-                board = boardUseCases.findOneBoard(boardId)
+                boardUseCases.findOneBoard(boardId).onEach {
+                    board = it
+                }.launchIn(viewModelScope)
             }
         }
     }
@@ -163,10 +137,5 @@ class BoardViewModel @Inject constructor(
         } catch (e: ResourceException.InvalidStateException) {
 
         } catch (e: ResourceException.NotFoundException) {}
-    }
-
-    private fun fetchBoardAfterUpdate(action: suspend () -> Unit) = viewModelScope.launch {
-        action()
-        fetchBoard()
     }
 }

@@ -9,8 +9,6 @@ sealed class AddEditBoardEvent {
 
     data class SelectLabel(val label: SimpleLabel) : AddEditBoardEvent()
 
-    data class RemoveLabel(val label: SimpleLabel) : AddEditBoardEvent()
-
     object CreateBoard : AddEditBoardEvent()
 
     object EditBoard : AddEditBoardEvent()

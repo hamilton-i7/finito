@@ -22,7 +22,7 @@ class CreateBoard(
                 message = "Board must be either archived or deleted. Not both"
             )
         }
-        return boardRepository.create(board).toInt().also { boardId ->
+        return boardRepository.create(board.copy(name = board.name.trim())).toInt().also { boardId ->
             if (labels.isEmpty()) return@also
             val boardLabelCrossRefs = labels.map { label ->
                 BoardLabelCrossRef(boardId = boardId, labelId = label.labelId)

@@ -110,6 +110,7 @@ private fun BoardScreen(
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
 
+    // TODO: Show board labels
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {

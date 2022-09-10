@@ -9,10 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -40,6 +43,9 @@ class AddEditBoardViewModel @Inject constructor(
     var showLabels by mutableStateOf(false)
         private set
 
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
     init {
         fetchBoard()
         fetchLabels()
@@ -60,13 +66,22 @@ class AddEditBoardViewModel @Inject constructor(
                     value = event.name
                 )
             }
-            AddEditBoardEvent.CreateBoard -> TODO()
+            AddEditBoardEvent.CreateBoard -> createBoard()
             AddEditBoardEvent.DeleteBoard -> TODO()
             AddEditBoardEvent.EditBoard -> TODO()
-            is AddEditBoardEvent.RemoveLabel -> TODO()
             AddEditBoardEvent.ToggleLabelsVisibility -> {
                 showLabels = !showLabels
             }
+        }
+    }
+
+    private fun createBoard() = viewModelScope.launch {
+        val board = BoardWithLabelsAndTasks(
+            board = Board(name = nameState.value),
+            labels = selectedLabels
+        )
+        boardUseCases.createBoard(board).let {
+            _eventFlow.emit(UiEvent.CreateBoard(it))
         }
     }
 
@@ -84,5 +99,9 @@ class AddEditBoardViewModel @Inject constructor(
         labelUseCases.findSimpleLabels().onEach {
             labels = it
         }.launchIn(viewModelScope)
+    }
+
+    sealed class UiEvent {
+        data class CreateBoard(val boardId: Int) : UiEvent()
     }
 }

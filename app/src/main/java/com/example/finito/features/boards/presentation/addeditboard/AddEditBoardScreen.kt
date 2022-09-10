@@ -10,6 +10,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
@@ -31,6 +33,7 @@ import com.example.finito.core.presentation.components.util.noRippleClickable
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
 import com.example.finito.ui.theme.FinitoTheme
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +43,19 @@ fun AddEditBoardScreen(
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(Unit) {
+        addEditBoardViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is AddEditBoardViewModel.UiEvent.CreateBoard -> {
+                    val route = "${Screen.Board.prefix}/${event.boardId}"
+                    navController.navigate(route = route) {
+                        popUpTo(Screen.CreateBoard.route) { inclusive = true }
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,6 +93,7 @@ fun AddEditBoardScreen(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun AddEditBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
@@ -139,16 +156,22 @@ private fun AddEditBoardScreen(
             }
             item {
                 Spacer(modifier = Modifier.height(40.dp))
-                Button(
-                    onClick = onCreateBoard,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .widthIn(max = 350.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = stringResource(id = R.string.create_board))
+                AnimatedContent(
+                    targetState = nameState.value.isNotBlank(),
+                    transitionSpec = { fadeIn() with fadeOut() }
+                ) { validName ->
+                    Button(
+                        onClick = onCreateBoard,
+                        enabled = validName,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .widthIn(max = 350.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = stringResource(id = R.string.create_board))
+                    }
                 }
             }
         }

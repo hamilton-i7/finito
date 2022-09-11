@@ -3,7 +3,9 @@ package com.example.finito.core.presentation.components
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -12,14 +14,17 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
+import com.example.finito.core.domain.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
+import com.example.finito.core.presentation.util.DialogType
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
+import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -39,7 +44,12 @@ fun Layout(
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.navigationBarsPadding()
+            )
+        },
         topBar = {
             when (currentRoute) {
                 Screen.Home.route -> HomeScreenTopBar(
@@ -71,6 +81,27 @@ fun Layout(
                     },
                     scrollBehavior = enterOnScrollBehavior,
                     searchBarScrollBehavior = pinnedScrollBehavior,
+                )
+                Screen.Trash.route -> TrashTopBar(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    },
+                    onMoreOptionsClick = {
+                        appViewModel.onEvent(AppEvent.ShowTopBarMenu(show = true))
+                    },
+                    scrollBehavior = enterOnScrollBehavior,
+                    showMenu = appViewModel.showTopBarMenu,
+                    onDismissMenu = {
+                        appViewModel.onEvent(AppEvent.ShowTopBarMenu(show = false))
+                    },
+                    onOptionClick = {
+                        appViewModel.onEvent(AppEvent.ShowTopBarMenu(show = false))
+                        when (it) {
+                            TrashScreenMenuOption.EmptyTrash -> appViewModel.onEvent(
+                                AppEvent.ShowDialog(type = DialogType.EmptyTrash)
+                            )
+                        }
+                    }
                 )
             }
         },

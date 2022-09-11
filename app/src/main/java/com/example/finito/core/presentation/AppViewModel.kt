@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
+import com.example.finito.core.presentation.util.DialogType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,6 +24,12 @@ class AppViewModel @Inject constructor(
 ) : ViewModel() {
 
     var showSearchbar by mutableStateOf(false)
+        private set
+
+    var showTopBarMenu by mutableStateOf(false)
+        private set
+
+    var dialogType by mutableStateOf<DialogType?>(null)
         private set
 
     var searchQuery by mutableStateOf(TextFieldValue())
@@ -43,6 +50,8 @@ class AppViewModel @Inject constructor(
             is AppEvent.ShowSearchBar -> onShowSearchBarChange(event.show)
             is AppEvent.SearchBoards -> onSearchBoards(event.query)
             AppEvent.ToggleLayout -> onToggleLayout()
+            is AppEvent.ShowTopBarMenu -> showTopBarMenu = event.show
+            is AppEvent.ShowDialog -> dialogType = event.type
         }
     }
 

@@ -73,7 +73,7 @@ fun ArchiveScreen(
     }
 
     ArchiveScreen(
-        gridLayout = archiveViewModel.gridLayout,
+        gridLayout = appViewModel.gridLayout,
         labels = archiveViewModel.labels,
         labelFilters = archiveViewModel.labelFilters,
         onLabelClick = {

@@ -112,9 +112,11 @@ fun FinitoNavHost(
            }
        ) {
            TrashScreen(
+               appViewModel = appViewModel,
                navController = navHostController,
                drawerState = drawerState,
-               finishActivity = finishActivity
+               finishActivity = finishActivity,
+               showSnackbar = showSnackbar
            )
        }
 

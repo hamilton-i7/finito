@@ -2,35 +2,41 @@ package com.example.finito.features.boards.presentation.trash.components
 
 import androidx.compose.runtime.Composable
 import com.example.finito.R
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.dialogs.DeleteDialog
+import com.example.finito.core.presentation.util.DialogType
 import com.example.finito.features.boards.presentation.trash.TrashEvent
 import com.example.finito.features.boards.presentation.trash.TrashViewModel
 
 @Composable
-fun TrashDialogs(trashViewModel: TrashViewModel) {
-    when (trashViewModel.dialogType) {
-        is TrashEvent.DialogType.DeleteBoard -> {
+fun TrashDialogs(
+    appViewModel: AppViewModel,
+    trashViewModel: TrashViewModel,
+) {
+    when (appViewModel.dialogType) {
+        is DialogType.DeleteBoard -> {
             DeleteDialog(
-                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDialog()) },
+                onDismiss = { appViewModel.onEvent(AppEvent.ShowDialog()) },
                 description = R.string.delete_board_confirmation,
                 onConfirmClick = {
                     trashViewModel.onEvent(TrashEvent.DeleteForever(
-                        (trashViewModel.dialogType as TrashEvent.DialogType.DeleteBoard).board)
+                        (appViewModel.dialogType as DialogType.DeleteBoard).board)
                     )
                 },
                 onDismissClick = {
-                    trashViewModel.onEvent(TrashEvent.ShowDialog())
+                    appViewModel.onEvent(AppEvent.ShowDialog())
                 }
             )
         }
-        TrashEvent.DialogType.EmptyTrash -> {
+        DialogType.EmptyTrash -> {
             DeleteDialog(
-                onDismiss = { trashViewModel.onEvent(TrashEvent.ShowDialog()) },
+                onDismiss = { appViewModel.onEvent(AppEvent.ShowDialog()) },
                 title = R.string.empty_trash_confirmation_title,
                 description = R.string.empty_trash_confirmation,
                 onConfirmClick = { trashViewModel.onEvent(TrashEvent.EmptyTrash) },
                 onDismissClick = {
-                    trashViewModel.onEvent(TrashEvent.ShowDialog())
+                    appViewModel.onEvent(AppEvent.ShowDialog())
                 }
             )
         }

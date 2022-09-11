@@ -56,11 +56,6 @@ class ArchiveViewModel @Inject constructor(
         } ?: SortingOption.Common.Default
     ); private set
 
-    var gridLayout by mutableStateOf(preferences.getBoolean(
-        PreferencesModule.TAG.GRID_LAYOUT.name,
-        true
-    )); private set
-
     private var recentlyMovedBoard: BoardWithLabelsAndTasks? = null
 
     var showCardMenu by mutableStateOf(false)

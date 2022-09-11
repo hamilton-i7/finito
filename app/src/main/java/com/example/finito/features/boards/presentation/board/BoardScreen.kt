@@ -23,7 +23,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
 import com.example.finito.core.domain.util.menu.ActiveBoardScreenOption
-import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
@@ -60,16 +59,16 @@ fun BoardScreen(
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
 
-    HandleBackPress(
-        drawerState = if (boardState == BoardState.Active) drawerState else null,
-        onBackPress = {
-            if (boardState != BoardState.Active) {
-                navController.navigateUp()
-                return@HandleBackPress
-            }
-            navController.popBackStack(Screen.Home.route, inclusive = false)
-        }
-    )
+//    HandleBackPress(
+//        drawerState = if (boardState == BoardState.Active) drawerState else null,
+//        onBackPress = {
+//            if (boardState != BoardState.Active) {
+//                navController.navigateUp()
+//                return@HandleBackPress
+//            }
+//            navController.popBackStack(Screen.Home.route, inclusive = false)
+//        }
+//    )
 
     LaunchedEffect(Unit) {
         boardViewModel.eventFlow.collectLatest { event ->

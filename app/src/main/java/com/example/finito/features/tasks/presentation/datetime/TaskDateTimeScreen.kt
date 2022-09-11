@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.components.bars.DialogTopBar
 import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.TimeTextField
@@ -49,15 +48,15 @@ fun TaskDateTimeScreen(
     } ?: ""
     val time = taskDateTimeViewModel.time?.formatted() ?: ""
 
-    HandleBackPress {
-        if (!dataChanged(task, taskDateTimeViewModel.date, taskDateTimeViewModel.time)) {
-            navController.navigateUp()
-            return@HandleBackPress
-        }
-        taskDateTimeViewModel.onEvent(TaskDateTimeEvent.ShowDialog(
-            type = TaskDateTimeEvent.DialogType.DiscardChanges
-        ))
-    }
+//    HandleBackPress {
+//        if (!dataChanged(task, taskDateTimeViewModel.date, taskDateTimeViewModel.time)) {
+//            navController.navigateUp()
+//            return@HandleBackPress
+//        }
+//        taskDateTimeViewModel.onEvent(TaskDateTimeEvent.ShowDialog(
+//            type = TaskDateTimeEvent.DialogType.DiscardChanges
+//        ))
+//    }
 
     Scaffold(
         topBar = {

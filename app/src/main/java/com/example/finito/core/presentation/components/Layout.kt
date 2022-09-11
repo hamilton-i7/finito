@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
+import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
@@ -29,6 +30,7 @@ fun Layout(
     drawerState: DrawerState,
     snackbarHostState: SnackbarHostState,
     navController: NavHostController,
+    finishActivity: () -> Unit,
     currentRoute: String?,
     content: @Composable () -> Unit,
 ) {
@@ -37,6 +39,14 @@ fun Layout(
     val isKeyboardVisible = WindowInsets.isImeVisible
     val enterOnScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    HandleBackPress(drawerState) {
+        if (appViewModel.showSearchbar) {
+            appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
+        } else {
+            finishActivity()
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

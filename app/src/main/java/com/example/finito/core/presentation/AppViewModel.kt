@@ -59,7 +59,7 @@ class AppViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(SEARCH_DELAY_MILLIS)
-            _eventFlow.emit(Event.SearchBoards)
+            _eventFlow.emit(Event.SearchBoards(query))
         }
     }
 
@@ -67,14 +67,12 @@ class AppViewModel @Inject constructor(
         if (show == showSearchbar) return@launch
         if (!show) {
             searchQuery = ""
-            _eventFlow.emit(Event.CloseSearchBar)
+            _eventFlow.emit(Event.SearchBoards(query = ""))
         }
         showSearchbar = show
     }
 
     sealed class Event {
-        object CloseSearchBar : Event()
-
-        object SearchBoards : Event()
+        data class SearchBoards(val query: String) : Event()
     }
 }

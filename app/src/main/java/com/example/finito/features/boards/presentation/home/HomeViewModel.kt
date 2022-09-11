@@ -1,14 +1,14 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
-import com.example.finito.core.domain.util.ResourceException
-import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -17,7 +17,8 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -41,14 +42,6 @@ class HomeViewModel @Inject constructor(
         private set
 
     private var fetchBoardsJob: Job? = null
-
-    var showSearchBar by mutableStateOf(false)
-        private set
-
-    var searchQuery by mutableStateOf("")
-        private set
-
-    private var searchJob: Job? = null
 
     var boardsOrder by mutableStateOf(
         preferences.getString(
@@ -76,6 +69,9 @@ class HomeViewModel @Inject constructor(
 
     var selectedBoardId by mutableStateOf(0)
         private set
+
+    private val _eventFlow = MutableSharedFlow<Event>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         fetchLabels()
@@ -109,20 +105,10 @@ class HomeViewModel @Inject constructor(
             }
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
-            is HomeEvent.SearchBoards -> {
-                searchQuery = event.query
-
-                searchJob?.cancel()
-                searchJob = viewModelScope.launch {
-                    delay(SEARCH_DELAY_MILLIS)
-                    fetchBoards()
-                }
-            }
+            is HomeEvent.SearchBoards -> fetchBoards(event.query)
             HomeEvent.ToggleLayout -> toggleLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
-            is HomeEvent.ShowSearchBar -> {
-                showSearchBar(event.show)
-            }
+            is HomeEvent.RestoreCrossScreenBoard -> restoreCrossScreenBoard(event.board)
             is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
     }
@@ -133,7 +119,7 @@ class HomeViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun fetchBoards() = viewModelScope.launch {
+    private fun fetchBoards(searchQuery: String? = null) = viewModelScope.launch {
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
             boardOrder = boardsOrder,
@@ -149,26 +135,24 @@ class HomeViewModel @Inject constructor(
         board: BoardWithLabelsAndTasks,
         mode: DeactivateMode,
     ) = viewModelScope.launch {
-        try {
-            with(board) {
-                boardUseCases.updateBoard(
-                    when (mode) {
-                        DeactivateMode.ARCHIVE -> copy(board = this.board.copy(archived = true))
-                        DeactivateMode.DELETE -> copy(board = this.board.copy(
-                            deleted = true,
-                            removedAt = LocalDateTime.now()
-                        ))
+        with(board) {
+            when (mode) {
+                DeactivateMode.ARCHIVE -> {
+                    boardUseCases.updateBoard(copy(board = this.board.copy(archived = true))).also {
+                        _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
                     }
-                )
-                recentlyDeactivatedBoard = this
+                }
+                DeactivateMode.DELETE -> {
+                    boardUseCases.updateBoard(copy(board = this.board.copy(
+                        deleted = true,
+                        removedAt = LocalDateTime.now()
+                    ))).also {
+                        _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                    }
+                }
             }
-        } catch (e: ResourceException.NegativeIdException) {
-
-        } catch (e: ResourceException.EmptyException) {
-
-        } catch (e: ResourceException.InvalidStateException) {
-
-        } catch (e: ResourceException.NotFoundException) {}
+            recentlyDeactivatedBoard = this
+        }
     }
 
     private fun toggleLayout() {
@@ -188,13 +172,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun showSearchBar(show: Boolean) {
-        if (show == showSearchBar) return
-        if (!show) {
-            searchQuery = ""
-            fetchBoards()
-        }
-        showSearchBar = show
+    private fun restoreCrossScreenBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
+        boardUseCases.updateBoard(
+            board.copy(board = board.board.copy(archived = false, deleted = false))
+        )
     }
 
     private fun onShowCardMenu(id: Int, show: Boolean) {
@@ -202,4 +183,7 @@ class HomeViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    sealed class Event {
+        data class ShowSnackbar(@StringRes val message: Int) : Event()
+    }
 }

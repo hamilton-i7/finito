@@ -1,8 +1,6 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,7 +9,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
-import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
@@ -19,23 +17,13 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    drawerState: DrawerState,
+    appViewModel: AppViewModel,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    finishActivity: () -> Unit = {},
     showSnackbar: (message: Int, () -> Unit) -> Unit,
 ) {
-    HandleBackPress(drawerState) {
-        if (homeViewModel.showSearchBar) {
-            homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
-        } else {
-            finishActivity()
-        }
-    }
-
     LaunchedEffect(Unit) {
         homeViewModel.eventFlow.collectLatest { event ->
             when (event) {
@@ -43,6 +31,13 @@ fun HomeScreen(
                     showSnackbar(event.message) {
                         homeViewModel.onEvent(HomeEvent.RestoreBoard)
                     }
+                }
+            }
+        }
+        appViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is AppViewModel.Event.SearchBoards -> {
+                    homeViewModel.onEvent(HomeEvent.SearchBoards(event.query))
                 }
             }
         }

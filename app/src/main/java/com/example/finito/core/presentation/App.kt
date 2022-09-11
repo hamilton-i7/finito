@@ -28,6 +28,7 @@ private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 @Composable
 fun App(finishActivity: () -> Unit) {
     val context = LocalContext.current
+    val appViewModel: AppViewModel = hiltViewModel()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
     val snackbarState = rememberSnackbarState()
@@ -78,13 +79,16 @@ fun App(finishActivity: () -> Unit) {
     ) {
         Layout(
             drawerState = drawerState,
+            appViewModel = appViewModel,
             snackbarHostState = snackbarHostState,
             currentRoute = navController.currentDestination?.route,
-            navController = navController
+            navController = navController,
+            finishActivity = finishActivity
         ) {
             FinitoNavHost(
                 navHostController = navController,
                 drawerState = drawerState,
+                appViewModel = appViewModel,
                 finishActivity = finishActivity,
                 showSnackbar = { message, onActionClick ->
                     snackbarState.showSnackbar(

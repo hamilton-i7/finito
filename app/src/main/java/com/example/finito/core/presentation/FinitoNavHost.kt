@@ -7,12 +7,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
-import com.example.finito.core.presentation.components.util.NavigationTransitions.dialogScreenEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.dialogScreenExistTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.mainScreenExitTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.secondaryScreenEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.secondaryScreenExitTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenExitTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenPopEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenPopExitTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.peerScreenEnterTransition
+import com.example.finito.core.presentation.components.util.NavigationTransitions.peerScreenExitTransition
 import com.example.finito.features.boards.presentation.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.board.BoardScreen
@@ -36,8 +36,23 @@ fun FinitoNavHost(
    ) {
        composable(
            route = Screen.Home.route,
-           enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition,
+           enterTransition = peerScreenEnterTransition,
+           exitTransition = {
+               when {
+                   Screen.Home.childRoutes.contains(targetState.destination.route) -> {
+                       childScreenExitTransition()
+                   }
+                   else -> peerScreenExitTransition()
+               }
+           },
+           popEnterTransition = {
+               when {
+                   Screen.Home.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           }
        ) {
            HomeScreen(
                navController = navHostController,
@@ -48,11 +63,26 @@ fun FinitoNavHost(
 
        composable(
            route = Screen.Archive.route,
-           enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition
+           enterTransition = peerScreenEnterTransition,
+           exitTransition = {
+               when {
+                   Screen.Archive.childRoutes.contains(targetState.destination.route) -> {
+                       childScreenExitTransition()
+                   }
+                   else -> peerScreenExitTransition()
+               }
+           },
+           popEnterTransition = {
+               when {
+                   Screen.Archive.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           }
        ) {
            ArchiveScreen(
-               navHostController = navHostController,
+               navController = navHostController,
                drawerState = drawerState,
                finishActivity = finishActivity
            )
@@ -60,11 +90,26 @@ fun FinitoNavHost(
 
        composable(
            route = Screen.Trash.route,
-           enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition
+           enterTransition = peerScreenEnterTransition,
+           exitTransition = {
+               when {
+                   Screen.Trash.childRoutes.contains(targetState.destination.route) -> {
+                       childScreenExitTransition()
+                   }
+                   else -> peerScreenExitTransition()
+               }
+           },
+           popEnterTransition = {
+               when {
+                   Screen.Trash.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           }
        ) {
            TrashScreen(
-               navHostController = navHostController,
+               navController = navHostController,
                drawerState = drawerState,
                finishActivity = finishActivity
            )
@@ -73,21 +118,36 @@ fun FinitoNavHost(
        composable(
            route = Screen.Board.route,
            arguments = Screen.Board.arguments,
-           enterTransition = mainScreenEnterTransition,
-           exitTransition = mainScreenExitTransition,
-           popEnterTransition = null
+           enterTransition = {
+                when {
+                    Screen.Board.parentRoutes.contains(initialState.destination.route) -> {
+                        childScreenEnterTransition()
+                    }
+                    else -> peerScreenEnterTransition()
+                }
+           },
+           popEnterTransition = {
+               when {
+                   Screen.Board.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           },
+           exitTransition = peerScreenExitTransition,
+           popExitTransition = childScreenPopExitTransition
        ) {
            BoardScreen(
                navController = navHostController,
                drawerState = drawerState,
-               finishActivity = finishActivity
            )
        }
 
        composable(
            route = Screen.CreateBoard.route,
-           enterTransition = secondaryScreenEnterTransition,
-           exitTransition = secondaryScreenExitTransition
+           enterTransition = childScreenEnterTransition,
+           exitTransition = childScreenExitTransition,
+           popExitTransition = childScreenPopExitTransition
        ) {
            AddEditBoardScreen(navController = navHostController)
        }
@@ -95,8 +155,9 @@ fun FinitoNavHost(
        composable(
            route = Screen.TaskDateTime.route,
            arguments = Screen.TaskDateTime.arguments,
-           enterTransition = dialogScreenEnterTransition,
-           exitTransition = dialogScreenExistTransition
+           enterTransition = childScreenEnterTransition,
+           exitTransition = childScreenExitTransition,
+           popExitTransition = childScreenPopExitTransition
        ) {
            TaskDateTimeScreen(navController = navHostController)
        }

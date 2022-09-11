@@ -1,76 +1,99 @@
 package com.example.finito.core.presentation.components.util
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.navigation.NavBackStackEntry
+import com.example.finito.core.presentation.components.util.AnimationDurationConstants.LongDurationMillis
 import com.example.finito.core.presentation.components.util.AnimationDurationConstants.RegularDurationMillis
-import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortDurationMillis
+import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortestDurationMillis
 
 @OptIn(ExperimentalAnimationApi::class)
 object NavigationTransitions  {
-        val mainScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        val peerScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
         fadeIn(
             animationSpec = tween(
-                durationMillis = ShortDurationMillis,
-                easing = LinearOutSlowInEasing,
-                delayMillis = RegularDurationMillis
+                durationMillis = RegularDurationMillis,
+                delayMillis = ShortestDurationMillis,
+                easing = EaseOut
             ),
         ) + scaleIn(
             animationSpec = tween(
-                durationMillis = ShortDurationMillis,
-                easing = LinearOutSlowInEasing,
-                delayMillis = RegularDurationMillis
+                durationMillis = RegularDurationMillis,
+                delayMillis = ShortestDurationMillis,
+                easing = EaseOut
             ),
-            initialScale = 0.6f
+            initialScale = 0.92f
         )
     }
-    val mainScreenExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+    val peerScreenExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
         fadeOut(
             animationSpec = tween(
-                durationMillis = RegularDurationMillis,
+                durationMillis = ShortestDurationMillis,
                 easing = FastOutLinearInEasing,
             )
         )
     }
 
-    val dialogScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
-        slideInVertically { it / 2 } + fadeIn()
-    }
-
-    val dialogScreenExistTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
-        slideOutVertically { it / 2 } + fadeOut()
-    }
-
-    val secondaryScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
-        slideInHorizontally(
+    val childScreenEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        fadeIn(
             animationSpec = tween(
-                durationMillis = ShortDurationMillis,
-                easing = LinearOutSlowInEasing,
-                delayMillis = RegularDurationMillis
-            ),
-        ) { it / 2 } + fadeIn(
+                durationMillis = RegularDurationMillis,
+                delayMillis = ShortestDurationMillis,
+                easing = FastOutLinearInEasing
+            )
+        ) + scaleIn(
             animationSpec = tween(
-                durationMillis = ShortDurationMillis,
-                easing = LinearOutSlowInEasing,
-                delayMillis = RegularDurationMillis
+                durationMillis = LongDurationMillis,
+                easing = CubicBezierEasing(0.8f, 0f, 0.4f, 0f)
             ),
+            initialScale = 0.8f
         )
     }
 
-    val secondaryScreenExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
-        slideOutHorizontally(
+    val childScreenPopEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        fadeIn(
             animationSpec = tween(
-                durationMillis =  ShortDurationMillis,
-                easing = LinearEasing
+                durationMillis = ShortestDurationMillis,
+                delayMillis = RegularDurationMillis,
+                easing = LinearOutSlowInEasing
             )
-        ) { it / 2 } + fadeOut(
+        ) + scaleIn(
             animationSpec = tween(
-                durationMillis = ShortDurationMillis,
-                easing = LinearEasing
+                durationMillis = LongDurationMillis,
+                easing = CubicBezierEasing(0.8f, 0f, 0.4f, 0f)
+            ),
+            initialScale = 1.1f
+        )
+    }
+
+    val childScreenExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        fadeOut(
+            tween(
+                durationMillis = RegularDurationMillis,
+                easing = FastOutLinearInEasing
             )
+        ) + scaleOut(
+            tween(
+                durationMillis = LongDurationMillis,
+                easing = CubicBezierEasing(0.8f, 0f, 0.4f, 0f)
+            ),
+            targetScale = 1.1f
+        )
+    }
+
+    val childScreenPopExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        fadeOut(
+            tween(
+                durationMillis = RegularDurationMillis,
+                easing = LinearOutSlowInEasing
+            )
+        ) + scaleOut(
+            tween(
+                durationMillis = LongDurationMillis,
+                easing = CubicBezierEasing(0.8f, 0f, 0.4f, 0f)
+            ),
+            targetScale = 0.8f
         )
     }
 }

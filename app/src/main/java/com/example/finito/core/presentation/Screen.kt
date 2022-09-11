@@ -9,7 +9,12 @@ sealed class Screen(
     val prefix: String? = null,
     val arguments: List<NamedNavArgument> = emptyList(),
 ) {
-    object Home : Screen(route = "home")
+    object Home : Screen(route = "home") {
+        val childRoutes = listOf(
+            Board.route,
+            CreateBoard.route
+        )
+    }
 
     object Today : Screen(route = "today")
 
@@ -21,7 +26,17 @@ sealed class Screen(
         route = "board/{$BOARD_ROUTE_ARGUMENT}",
         prefix = "board",
         arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
-    )
+    ) {
+        val childRoutes = listOf(
+            TaskDateTime.route,
+            EditBoard.route
+        )
+        val parentRoutes = listOf(
+            Home.route,
+            Archive.route,
+            Trash.route
+        )
+    }
 
     object CreateBoard : Screen(route = "create_board")
 
@@ -37,9 +52,13 @@ sealed class Screen(
         arguments = listOf(navArgument(LABEL_ROUTE_ARGUMENT) { type = NavType.IntType })
     )
 
-    object Archive : Screen(route = "archive")
+    object Archive : Screen(route = "archive") {
+        val childRoutes = listOf(Board.route)
+    }
 
-    object Trash : Screen(route = "trash")
+    object Trash : Screen(route = "trash") {
+        val childRoutes = listOf(Board.route)
+    }
 
     object TaskDateTime : Screen(
         route = "task_date_time/{$TASK_ROUTE_ARGUMENT}",

@@ -17,6 +17,7 @@ import com.example.finito.R
 import com.example.finito.core.domain.util.ArchivedBoardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun ArchiveScreen(
-    navHostController: NavHostController,
+    navController: NavHostController,
     drawerState: DrawerState,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {}
@@ -117,6 +118,10 @@ fun ArchiveScreen(
                 archiveViewModel.onEvent(ArchiveEvent.RemoveFilters)
             },
             boards = archiveViewModel.boards,
+            onBoardClick = {
+                val route = "${Screen.Board.prefix}/${it}"
+                navController.navigate(route)
+            },
             selectedSortingOption = archiveViewModel.boardsOrder,
             onSortOptionClick = {
                 archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))

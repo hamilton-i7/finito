@@ -1,5 +1,6 @@
 package com.example.finito.core.presentation.components.bars
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -8,18 +9,20 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
 import com.example.finito.core.domain.util.TopBarMenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
-import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediumTopBarWithMenu(
     title: String,
-    onMenuClick: () -> Unit = {},
+    onNavigationIconClick: () -> Unit = {},
+    navigationIcon: ImageVector = Icons.Outlined.Menu,
+    @StringRes navigationIconDescription: Int = R.string.open_menu,
     onMoreOptionsClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showMenu: Boolean = false,
@@ -29,10 +32,10 @@ fun MediumTopBarWithMenu(
 ) {
     MediumTopAppBar(
         navigationIcon = {
-            IconButton(onClick = onMenuClick) {
+            IconButton(onClick = onNavigationIconClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Menu,
-                    contentDescription = stringResource(id = R.string.open_menu)
+                    imageVector = navigationIcon,
+                    contentDescription = stringResource(id = navigationIconDescription)
                 )
             }
         },

@@ -134,6 +134,10 @@ fun HomeScreen(
                 homeViewModel.onEvent(HomeEvent.RemoveFilters)
             },
             boards = homeViewModel.boards,
+            onBoardClick = {
+                val route = "${Screen.Board.prefix}/${it}"
+                navController.navigate(route)
+            },
             selectedSortingOption = homeViewModel.boardsOrder,
             onSortOptionClick = {
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))
@@ -236,7 +240,7 @@ private fun HomeScreen(
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
                 onMenuItemClick(boardId, option as ActiveBoardMenuOption)
-            }
+            },
         )
     }
 }

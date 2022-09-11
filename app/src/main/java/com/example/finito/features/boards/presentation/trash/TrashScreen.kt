@@ -19,6 +19,7 @@ import com.example.finito.R
 import com.example.finito.core.domain.util.DeletedBoardMenuOption
 import com.example.finito.core.domain.util.TrashScreenMenuOption
 import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
@@ -29,7 +30,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrashScreen(
-    navHostController: NavHostController,
+    navController: NavHostController,
     drawerState: DrawerState,
     trashViewModel: TrashViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
@@ -82,6 +83,10 @@ fun TrashScreen(
             paddingValues = innerPadding,
             gridLayout = trashViewModel.gridLayout,
             boards = trashViewModel.boards,
+            onBoardClick = {
+                val route = "${Screen.Board.prefix}/${it}"
+                navController.navigate(route)
+            },
             onCardOptionsClick = {
                 trashViewModel.onEvent(TrashEvent.ShowCardMenu(boardId = it, show = true))
             },

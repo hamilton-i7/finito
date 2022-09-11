@@ -41,9 +41,9 @@ fun BoardScreen(
     navController: NavController,
     drawerState: DrawerState,
     boardViewModel: BoardViewModel = hiltViewModel(),
-    finishActivity: () -> Unit = {},
 ) {
     val detailedBoard = boardViewModel.board
+    val activeBoard = detailedBoard?.board?.archived == false && !detailedBoard.board.deleted
 
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -53,15 +53,29 @@ fun BoardScreen(
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
 
-    HandleBackPress(drawerState, onBackPress =  finishActivity)
+    HandleBackPress(
+        drawerState = if (activeBoard) drawerState else null,
+        onBackPress = {
+            if (!activeBoard) {
+                navController.navigateUp()
+                return@HandleBackPress
+            }
+            navController.popBackStack(Screen.Home.route, inclusive = false)
+        }
+    )
 
     Scaffold(
         topBar = {
             BoardTopBar(
-                onMenuClick = {
+                onNavigationClick = onNavigationClick@{
+                    if (!activeBoard) {
+                        navController.navigateUp()
+                        return@onNavigationClick
+                    }
                     scope.launch { drawerState.open() }
                 },
                 boardName = detailedBoard?.board?.name ?: "",
+                activeBoard = activeBoard,
                 scrollBehavior = topBarScrollBehavior
             )
         },

@@ -4,6 +4,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.example.finito.core.presentation.util.DialogType
 
 sealed class AppEvent {
+    data class ShowBottomBar(val show: Boolean) : AppEvent()
+
     data class ShowSearchBar(val show: Boolean) : AppEvent()
 
     data class ShowTopBarMenu(val show: Boolean) : AppEvent()

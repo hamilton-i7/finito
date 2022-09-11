@@ -56,6 +56,13 @@ fun App(finishActivity: () -> Unit) {
         }
     )
 
+    when (currentRoute) {
+        Screen.Home.route, Screen.Archive.route -> {
+            appViewModel.onEvent(AppEvent.ShowBottomBar(show = true))
+        }
+        else -> appViewModel.onEvent(AppEvent.ShowBottomBar(show = false))
+    }
+
     Drawer(
         drawerState = drawerState,
         isSelectedScreen = {

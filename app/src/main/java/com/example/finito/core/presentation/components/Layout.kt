@@ -1,7 +1,10 @@
 package com.example.finito.core.presentation.components
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,13 +24,15 @@ import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
+import com.example.finito.core.presentation.util.AnimationDurationConstants.LongDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.ShortestDurationMillis
 import com.example.finito.core.presentation.util.DialogType
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun Layout(
     appViewModel: AppViewModel = hiltViewModel(),
@@ -39,7 +44,6 @@ fun Layout(
 ) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
-    val isKeyboardVisible = WindowInsets.isImeVisible
     val enterOnScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -106,25 +110,39 @@ fun Layout(
             }
         },
         bottomBar = bottomBar@{
-            when (currentRoute) {
-                Screen.Home.route, Screen.Archive.route -> {
-                    if (isKeyboardVisible) return@bottomBar
-                    BottomBar(
-                        fabDescription = R.string.add_board,
-                        searchDescription = R.string.search_boards,
-                        onChangeLayoutClick = {
-                            appViewModel.onEvent(AppEvent.ToggleLayout)
-                        },
-                        gridLayout = appViewModel.gridLayout,
-                        onSearchClick = {
-                            appViewModel.onEvent(AppEvent.ShowSearchBar(show = true))
-                        },
-                        onFabClick = {
-                            navController.navigate(route = Screen.CreateBoard.route)
-                        }
+            AnimatedContent(
+                targetState = appViewModel.showBottomBar,
+                transitionSpec = {
+                    slideInVertically(
+                        animationSpec = tween(
+                            durationMillis = LongDurationMillis,
+                            delayMillis = ShortestDurationMillis
+                        ),
+                        initialOffsetY = { it / 2 }
+                    ) with slideOutVertically(
+                        animationSpec = tween(
+                            durationMillis = LongDurationMillis,
+                            delayMillis = ShortestDurationMillis
+                        ),
+                        targetOffsetY = { it / 2 }
                     )
                 }
-                else -> Unit
+            ) { showBottomBar ->
+                if (!showBottomBar) return@AnimatedContent
+                BottomBar(
+                    fabDescription = R.string.add_board,
+                    searchDescription = R.string.search_boards,
+                    onChangeLayoutClick = {
+                        appViewModel.onEvent(AppEvent.ToggleLayout)
+                    },
+                    gridLayout = appViewModel.gridLayout,
+                    onSearchClick = {
+                        appViewModel.onEvent(AppEvent.ShowSearchBar(show = true))
+                    },
+                    onFabClick = {
+                        navController.navigate(route = Screen.CreateBoard.route)
+                    }
+                )
             }
         },
         modifier = Modifier

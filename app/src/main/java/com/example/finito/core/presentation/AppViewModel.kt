@@ -23,6 +23,9 @@ class AppViewModel @Inject constructor(
     private val preferences: SharedPreferences,
 ) : ViewModel() {
 
+    var showBottomBar by mutableStateOf(true)
+        private set
+
     var showSearchbar by mutableStateOf(false)
         private set
 
@@ -52,6 +55,7 @@ class AppViewModel @Inject constructor(
             AppEvent.ToggleLayout -> onToggleLayout()
             is AppEvent.ShowTopBarMenu -> showTopBarMenu = event.show
             is AppEvent.ShowDialog -> dialogType = event.type
+            is AppEvent.ShowBottomBar -> showBottomBar = event.show
         }
     }
 

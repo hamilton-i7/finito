@@ -1,24 +1,28 @@
 package com.example.finito.features.boards.presentation.board
 
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Priority
-import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
+import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -54,19 +58,25 @@ class BoardViewModel @Inject constructor(
     var selectedPriority by mutableStateOf<Priority?>(null)
         private set
 
+    private val _eventFlow = MutableSharedFlow<Event>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    private val _crossScreenEventFlow = MutableSharedFlow<CrossScreenEvent>()
+    val crossScreenEventFlow = _crossScreenEventFlow.asSharedFlow()
+
     init {
         fetchBoard()
     }
 
     fun onEvent(event: BoardEvent) {
         when (event) {
-            is BoardEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
-            is BoardEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
+            is BoardEvent.ArchiveBoard -> deactivateBoard(DeactivateMode.ARCHIVE)
+            is BoardEvent.DeleteBoard -> deactivateBoard(DeactivateMode.DELETE)
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> changeTaskPriorityConfirm(event.task)
             is BoardEvent.CheckTask -> TODO()
             BoardEvent.DeleteCompletedTasks -> TODO()
-            is BoardEvent.ShowScreenMenu -> TODO()
+            is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.UncheckTask -> TODO()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
@@ -115,27 +125,51 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun deactivateBoard(
-        board: BoardWithLabelsAndTasks,
         mode: DeactivateMode,
     ) = viewModelScope.launch {
-        try {
-            with(board) {
-                boardUseCases.updateBoard(
-                    when (mode) {
-                        DeactivateMode.ARCHIVE -> copy(board = this.board.copy(archived = true))
-                        DeactivateMode.DELETE -> copy(board = this.board.copy(
-                            deleted = true,
-                            removedAt = LocalDateTime.now()
+        if (board == null) return@launch
+        with(board!!) {
+            val updatedBoard = BoardWithLabelsAndTasks(
+                board = when (mode) {
+                    DeactivateMode.ARCHIVE -> board.copy(archived = true)
+                    DeactivateMode.DELETE -> board.copy(
+                        archived = true,
+                        removedAt = LocalDateTime.now()
+                    )
+                },
+                labels = labels,
+                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+            )
+            boardUseCases.updateBoard(updatedBoard).also {
+                when (mode) {
+                    DeactivateMode.ARCHIVE -> {
+                        _eventFlow.emit(Event.ArchiveBoard)
+                        _crossScreenEventFlow.emit(CrossScreenEvent.ShowSnackbar(
+                            board = this,
+                            message = R.string.board_archived
                         ))
                     }
-                )
+                    DeactivateMode.DELETE -> {
+                        _eventFlow.emit(Event.DeleteBoard)
+                        _crossScreenEventFlow.emit(CrossScreenEvent.ShowSnackbar(
+                            board =  this,
+                            message = R.string.board_moved_to_trash
+                        ))
+                    }
+                }
             }
-        } catch (e: ResourceException.NegativeIdException) {
+        }
+    }
 
-        } catch (e: ResourceException.EmptyException) {
+    sealed class Event {
+        object ArchiveBoard : Event()
+        object DeleteBoard : Event()
+    }
 
-        } catch (e: ResourceException.InvalidStateException) {
-
-        } catch (e: ResourceException.NotFoundException) {}
+    sealed class CrossScreenEvent {
+        data class ShowSnackbar(
+            val board: DetailedBoard,
+            @StringRes val message: Int,
+        ) : CrossScreenEvent()
     }
 }

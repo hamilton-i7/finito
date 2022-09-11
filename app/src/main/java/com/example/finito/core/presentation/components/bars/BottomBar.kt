@@ -44,20 +44,19 @@ fun BottomBar(
                 }
             }
         },
-        floatingActionButton = if (onFabClick != null) {
-            {
-                FloatingActionButton(
-                    onClick = onFabClick,
-                    containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Add,
-                        contentDescription = stringResource(id = fabDescription)
-                    )
-                }
+        floatingActionButton = fab@{
+            if (onFabClick == null) return@fab
+            FloatingActionButton(
+                onClick = onFabClick,
+                containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Add,
+                    contentDescription = stringResource(id = fabDescription)
+                )
             }
-        } else null,
+        },
         modifier = modifier
     )
 }

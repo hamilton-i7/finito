@@ -1,4 +1,4 @@
-package com.example.finito.core.presentation.components.util
+package com.example.finito.core.presentation.util
 
 object AnimationDurationConstants {
     const val ShortestDurationMillis = 90

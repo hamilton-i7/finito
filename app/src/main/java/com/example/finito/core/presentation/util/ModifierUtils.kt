@@ -1,4 +1,4 @@
-package com.example.finito.core.presentation.components.util
+package com.example.finito.core.presentation.util
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

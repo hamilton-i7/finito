@@ -7,12 +7,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
-import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenExitTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenPopEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.childScreenPopExitTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.peerScreenEnterTransition
-import com.example.finito.core.presentation.components.util.NavigationTransitions.peerScreenExitTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenExitTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopExitTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenExitTransition
 import com.example.finito.features.boards.presentation.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.board.BoardScreen
@@ -27,8 +27,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun FinitoNavHost(
     navHostController: NavHostController,
+    appViewModel: AppViewModel,
     drawerState: DrawerState,
     finishActivity: () -> Unit,
+    showSnackbar: (Int, () -> Unit) -> Unit,
 ) {
    AnimatedNavHost(
        navController = navHostController,
@@ -56,8 +58,8 @@ fun FinitoNavHost(
        ) {
            HomeScreen(
                navController = navHostController,
-               drawerState = drawerState,
-               finishActivity = finishActivity
+               appViewModel = appViewModel,
+               showSnackbar = showSnackbar,
            )
        }
 
@@ -140,6 +142,7 @@ fun FinitoNavHost(
            BoardScreen(
                navController = navHostController,
                drawerState = drawerState,
+//               showSnackbar = showSnackbar,
            )
        }
 

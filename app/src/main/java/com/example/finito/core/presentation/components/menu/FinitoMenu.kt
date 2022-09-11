@@ -22,14 +22,14 @@ fun FinitoMenu(
     options: List<MenuOption>,
     onOptionClick: (MenuOption) -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-
     DropdownMenu(
         expanded = show,
         onDismissRequest = onDismiss,
         modifier = Modifier.widthIn(min = MENU_MIN_WIDTH)
     ) {
         options.forEach { option ->
+            val interactionSource = remember { MutableInteractionSource() }
+
             DropdownMenuItem(
                 text = { Text(stringResource(id = option.label)) },
                 onClick = { onOptionClick(option) },

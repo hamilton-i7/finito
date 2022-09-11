@@ -51,6 +51,7 @@ class TrashViewModel @Inject constructor(
         fetchBoards()
     }
 
+    // TODO: Delete boards after 7 days of being in the trash
     fun onEvent(event: TrashEvent) {
         when (event) {
             is TrashEvent.DeleteForever -> deleteBoard(event.board)

@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.presentation.Screen
-import com.example.finito.core.presentation.components.util.TextFieldState
+import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -43,7 +43,7 @@ class AddEditBoardViewModel @Inject constructor(
     var showLabels by mutableStateOf(false)
         private set
 
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
@@ -80,8 +80,8 @@ class AddEditBoardViewModel @Inject constructor(
             board = Board(name = nameState.value),
             labels = selectedLabels
         )
-        boardUseCases.createBoard(board).let {
-            _eventFlow.emit(UiEvent.CreateBoard(it))
+        boardUseCases.createBoard(board).also {
+            _eventFlow.emit(Event.CreateBoard(it))
         }
     }
 
@@ -101,7 +101,7 @@ class AddEditBoardViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    sealed class UiEvent {
-        data class CreateBoard(val boardId: Int) : UiEvent()
+    sealed class Event {
+        data class CreateBoard(val boardId: Int) : Event()
     }
 }

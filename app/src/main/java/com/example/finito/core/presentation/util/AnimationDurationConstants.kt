@@ -1,9 +1,9 @@
 package com.example.finito.core.presentation.util
 
 object AnimationDurationConstants {
-    const val ShortestDurationMillis = 90
+    const val ShortestDurationMillis = 140
 
-    const val RegularDurationMillis = 210
+    const val RegularDurationMillis = 260
 
-    const val LongDurationMillis = 300
+    const val LongDurationMillis = 350
 }

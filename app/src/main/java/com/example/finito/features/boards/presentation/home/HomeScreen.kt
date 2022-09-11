@@ -1,14 +1,19 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
+import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -16,14 +21,32 @@ import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     appViewModel: AppViewModel,
     homeViewModel: HomeViewModel = hiltViewModel(),
     showSnackbar: (message: Int, () -> Unit) -> Unit,
+    drawerState: DrawerState,
+    finishActivity: () -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
+        }
+        if (appViewModel.showSearchbar) {
+            appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
+            return@BackHandler
+        }
+        finishActivity()
+    }
+
     LaunchedEffect(Unit) {
         homeViewModel.eventFlow.collectLatest { event ->
             when (event) {

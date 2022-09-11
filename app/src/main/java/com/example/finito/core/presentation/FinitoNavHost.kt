@@ -1,11 +1,9 @@
 package com.example.finito.core.presentation
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import com.example.finito.core.presentation.util.NavigationTransitions.childScreenEnterTransition
 import com.example.finito.core.presentation.util.NavigationTransitions.childScreenExitTransition
@@ -21,7 +19,6 @@ import com.example.finito.features.boards.presentation.trash.TrashScreen
 import com.example.finito.features.tasks.presentation.datetime.TaskDateTimeScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +57,8 @@ fun FinitoNavHost(
                navController = navHostController,
                appViewModel = appViewModel,
                showSnackbar = showSnackbar,
+               drawerState = drawerState,
+               finishActivity = finishActivity,
            )
        }
 
@@ -85,8 +84,10 @@ fun FinitoNavHost(
        ) {
            ArchiveScreen(
                navController = navHostController,
+               appViewModel = appViewModel,
+               showSnackbar = showSnackbar,
                drawerState = drawerState,
-               finishActivity = finishActivity
+               finishActivity = finishActivity,
            )
        }
 
@@ -167,18 +168,3 @@ fun FinitoNavHost(
    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HandleBackPress(
-    drawerState: DrawerState? = null,
-    onBackPress: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    BackHandler {
-        drawerState?.let {
-            if (drawerState.isOpen) {
-                scope.launch { drawerState.close() }
-            } else onBackPress()
-        } ?: onBackPress()
-    }
-}

@@ -16,11 +16,7 @@ sealed class ArchiveEvent {
 
     data class SearchBoards(val query: String) : ArchiveEvent()
 
-    object ToggleLayout : ArchiveEvent()
-
     object RestoreBoard : ArchiveEvent()
-
-    data class ShowSearchBar(val show: Boolean) : ArchiveEvent()
 
     data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : ArchiveEvent()
 }

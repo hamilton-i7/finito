@@ -15,10 +15,10 @@ import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
-import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import kotlinx.coroutines.launch
@@ -30,7 +30,6 @@ fun Layout(
     drawerState: DrawerState,
     snackbarHostState: SnackbarHostState,
     navController: NavHostController,
-    finishActivity: () -> Unit,
     currentRoute: String?,
     content: @Composable () -> Unit,
 ) {
@@ -39,14 +38,6 @@ fun Layout(
     val isKeyboardVisible = WindowInsets.isImeVisible
     val enterOnScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
-    HandleBackPress(drawerState) {
-        if (appViewModel.showSearchbar) {
-            appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
-        } else {
-            finishActivity()
-        }
-    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -67,12 +58,26 @@ fun Layout(
                     scrollBehavior = enterOnScrollBehavior,
                     searchBarScrollBehavior = pinnedScrollBehavior
                 )
-                else -> Unit
+                Screen.Archive.route -> ArchiveScreenTopBar(
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    },
+                    showSearchBar = appViewModel.showSearchbar,
+                    onSearchBarNavigationIconClick = {
+                        appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
+                    },
+                    searchQuery = appViewModel.searchQuery,
+                    onSearchQueryChange = {
+                        appViewModel.onEvent(AppEvent.SearchBoards(it))
+                    },
+                    scrollBehavior = enterOnScrollBehavior,
+                    searchBarScrollBehavior = pinnedScrollBehavior,
+                )
             }
         },
         bottomBar = bottomBar@{
             when (currentRoute) {
-                Screen.Home.route -> {
+                Screen.Home.route, Screen.Archive.route -> {
                     if (isKeyboardVisible) return@bottomBar
                     BottomBar(
                         fabDescription = R.string.add_board,
@@ -101,7 +106,9 @@ fun Layout(
             )
             .noRippleClickable { focusManager.clearFocus() },
     ) { innerPadding ->
-        Surface(modifier = Modifier.fillMaxSize().padding(innerPadding)) { content() }
+        Surface(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) { content() }
     }
 }
 
@@ -139,6 +146,44 @@ private fun HomeScreenTopBar(
         } else {
             HomeTopBar(
                 onMenuClick = onMenuClick,
+                scrollBehavior = scrollBehavior
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun ArchiveScreenTopBar(
+    onMenuClick: () -> Unit,
+    showSearchBar: Boolean,
+    onSearchBarNavigationIconClick: () -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior,
+    searchBarScrollBehavior: TopAppBarScrollBehavior,
+) {
+    AnimatedContent(
+        targetState = showSearchBar,
+        transitionSpec = {
+            (slideIntoContainer(
+                towards = AnimatedContentScope.SlideDirection.Start
+            ) with slideOutOfContainer(
+                towards = AnimatedContentScope.SlideDirection.End)
+                    ).using(SizeTransform(clip = false))
+        }
+    ) { showingSearchBar ->
+        if (showingSearchBar) {
+            SearchTopBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onBackClick = onSearchBarNavigationIconClick,
+                scrollBehavior = searchBarScrollBehavior,
+            )
+        } else {
+            TopBar(
+                onNavigationIconClick = onMenuClick,
+                title = R.string.archive,
                 scrollBehavior = scrollBehavior
             )
         }

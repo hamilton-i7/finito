@@ -1,7 +1,9 @@
 package com.example.finito.core.presentation
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
@@ -33,9 +35,12 @@ fun App(finishActivity: () -> Unit) {
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
     val snackbarState = rememberSnackbarState()
     val (snackbarHostState, scope, navController) = snackbarState
+    var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
 
     navController.addOnDestinationChangedListener(
         listener = { _, destination, arguments ->
+            currentRoute = destination.route
+
             if (!drawerRoutes.contains(destination.route)) {
                 return@addOnDestinationChangedListener
             }
@@ -78,12 +83,11 @@ fun App(finishActivity: () -> Unit) {
         }
     ) {
         Layout(
-            drawerState = drawerState,
             appViewModel = appViewModel,
+            drawerState = drawerState,
             snackbarHostState = snackbarHostState,
-            currentRoute = navController.currentDestination?.route,
             navController = navController,
-            finishActivity = finishActivity
+            currentRoute = currentRoute
         ) {
             FinitoNavHost(
                 navHostController = navController,

@@ -12,7 +12,6 @@ import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
-import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -98,8 +97,8 @@ class HomeViewModel @Inject constructor(
                 }
                 fetchBoards()
             }
-            is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
-            is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
+            is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, EditMode.ARCHIVE)
+            is HomeEvent.DeleteBoard -> deactivateBoard(event.board, EditMode.DELETE)
             is HomeEvent.SearchBoards -> fetchBoards(event.query)
             HomeEvent.RestoreBoard -> restoreBoard()
             is HomeEvent.RestoreCrossScreenBoard -> restoreCrossScreenBoard(event.board)
@@ -127,16 +126,16 @@ class HomeViewModel @Inject constructor(
 
     private fun deactivateBoard(
         board: BoardWithLabelsAndTasks,
-        mode: DeactivateMode,
+        mode: EditMode,
     ) = viewModelScope.launch {
         with(board) {
             when (mode) {
-                DeactivateMode.ARCHIVE -> {
+                EditMode.ARCHIVE -> {
                     boardUseCases.updateBoard(copy(board = this.board.copy(archived = true))).also {
                         _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
                     }
                 }
-                DeactivateMode.DELETE -> {
+                EditMode.DELETE -> {
                     boardUseCases.updateBoard(copy(board = this.board.copy(
                         deleted = true,
                         removedAt = LocalDateTime.now()
@@ -167,6 +166,10 @@ class HomeViewModel @Inject constructor(
     private fun onShowCardMenu(id: Int, show: Boolean) {
         selectedBoardId = if (!show) 0 else id
         showCardMenu = show
+    }
+
+    enum class EditMode {
+        ARCHIVE, DELETE
     }
 
     sealed class Event {

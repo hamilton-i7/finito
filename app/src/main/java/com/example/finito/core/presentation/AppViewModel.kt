@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.di.PreferencesModule
@@ -24,7 +25,7 @@ class AppViewModel @Inject constructor(
     var showSearchbar by mutableStateOf(false)
         private set
 
-    var searchQuery by mutableStateOf("")
+    var searchQuery by mutableStateOf(TextFieldValue())
         private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -53,19 +54,19 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    private fun onSearchBoards(query: String) {
+    private fun onSearchBoards(query: TextFieldValue) {
         searchQuery = query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(SEARCH_DELAY_MILLIS)
-            _eventFlow.emit(Event.SearchBoards(query))
+            _eventFlow.emit(Event.SearchBoards(query.text.trim()))
         }
     }
 
     private fun onShowSearchBarChange(show: Boolean) = viewModelScope.launch {
         if (show == showSearchbar) return@launch
         if (!show) {
-            searchQuery = ""
+            searchQuery = TextFieldValue()
             _eventFlow.emit(Event.SearchBoards(query = ""))
         }
         showSearchbar = show

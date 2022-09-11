@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,10 +58,15 @@ fun HomeScreen(
                 }
             }
         }
-        appViewModel.eventFlow.collectLatest { event ->
-            when (event) {
-                is AppViewModel.Event.SearchBoards -> {
-                    homeViewModel.onEvent(HomeEvent.SearchBoards(event.query))
+    }
+
+    SideEffect {
+        scope.launch {
+            appViewModel.eventFlow.collectLatest { event ->
+                when (event) {
+                    is AppViewModel.Event.SearchBoards -> {
+                        homeViewModel.onEvent(HomeEvent.SearchBoards(event.query))
+                    }
                 }
             }
         }

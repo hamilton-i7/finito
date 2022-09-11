@@ -3,13 +3,12 @@ package com.example.finito.core.presentation.components
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
@@ -118,8 +117,8 @@ private fun HomeScreenTopBar(
     onMenuClick: () -> Unit,
     showSearchBar: Boolean,
     onSearchBarNavigationIconClick: () -> Unit,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+    searchQuery: TextFieldValue,
+    onSearchQueryChange: (TextFieldValue) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     searchBarScrollBehavior: TopAppBarScrollBehavior,
 ) {
@@ -158,8 +157,8 @@ private fun ArchiveScreenTopBar(
     onMenuClick: () -> Unit,
     showSearchBar: Boolean,
     onSearchBarNavigationIconClick: () -> Unit,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+    searchQuery: TextFieldValue,
+    onSearchQueryChange: (TextFieldValue) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     searchBarScrollBehavior: TopAppBarScrollBehavior,
 ) {

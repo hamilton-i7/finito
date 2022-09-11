@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
-import com.example.finito.core.domain.util.TopBarMenuOption
+import com.example.finito.core.domain.util.menu.MenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,8 +22,8 @@ fun SmallTopBarWithMenu(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
-    options: List<TopBarMenuOption> = emptyList(),
-    onOptionClick: (TopBarMenuOption) -> Unit = {},
+    options: List<MenuOption> = emptyList(),
+    onOptionClick: (MenuOption) -> Unit = {},
 ) {
     TopAppBar(title = { Text(title) },
         navigationIcon = {

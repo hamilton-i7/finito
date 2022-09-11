@@ -16,13 +16,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.ActiveBoardMenuOption
+import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
-import com.example.finito.core.presentation.components.util.noRippleClickable
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
@@ -150,13 +150,13 @@ fun HomeScreen(
                 homeViewModel.onEvent(HomeEvent.ShowCardMenu(show = false))
             },
             options = listOf(
-                ActiveBoardMenuOption.Archive,
-                ActiveBoardMenuOption.Delete,
+                ActiveBoardCardMenuOption.Archive,
+                ActiveBoardCardMenuOption.Delete,
             ),
             onMenuItemClick = { board, option ->
                 homeViewModel.onEvent(HomeEvent.ShowCardMenu(show = false))
                 when (option) {
-                    ActiveBoardMenuOption.Archive -> {
+                    ActiveBoardCardMenuOption.Archive -> {
                         homeViewModel.onEvent(HomeEvent.ArchiveBoard(board))
                         // Dismiss current Snackbar to avoid having multiple instances
                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -171,7 +171,7 @@ fun HomeScreen(
                             }
                         }
                     }
-                    ActiveBoardMenuOption.Delete -> {
+                    ActiveBoardCardMenuOption.Delete -> {
                         homeViewModel.onEvent(HomeEvent.DeleteBoard(board))
                         // Dismiss current Snackbar to avoid having multiple instances
                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -206,11 +206,11 @@ private fun HomeScreen(
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
     onDismissMenu: (boardId: Int) -> Unit = {},
-    options: List<ActiveBoardMenuOption> = emptyList(),
+    options: List<ActiveBoardCardMenuOption> = emptyList(),
     onCardOptionsClick: (boardId: Int) -> Unit = {},
     onMenuItemClick: (
         board: BoardWithLabelsAndTasks,
-        option: ActiveBoardMenuOption,
+        option: ActiveBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
     val sortingOptions = listOf(
@@ -239,7 +239,7 @@ private fun HomeScreen(
             options = options,
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as ActiveBoardMenuOption)
+                onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
             },
         )
     }

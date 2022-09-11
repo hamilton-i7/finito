@@ -16,8 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.DeletedBoardMenuOption
-import com.example.finito.core.domain.util.TrashScreenMenuOption
+import com.example.finito.core.domain.util.menu.DeletedBoardCardMenuOption
+import com.example.finito.core.domain.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.presentation.trash.components.TrashTopBar
@@ -95,13 +95,13 @@ fun TrashScreen(
                 trashViewModel.onEvent(TrashEvent.ShowCardMenu(show = false))
             },
             options = listOf(
-                DeletedBoardMenuOption.Restore,
-                DeletedBoardMenuOption.DeleteForever,
+                DeletedBoardCardMenuOption.Restore,
+                DeletedBoardCardMenuOption.DeleteForever,
             ),
             onMenuItemClick = { board, option ->
                 trashViewModel.onEvent(TrashEvent.ShowCardMenu(show = false))
                 when (option) {
-                    DeletedBoardMenuOption.Restore -> {
+                    DeletedBoardCardMenuOption.Restore -> {
                         trashViewModel.onEvent(TrashEvent.RestoreBoard(board))
 
                         // Dismiss current Snackbar to avoid having multiple instances
@@ -117,7 +117,7 @@ fun TrashScreen(
                             }
                         }
                     }
-                    DeletedBoardMenuOption.DeleteForever -> {
+                    DeletedBoardCardMenuOption.DeleteForever -> {
                         trashViewModel.onEvent(TrashEvent.ShowDialog(
                             type = TrashEvent.DialogType.DeleteBoard(board.board)
                         ))
@@ -136,11 +136,11 @@ private fun TrashScreen(
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
     onDismissMenu: (boardId: Int) -> Unit = {},
-    options: List<DeletedBoardMenuOption> = emptyList(),
+    options: List<DeletedBoardCardMenuOption> = emptyList(),
     onCardOptionsClick: (boardId: Int) -> Unit = {},
     onMenuItemClick: (
         board: BoardWithLabelsAndTasks,
-        option: DeletedBoardMenuOption,
+        option: DeletedBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
     Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
@@ -153,7 +153,7 @@ private fun TrashScreen(
             options = options,
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as DeletedBoardMenuOption)
+                onMenuItemClick(boardId, option as DeletedBoardCardMenuOption)
             }
         )
     }

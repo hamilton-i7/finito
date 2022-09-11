@@ -12,7 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.finito.core.domain.util.BoardCardMenuOption
+import com.example.finito.core.domain.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks

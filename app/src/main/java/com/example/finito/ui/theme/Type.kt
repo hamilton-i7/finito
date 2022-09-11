@@ -102,7 +102,7 @@ val Typography = Typography(
     ),
     labelLarge = TextStyle(
         fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp

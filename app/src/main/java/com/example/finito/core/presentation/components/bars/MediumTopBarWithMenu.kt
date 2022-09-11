@@ -2,19 +2,17 @@ package com.example.finito.core.presentation.components.bars
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
-import com.example.finito.core.domain.util.TopBarMenuOption
-import com.example.finito.core.presentation.MENU_MIN_WIDTH
+import com.example.finito.core.domain.util.menu.MenuOption
+import com.example.finito.core.presentation.components.menu.FinitoMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,8 +25,8 @@ fun MediumTopBarWithMenu(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
-    options: List<TopBarMenuOption> = emptyList(),
-    onOptionClick: (TopBarMenuOption) -> Unit = {},
+    options: List<MenuOption> = emptyList(),
+    onOptionClick: (MenuOption) -> Unit = {},
 ) {
     MediumTopAppBar(
         navigationIcon = {
@@ -48,18 +46,12 @@ fun MediumTopBarWithMenu(
                         contentDescription = stringResource(id = R.string.more_options)
                     )
                 }
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = onDismissMenu,
-                    modifier = Modifier.widthIn(min = MENU_MIN_WIDTH)
-                ) {
-                    options.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = option.label)) },
-                            onClick = { onOptionClick(option) }
-                        )
-                    }
-                }
+                FinitoMenu(
+                    show = showMenu,
+                    onDismiss = onDismissMenu,
+                    options = options,
+                    onOptionClick = onOptionClick
+                )
             }
         },
         scrollBehavior = scrollBehavior

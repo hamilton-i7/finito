@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.ArchivedBoardMenuOption
+import com.example.finito.core.domain.util.menu.ArchivedBoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.HandleBackPress
 import com.example.finito.core.presentation.Screen
@@ -134,13 +134,13 @@ fun ArchiveScreen(
                 archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(show = false))
             },
             options = listOf(
-                ArchivedBoardMenuOption.Unarchive,
-                ArchivedBoardMenuOption.Delete,
+                ArchivedBoardCardMenuOption.Unarchive,
+                ArchivedBoardCardMenuOption.Delete,
             ),
             onMenuItemClick = { board, option ->
                 archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(show = false))
                 when (option) {
-                    ArchivedBoardMenuOption.Unarchive -> {
+                    ArchivedBoardCardMenuOption.Unarchive -> {
                         archiveViewModel.onEvent(ArchiveEvent.UnarchiveBoard(board))
                         // Dismiss current Snackbar to avoid having multiple instances
                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -155,7 +155,7 @@ fun ArchiveScreen(
                             }
                         }
                     }
-                    ArchivedBoardMenuOption.Delete -> {
+                    ArchivedBoardCardMenuOption.Delete -> {
                         archiveViewModel.onEvent(ArchiveEvent.DeleteBoard(board))
                         // Dismiss current Snackbar to avoid having multiple instances
                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -190,11 +190,11 @@ private fun ArchiveScreen(
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
     onDismissMenu: (boardId: Int) -> Unit = {},
-    options: List<ArchivedBoardMenuOption> = emptyList(),
+    options: List<ArchivedBoardCardMenuOption> = emptyList(),
     onCardOptionsClick: (boardId: Int) -> Unit = {},
     onMenuItemClick: (
         board: BoardWithLabelsAndTasks,
-        option: ArchivedBoardMenuOption,
+        option: ArchivedBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
     val sortingOptions = listOf(
@@ -221,7 +221,7 @@ private fun ArchiveScreen(
             options = options,
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as ArchivedBoardMenuOption)
+                onMenuItemClick(boardId, option as ArchivedBoardCardMenuOption)
             }
         )
     }

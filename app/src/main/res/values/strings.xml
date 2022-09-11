@@ -92,4 +92,6 @@
     <string name="hide_labels">Hide labels</string>
     <string name="create_board">Create board</string>
     <string name="go_back">Go back</string>
+    <string name="unarchive_board">Unarchive board</string>
+    <string name="restore_board">Restore board</string>
 </resources>

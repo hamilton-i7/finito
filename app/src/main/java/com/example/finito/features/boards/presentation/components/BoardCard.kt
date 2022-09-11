@@ -16,9 +16,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.core.domain.util.BoardCardMenuOption
+import com.example.finito.core.domain.util.menu.BoardCardMenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.core.presentation.components.PercentageIndicator
+import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
@@ -63,34 +64,14 @@ fun BoardCard(
                             contentDescription = stringResource(id = R.string.more_options),
                             tint = finitoColors.onSurfaceVariant
                         )
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = onDismissMenu,
-                            modifier = Modifier.widthIn(min = MENU_MIN_WIDTH)
-                        ) {
-                            options.forEach { option ->
-                                val interactionSource = remember { MutableInteractionSource() }
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = stringResource(id = option.label),
-                                            style = MaterialTheme.typography.bodyLarge
-                                        )
-                                    },
-                                    onClick = { onMenuItemClick(option) },
-                                    interactionSource = interactionSource,
-                                    modifier = Modifier.indication(
-                                        interactionSource,
-                                        indication = rememberRipple(
-                                            color = finitoColors.primary.copy(
-                                                alpha = 0.12f
-                                            )
-                                        )
-                                    )
-                                )
+                        FinitoMenu(
+                            show = showMenu,
+                            onDismiss = onDismissMenu,
+                            options = options,
+                            onOptionClick = {
+                                onMenuItemClick(it as BoardCardMenuOption)
                             }
-                        }
+                        )
                     }
                 }
             }

@@ -1,15 +1,12 @@
 package com.example.finito.core.presentation
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.example.finito.core.presentation.components.Layout
+import com.example.finito.core.presentation.util.rememberSnackbarState
 import kotlinx.coroutines.launch
 
 private val staticDrawerRoutes = listOf(
@@ -27,13 +24,14 @@ private val dynamicDrawerRoutes = listOf(
 
 private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
-    val navController = rememberAnimatedNavController()
-    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
+    val snackbarState = rememberSnackbarState()
+    val (snackbarHostState, scope, navController) = snackbarState
 
     navController.addOnDestinationChangedListener(
         listener = { _, destination, arguments ->
@@ -78,8 +76,24 @@ fun App(finishActivity: () -> Unit) {
             }
         }
     ) {
-        Surface {
-            FinitoNavHost(navController, drawerState, finishActivity)
+        Layout(
+            drawerState = drawerState,
+            snackbarHostState = snackbarHostState,
+            currentRoute = navController.currentDestination?.route,
+            navController = navController
+        ) {
+            FinitoNavHost(
+                navHostController = navController,
+                drawerState = drawerState,
+                finishActivity = finishActivity,
+                showSnackbar = { message, onActionClick ->
+                    snackbarState.showSnackbar(
+                        context = context,
+                        message = message,
+                        onActionClick = onActionClick
+                    )
+                }
+            )
         }
     }
 }

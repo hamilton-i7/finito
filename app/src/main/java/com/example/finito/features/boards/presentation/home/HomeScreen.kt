@@ -44,7 +44,7 @@ fun HomeScreen(
     }
 
     HomeScreen(
-        gridLayout = homeViewModel.gridLayout,
+        gridLayout = appViewModel.gridLayout,
         labels = homeViewModel.labels,
         labelFilters = homeViewModel.labelFilters,
         onLabelClick = {

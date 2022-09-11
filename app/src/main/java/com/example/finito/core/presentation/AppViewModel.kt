@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
-import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

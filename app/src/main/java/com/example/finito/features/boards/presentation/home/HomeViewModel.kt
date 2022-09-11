@@ -56,11 +56,6 @@ class HomeViewModel @Inject constructor(
             }
         } ?: SortingOption.Common.Default
     ); private set
-    
-    var gridLayout by mutableStateOf(preferences.getBoolean(
-        PreferencesModule.TAG.GRID_LAYOUT.name,
-        true
-    )); private set
 
     private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
 
@@ -106,7 +101,6 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
             is HomeEvent.SearchBoards -> fetchBoards(event.query)
-            HomeEvent.ToggleLayout -> toggleLayout()
             HomeEvent.RestoreBoard -> restoreBoard()
             is HomeEvent.RestoreCrossScreenBoard -> restoreCrossScreenBoard(event.board)
             is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
@@ -152,14 +146,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
             recentlyDeactivatedBoard = this
-        }
-    }
-
-    private fun toggleLayout() {
-        gridLayout = !gridLayout
-        with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
-            apply()
         }
     }
 

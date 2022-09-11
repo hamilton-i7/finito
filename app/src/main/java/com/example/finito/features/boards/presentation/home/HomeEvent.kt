@@ -16,8 +16,6 @@ sealed class HomeEvent {
 
     data class SearchBoards(val query: String) : HomeEvent()
 
-    object ToggleLayout : HomeEvent()
-
     object RestoreBoard : HomeEvent()
 
     data class RestoreCrossScreenBoard(val board: BoardWithLabelsAndTasks) : HomeEvent()

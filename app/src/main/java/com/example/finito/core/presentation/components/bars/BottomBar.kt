@@ -32,13 +32,13 @@ fun BottomBar(
         transitionSpec = {
             slideInVertically(
                 animationSpec = tween(
-                    durationMillis = AnimationDurationConstants.LongDurationMillis,
+                    durationMillis = AnimationDurationConstants.RegularDurationMillis,
                     delayMillis = AnimationDurationConstants.ShortestDurationMillis
                 ),
                 initialOffsetY = { it / 2 }
             ) with slideOutVertically(
                 animationSpec = tween(
-                    durationMillis = AnimationDurationConstants.LongDurationMillis,
+                    durationMillis = AnimationDurationConstants.RegularDurationMillis,
                     delayMillis = AnimationDurationConstants.ShortestDurationMillis
                 ),
                 targetOffsetY = { it / 2 }

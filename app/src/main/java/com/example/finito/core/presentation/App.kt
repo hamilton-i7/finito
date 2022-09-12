@@ -58,9 +58,15 @@ fun App(finishActivity: () -> Unit) {
 
     when (currentRoute) {
         Screen.Home.route, Screen.Archive.route -> {
-            appViewModel.onEvent(AppEvent.ShowBottomBar(show = true))
+            appViewModel.onEvent(
+                screen = null,
+                event = AppEvent.Generic.ShowBottomBar(show = true)
+            )
         }
-        else -> appViewModel.onEvent(AppEvent.ShowBottomBar(show = false))
+        else -> appViewModel.onEvent(
+            screen = null,
+            event = AppEvent.Generic.ShowBottomBar(show = false)
+        )
     }
 
     Drawer(

@@ -42,7 +42,10 @@ fun HomeScreen(
             return@BackHandler
         }
         if (appViewModel.showSearchbar) {
-            appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
+            appViewModel.onEvent(
+                screen = Screen.Home,
+                event = AppEvent.Home.ShowSearchBar(show = false)
+            )
             return@BackHandler
         }
         finishActivity()
@@ -62,9 +65,9 @@ fun HomeScreen(
 
     SideEffect {
         scope.launch {
-            appViewModel.eventFlow.collectLatest { event ->
-                when (event) {
-                    is AppViewModel.Event.SearchBoards -> {
+            appViewModel.eventFlow.collectLatest {
+                when (val event = it as AppViewModel.Event.Home) {
+                    is AppViewModel.Event.Home.SearchBoards -> {
                         homeViewModel.onEvent(HomeEvent.SearchBoards(event.query))
                     }
                 }

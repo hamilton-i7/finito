@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.board
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,13 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.ActiveBoardScreenOption
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
-import com.example.finito.features.boards.domain.BoardState
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
-import com.example.finito.features.boards.presentation.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
@@ -42,15 +42,9 @@ import kotlinx.coroutines.launch
 fun BoardScreen(
     navController: NavController,
     drawerState: DrawerState,
+    appViewModel: AppViewModel,
     boardViewModel: BoardViewModel = hiltViewModel(),
 ) {
-    val detailedBoard = boardViewModel.board
-    val boardState = when {
-        detailedBoard?.board?.archived == false && !detailedBoard.board.deleted -> BoardState.Active
-        detailedBoard?.board?.archived == true -> BoardState.Archived
-        else -> BoardState.Deleted
-    }
-
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val listState = rememberLazyListState()
@@ -58,17 +52,21 @@ fun BoardScreen(
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
+    val previousDestination = navController.previousBackStackEntry?.destination?.route
+    val inactiveBoard = previousDestination == Screen.Archive.route
+            || previousDestination != Screen.Trash.route
 
-//    HandleBackPress(
-//        drawerState = if (boardState == BoardState.Active) drawerState else null,
-//        onBackPress = {
-//            if (boardState != BoardState.Active) {
-//                navController.navigateUp()
-//                return@HandleBackPress
-//            }
-//            navController.popBackStack(Screen.Home.route, inclusive = false)
-//        }
-//    )
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
+        }
+        if (inactiveBoard) {
+            navController.navigateUp()
+            return@BackHandler
+        }
+        navController.popBackStack(Screen.Home.route, inclusive = false)
+    }
 
     LaunchedEffect(Unit) {
         boardViewModel.eventFlow.collectLatest { event ->
@@ -83,46 +81,25 @@ fun BoardScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            BoardTopBar(
-                onNavigationClick = onNavigationClick@{
-                    if (boardState != BoardState.Active) {
-                        navController.navigateUp()
-                        return@onNavigationClick
-                    }
-                    scope.launch { drawerState.open() }
-                },
-                boardName = detailedBoard?.board?.name ?: "",
-                boardState = boardState,
-                scrollBehavior = topBarScrollBehavior,
-                showMenu = boardViewModel.showScreenMenu,
-                onMoreOptionsClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
-                },
-                onOptionClick = {
-                    when (boardState) {
-                        BoardState.Active -> when (it as ActiveBoardScreenOption) {
-                            ActiveBoardScreenOption.EditBoard -> TODO(reason = "Navigate to edit board screen")
-                            ActiveBoardScreenOption.ArchiveBoard -> {
-                                boardViewModel.onEvent(BoardEvent.ArchiveBoard)
-                            }
-                            ActiveBoardScreenOption.DeleteBoard -> {
-                                boardViewModel.onEvent((BoardEvent.DeleteBoard))
-                            }
-                            ActiveBoardScreenOption.DeleteCompletedTasks -> {
-                                boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                            }
-                        }
-                        BoardState.Archived -> TODO()
-                        BoardState.Deleted -> TODO()
-                    }
-                },
-                onDismissMenu = {
-                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+    LaunchedEffect(Unit) {
+        appViewModel.eventFlow.collectLatest {
+            when (it as AppViewModel.Event.Board) {
+                is AppViewModel.Event.Board.ArchiveBoard -> {
+                    boardViewModel.onEvent(BoardEvent.ArchiveBoard)
                 }
+            }
+        }
+    }
+
+    SideEffect {
+        appViewModel.onEvent(
+            event = AppEvent.Generic.ChangeDynamicTopBarTitle(
+                title = boardViewModel.board?.board?.name ?: ""
             )
-        },
+        )
+    }
+
+    Scaffold(
         floatingActionButton = {
             CreateFab(
                 text = R.string.create_task,

@@ -43,19 +43,43 @@ class AppViewModel @Inject constructor(
         true
     )); private set
 
+    var dynamicTopBarTitle by mutableStateOf("")
+        private set
+
     private var searchJob: Job? = null
 
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onEvent(event: AppEvent) {
+    fun <S: Screen> onEvent(screen: S? = null, event: AppEvent<S>) {
+        when (screen) {
+            Screen.Home -> handleHomeScreenEvents(event as AppEvent.Home)
+            Screen.Archive -> handleArchiveScreenEvents(event as AppEvent.Archive)
+            null -> handleGenericEvents(event as AppEvent.Generic)
+            else -> Unit
+        }
+    }
+
+    private fun handleGenericEvents(event: AppEvent.Generic) {
         when (event) {
-            is AppEvent.ShowSearchBar -> onShowSearchBarChange(event.show)
-            is AppEvent.SearchBoards -> onSearchBoards(event.query)
-            AppEvent.ToggleLayout -> onToggleLayout()
-            is AppEvent.ShowTopBarMenu -> showTopBarMenu = event.show
-            is AppEvent.ShowDialog -> dialogType = event.type
-            is AppEvent.ShowBottomBar -> showBottomBar = event.show
+            is AppEvent.Generic.ShowBottomBar -> showBottomBar = event.show
+            is AppEvent.Generic.ChangeDynamicTopBarTitle -> dynamicTopBarTitle = event.title
+        }
+    }
+
+    private fun handleArchiveScreenEvents(event: AppEvent.Archive) {
+        when (event) {
+            is AppEvent.Archive.SearchBoards -> onSearchBoards(event.query, Screen.Archive)
+            is AppEvent.Archive.ShowSearchBar -> onShowSearchBarChange(event.show, Screen.Archive)
+            AppEvent.Archive.ToggleLayout -> onToggleLayout()
+        }
+    }
+
+    private fun handleHomeScreenEvents(event: AppEvent.Home) {
+        when (event) {
+            is AppEvent.Home.ShowSearchBar -> onShowSearchBarChange(event.show, Screen.Home)
+            is AppEvent.Home.SearchBoards -> onSearchBoards(event.query, Screen.Home)
+            AppEvent.Home.ToggleLayout -> onToggleLayout()
         }
     }
 
@@ -67,25 +91,51 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    private fun onSearchBoards(query: TextFieldValue) {
+    private fun onSearchBoards(query: TextFieldValue, screen: Screen) {
         searchQuery = query
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(SEARCH_DELAY_MILLIS)
-            _eventFlow.emit(Event.SearchBoards(query.text.trim()))
+            when (screen) {
+                Screen.Home -> {
+                    _eventFlow.emit(Event.Home.SearchBoards(query.text.trim()))
+                }
+                Screen.Archive -> {
+                    _eventFlow.emit(Event.Archive.SearchBoards(query.text.trim()))
+                }
+                else -> Unit
+            }
         }
     }
 
-    private fun onShowSearchBarChange(show: Boolean) = viewModelScope.launch {
+    private fun onShowSearchBarChange(show: Boolean, screen: Screen) = viewModelScope.launch {
         if (show == showSearchbar) return@launch
         if (!show) {
             searchQuery = TextFieldValue()
-            _eventFlow.emit(Event.SearchBoards(query = ""))
+            when (screen) {
+                Screen.Home -> {
+                    _eventFlow.emit(Event.Home.SearchBoards(query = ""))
+                }
+                Screen.Archive -> {
+                    _eventFlow.emit(Event.Archive.SearchBoards(query = ""))
+                }
+                else -> Unit
+            }
         }
         showSearchbar = show
     }
 
     sealed class Event {
-        data class SearchBoards(val query: String) : Event()
+        sealed class Home : Event() {
+            data class SearchBoards(val query: String) : Home()
+        }
+
+        sealed class Archive : Event() {
+            data class SearchBoards(val query: String) : Archive()
+        }
+
+        sealed class Board : Event() {
+            object ArchiveBoard : Board()
+        }
     }
 }

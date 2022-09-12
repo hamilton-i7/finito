@@ -145,6 +145,7 @@ fun FinitoNavHost(
            BoardScreen(
                navController = navHostController,
                drawerState = drawerState,
+               appViewModel = appViewModel,
 //               showSnackbar = showSnackbar,
            )
        }

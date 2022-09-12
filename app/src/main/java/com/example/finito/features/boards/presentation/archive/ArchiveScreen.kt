@@ -42,7 +42,10 @@ fun ArchiveScreen(
             return@BackHandler
         }
         if (appViewModel.showSearchbar) {
-            appViewModel.onEvent(AppEvent.ShowSearchBar(show = false))
+            appViewModel.onEvent(
+                screen = Screen.Archive,
+                event = AppEvent.Archive.ShowSearchBar(show = false)
+            )
             return@BackHandler
         }
         finishActivity()
@@ -62,9 +65,9 @@ fun ArchiveScreen(
 
     SideEffect {
         scope.launch {
-            appViewModel.eventFlow.collectLatest { event ->
-                when (event) {
-                    is AppViewModel.Event.SearchBoards -> {
+            appViewModel.eventFlow.collectLatest {
+                when (val event = it as AppViewModel.Event.Archive) {
+                    is AppViewModel.Event.Archive.SearchBoards -> {
                         archiveViewModel.onEvent(ArchiveEvent.SearchBoards(event.query))
                     }
                 }

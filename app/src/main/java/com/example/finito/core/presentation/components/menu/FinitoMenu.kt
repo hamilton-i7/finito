@@ -16,11 +16,11 @@ import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.ui.theme.finitoColors
 
 @Composable
-fun FinitoMenu(
+fun <M: MenuOption> FinitoMenu(
     show: Boolean,
     onDismiss: () -> Unit,
-    options: List<MenuOption>,
-    onOptionClick: (MenuOption) -> Unit,
+    options: List<M>,
+    onOptionClick: (M) -> Unit,
 ) {
     DropdownMenu(
         expanded = show,

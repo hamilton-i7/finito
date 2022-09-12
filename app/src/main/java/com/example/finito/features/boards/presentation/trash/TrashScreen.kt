@@ -85,7 +85,8 @@ fun TrashScreen(
                 }
                 DeletedBoardCardMenuOption.DeleteForever -> {
                     appViewModel.onEvent(
-                        AppEvent.ShowDialog(type = DialogType.DeleteBoard(board.board))
+                        screen = Screen.Trash,
+                        event = AppEvent.Trash.ShowDialog(type = DialogType.DeleteBoard(board.board))
                     )
                 }
             }

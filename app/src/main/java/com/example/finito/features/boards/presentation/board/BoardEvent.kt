@@ -10,11 +10,11 @@ sealed class BoardEvent {
 
     object DeleteBoard : BoardEvent()
 
+    object RestoreBoard : BoardEvent()
+
     object DeleteCompletedTasks : BoardEvent()
 
-    data class CheckTask(val task: TaskWithSubtasks) : BoardEvent()
-
-    data class UncheckTask(val task: TaskWithSubtasks) : BoardEvent()
+    data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 
     data class ShowDialog(val type: DialogType? = null) : BoardEvent()
 

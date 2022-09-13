@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.board
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -22,10 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.domain.util.menu.ActiveBoardScreenOption
+import com.example.finito.core.domain.util.menu.ArchivedBoardScreenMenuOption
+import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
+import com.example.finito.features.boards.presentation.SharedBoardEvent
+import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
@@ -33,6 +38,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
 import com.example.finito.features.tasks.presentation.components.TaskItem
 import com.example.finito.ui.theme.FinitoTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,10 +46,13 @@ import kotlinx.coroutines.launch
 fun BoardScreen(
     navController: NavController,
     drawerState: DrawerState,
+    sharedBoardViewModel: SharedBoardViewModel,
     boardViewModel: BoardViewModel = hiltViewModel(),
+    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
     val detailedBoard = boardViewModel.board
     val activeBoard = detailedBoard?.board?.archived == false && !detailedBoard.board.deleted
+    val previousRoute = navController.previousBackStackEntry?.destination?.route
 
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -53,16 +62,34 @@ fun BoardScreen(
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
 
-    HandleBackPress(
-        drawerState = if (activeBoard) drawerState else null,
-        onBackPress = {
-            if (!activeBoard) {
-                navController.navigateUp()
-                return@HandleBackPress
-            }
-            navController.popBackStack(Screen.Home.route, inclusive = false)
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
         }
-    )
+        if (previousRoute == Screen.Archive.route
+            || previousRoute == Screen.Trash.route) {
+            navController.navigateUp()
+            return@BackHandler
+        }
+        navController.navigate(route = Screen.Home.route) {
+            popUpTo(route = Screen.Home.route) { inclusive = true }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        boardViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is BoardViewModel.Event.ShowSnackbar -> {
+                    showSnackbar(event.message) {
+                        sharedBoardViewModel.onEvent(SharedBoardEvent.ResetBoard(
+                            board = event.board
+                        ))
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -75,7 +102,74 @@ fun BoardScreen(
                     scope.launch { drawerState.open() }
                 },
                 boardName = detailedBoard?.board?.name ?: "",
-                previousRoute = navController.previousBackStackEntry?.destination?.route,
+                showMenu = boardViewModel.showScreenMenu,
+                onMoreOptionsClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
+                },
+                onDismissMenu = {
+                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+                },
+                onOptionClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+
+                    when (previousRoute) {
+                        Screen.Archive.route -> {
+                            when (it as ArchivedBoardScreenMenuOption) {
+                                ArchivedBoardScreenMenuOption.DeleteBoard -> {
+                                    boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                    navController.navigateUp()
+                                }
+                                ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                }
+                                ArchivedBoardScreenMenuOption.EditBoard -> {
+                                    TODO(reason = "Navigate to edit screen")
+                                }
+                                ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
+                                    boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                    navController.navigateUp()
+                                }
+                            }
+                        }
+                        Screen.Trash.route -> {
+                            when (it as DeletedBoardScreenMenuOption) {
+                                DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                }
+                                DeletedBoardScreenMenuOption.EditBoard -> {
+                                    TODO(reason = "Navigate to edit screen")
+                                }
+                                DeletedBoardScreenMenuOption.RestoreBoard -> {
+                                    boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                    navController.navigateUp()
+                                }
+                            }
+                        }
+                        else -> {
+                            when (it as ActiveBoardScreenOption) {
+                                ActiveBoardScreenOption.ArchiveBoard -> {
+                                    boardViewModel.onEvent(BoardEvent.ArchiveBoard)
+                                    navController.navigate(route = Screen.Home.route) {
+                                        popUpTo(route = Screen.Home.route) { inclusive = true }
+                                    }
+                                }
+                                ActiveBoardScreenOption.DeleteBoard -> {
+                                    boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                    navController.navigate(route = Screen.Home.route) {
+                                        popUpTo(route = Screen.Home.route) { inclusive = true }
+                                    }
+                                }
+                                ActiveBoardScreenOption.DeleteCompletedTasks -> {
+                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                }
+                                ActiveBoardScreenOption.EditBoard -> {
+                                    TODO(reason = "Navigate to edit screen")
+                                }
+                            }
+                        }
+                    }
+                },
+                previousRoute = previousRoute,
                 scrollBehavior = topBarScrollBehavior
             )
         },

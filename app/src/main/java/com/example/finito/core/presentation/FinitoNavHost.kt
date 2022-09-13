@@ -13,6 +13,7 @@ import com.example.finito.core.presentation.util.NavigationTransitions.childScre
 import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopExitTransition
 import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenEnterTransition
 import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenExitTransition
+import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.board.BoardScreen
@@ -30,6 +31,7 @@ fun FinitoNavHost(
     drawerState: DrawerState,
     finishActivity: () -> Unit,
     showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
+    sharedBoardViewModel: SharedBoardViewModel,
 ) {
    AnimatedNavHost(
        navController = navHostController,
@@ -144,6 +146,8 @@ fun FinitoNavHost(
            BoardScreen(
                navController = navHostController,
                drawerState = drawerState,
+               sharedBoardViewModel = sharedBoardViewModel,
+               showSnackbar = showSnackbar
            )
        }
 

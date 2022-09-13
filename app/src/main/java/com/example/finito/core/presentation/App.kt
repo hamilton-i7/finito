@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
 import com.example.finito.core.presentation.util.rememberSnackbarState
+import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import kotlinx.coroutines.launch
 
 private val staticDrawerRoutes = listOf(
@@ -35,6 +36,7 @@ fun App(finishActivity: () -> Unit) {
     val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
+    val sharedBoardViewModel = hiltViewModel<SharedBoardViewModel>()
     val snackbarState = rememberSnackbarState()
     val (snackbarHostState, scope, navController) = snackbarState
 
@@ -105,6 +107,7 @@ fun App(finishActivity: () -> Unit) {
                 FinitoNavHost(
                     navHostController = navController,
                     drawerState = drawerState,
+                    sharedBoardViewModel = sharedBoardViewModel,
                     finishActivity = finishActivity,
                     showSnackbar = { message, onActionClick ->
                         snackbarState.showSnackbar(

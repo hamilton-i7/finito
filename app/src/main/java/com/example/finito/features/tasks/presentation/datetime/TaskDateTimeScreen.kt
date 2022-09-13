@@ -133,7 +133,7 @@ private fun TaskDateTimeScreen(
                 time = time,
                 onTimeRemove = onTimeRemove,
                 onClick = onTimeFieldClick,
-                enabled = time.isNotEmpty()
+                enabled = date.isNotEmpty()
             )
         }
     }

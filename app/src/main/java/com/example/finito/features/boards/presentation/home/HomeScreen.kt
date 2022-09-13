@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -40,7 +42,8 @@ fun HomeScreen(
     navController: NavHostController,
     drawerState: DrawerState,
     homeViewModel: HomeViewModel = hiltViewModel(),
-    finishActivity: () -> Unit = {}
+    finishActivity: () -> Unit = {},
+    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -62,8 +65,19 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        homeViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is HomeViewModel.Event.ShowSnackbar -> {
+                    showSnackbar(event.message) {
+                        homeViewModel.onEvent(HomeEvent.RestoreBoard)
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             AnimatedContent(
                 targetState = homeViewModel.showSearchBar,

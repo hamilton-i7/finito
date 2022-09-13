@@ -29,6 +29,7 @@ fun FinitoNavHost(
     navHostController: NavHostController,
     drawerState: DrawerState,
     finishActivity: () -> Unit,
+    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
    AnimatedNavHost(
        navController = navHostController,
@@ -57,7 +58,8 @@ fun FinitoNavHost(
            HomeScreen(
                navController = navHostController,
                drawerState = drawerState,
-               finishActivity = finishActivity
+               finishActivity = finishActivity,
+               showSnackbar = showSnackbar
            )
        }
 

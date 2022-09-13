@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
 import com.example.finito.core.presentation.util.rememberSnackbarState
@@ -29,6 +30,7 @@ private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
+    val context = LocalContext.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
     val snackbarState = rememberSnackbarState()
@@ -86,7 +88,18 @@ fun App(finishActivity: () -> Unit) {
             },
         ) {
             Surface {
-                FinitoNavHost(navController, drawerState, finishActivity)
+                FinitoNavHost(
+                    navHostController = navController,
+                    drawerState = drawerState,
+                    finishActivity = finishActivity,
+                    showSnackbar = { message, onActionClick ->
+                        snackbarState.showSnackbar(
+                            context = context,
+                            message = message,
+                            onActionClick = onActionClick
+                        )
+                    }
+                )
             }
         }
     }

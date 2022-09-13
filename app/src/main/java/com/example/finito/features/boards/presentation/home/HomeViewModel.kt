@@ -1,13 +1,14 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
-import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -18,6 +19,8 @@ import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -76,6 +79,9 @@ class HomeViewModel @Inject constructor(
 
     var selectedBoardId by mutableStateOf(0)
         private set
+
+    private val _eventFlow = MutableSharedFlow<Event>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         fetchLabels()
@@ -149,26 +155,25 @@ class HomeViewModel @Inject constructor(
         board: BoardWithLabelsAndTasks,
         mode: DeactivateMode,
     ) = viewModelScope.launch {
-        try {
-            with(board) {
-                boardUseCases.updateBoard(
-                    when (mode) {
-                        DeactivateMode.ARCHIVE -> copy(board = this.board.copy(archived = true))
-                        DeactivateMode.DELETE -> copy(board = this.board.copy(
-                            deleted = true,
-                            removedAt = LocalDateTime.now()
-                        ))
-                    }
-                )
-                recentlyDeactivatedBoard = this
+        with(board) {
+            when (mode) {
+                DeactivateMode.ARCHIVE -> {
+                    boardUseCases.updateBoard(copy(board = this.board.copy(archived = true)))
+                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
+                }
+                DeactivateMode.DELETE -> {
+                    boardUseCases.updateBoard(
+                        copy(
+                            board = this.board.copy(
+                                deleted = true, removedAt = LocalDateTime.now()
+                            )
+                        )
+                    )
+                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                }
             }
-        } catch (e: ResourceException.NegativeIdException) {
-
-        } catch (e: ResourceException.EmptyException) {
-
-        } catch (e: ResourceException.InvalidStateException) {
-
-        } catch (e: ResourceException.NotFoundException) {}
+            recentlyDeactivatedBoard = this
+        }
     }
 
     private fun toggleLayout() {
@@ -202,4 +207,7 @@ class HomeViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    sealed class Event {
+        data class ShowSnackbar(@StringRes val message: Int) : Event()
+    }
 }

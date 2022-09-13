@@ -9,13 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Priority
-import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
+import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,8 +60,8 @@ class BoardViewModel @Inject constructor(
 
     fun onEvent(event: BoardEvent) {
         when (event) {
-            is BoardEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
-            is BoardEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
+            is BoardEvent.ArchiveBoard -> deactivateBoard(DeactivateMode.ARCHIVE)
+            is BoardEvent.DeleteBoard -> deactivateBoard(DeactivateMode.DELETE)
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> changeTaskPriorityConfirm(event.task)
             is BoardEvent.CheckTask -> TODO()
@@ -114,28 +114,28 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun deactivateBoard(
-        board: BoardWithLabelsAndTasks,
-        mode: DeactivateMode,
-    ) = viewModelScope.launch {
-        try {
-            with(board) {
-                boardUseCases.updateBoard(
-                    when (mode) {
-                        DeactivateMode.ARCHIVE -> copy(board = this.board.copy(archived = true))
-                        DeactivateMode.DELETE -> copy(board = this.board.copy(
-                            deleted = true,
+    private fun deactivateBoard(mode: DeactivateMode) = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
+            when (mode) {
+                DeactivateMode.ARCHIVE -> {
+                    BoardWithLabelsAndTasks(
+                        board = board.copy(archived = true),
+                        labels = labels,
+                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                    )
+                }
+                DeactivateMode.DELETE -> {
+                    BoardWithLabelsAndTasks(
+                        board = board.copy(
+                            archived = true,
                             removedAt = LocalDateTime.now()
-                        ))
-                    }
-                )
-            }
-        } catch (e: ResourceException.NegativeIdException) {
-
-        } catch (e: ResourceException.EmptyException) {
-
-        } catch (e: ResourceException.InvalidStateException) {
-
-        } catch (e: ResourceException.NotFoundException) {}
+                        ),
+                        labels = labels,
+                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                    )
+                }
+            }.also { TODO(reason = "Emit event to show snackbar to undo action") }
+        }
     }
 }

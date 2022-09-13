@@ -75,7 +75,7 @@ fun BoardScreen(
                     scope.launch { drawerState.open() }
                 },
                 boardName = detailedBoard?.board?.name ?: "",
-                activeBoard = activeBoard,
+                previousRoute = navController.previousBackStackEntry?.destination?.route,
                 scrollBehavior = topBarScrollBehavior
             )
         },

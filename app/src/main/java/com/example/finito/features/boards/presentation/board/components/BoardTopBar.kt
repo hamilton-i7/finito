@@ -7,9 +7,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.*
+import com.example.finito.core.domain.util.menu.ActiveBoardScreenOption
+import com.example.finito.core.domain.util.menu.ArchivedBoardScreenMenuOption
+import com.example.finito.core.domain.util.menu.BoardScreenMenuOption
+import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.MediumTopBarWithMenu
-import com.example.finito.features.boards.domain.BoardState
 
 private val activeBoardOptions = listOf(
     ActiveBoardScreenOption.EditBoard,
@@ -35,7 +38,7 @@ private val deletedBoardOptions = listOf(
 @Composable
 fun BoardTopBar(
     boardName: String,
-    boardState: BoardState,
+    previousRoute: String?,
     onNavigationClick: () -> Unit = {},
     onMoreOptionsClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -43,19 +46,22 @@ fun BoardTopBar(
     onDismissMenu: () -> Unit = {},
     onOptionClick: (BoardScreenMenuOption) -> Unit = {}
 ) {
+    val fromInactiveStatus = previousRoute == Screen.Archive.route
+            || previousRoute == Screen.Trash.route
+
    MediumTopBarWithMenu(
        title = boardName,
        onNavigationIconClick = onNavigationClick,
-       navigationIcon = if (boardState == BoardState.Active) Icons.Outlined.Menu else Icons.Outlined.ArrowBack,
-       navigationIconDescription = if (boardState == BoardState.Active) R.string.open_menu else R.string.go_back,
+       navigationIcon = if (fromInactiveStatus) Icons.Outlined.ArrowBack else Icons.Outlined.Menu,
+       navigationIconDescription = if (fromInactiveStatus) R.string.go_back else R.string.open_menu,
        onMoreOptionsClick = onMoreOptionsClick,
        scrollBehavior = scrollBehavior,
        showMenu = showMenu,
        onDismissMenu = onDismissMenu,
-       options = when (boardState) {
-           BoardState.Active -> activeBoardOptions
-           BoardState.Archived -> archivedBoardOptions
-           BoardState.Deleted -> deletedBoardOptions
+       options = when (previousRoute) {
+           Screen.Archive.route -> archivedBoardOptions
+           Screen.Trash.route -> deletedBoardOptions
+           else -> activeBoardOptions
        },
        onOptionClick = { onOptionClick(it as BoardScreenMenuOption) }
    )

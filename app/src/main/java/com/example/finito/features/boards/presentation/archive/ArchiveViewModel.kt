@@ -1,13 +1,14 @@
 package com.example.finito.features.boards.presentation.archive
 
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
-import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -17,6 +18,8 @@ import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -75,6 +78,9 @@ class ArchiveViewModel @Inject constructor(
 
     var selectedBoardId by mutableStateOf(0)
         private set
+
+    private val _eventFlow = MutableSharedFlow<Event>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         fetchLabels()
@@ -149,27 +155,25 @@ class ArchiveViewModel @Inject constructor(
         board: BoardWithLabelsAndTasks,
         mode: EditMode,
     ) = viewModelScope.launch {
-        try {
-            with(board) {
-                boardUseCases.updateBoard(
-                    when (mode) {
-                        EditMode.UNARCHIVE -> copy(board = this.board.copy(archived = false))
-                        EditMode.DELETE -> copy(board = this.board.copy(
+        with(board) {
+            when (mode) {
+                EditMode.UNARCHIVE -> {
+                    boardUseCases.updateBoard(copy(board = this.board.copy(archived = false)))
+                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_out_of_archive))
+                }
+                EditMode.DELETE -> {
+                    boardUseCases.updateBoard(
+                        copy(board = this.board.copy(
                             deleted = true,
                             archived = false,
                             removedAt = LocalDateTime.now()
                         ))
-                    }
-                )
-                recentlyMovedBoard = this
+                    )
+                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                }
             }
-        } catch (e: ResourceException.NegativeIdException) {
-
-        } catch (e: ResourceException.EmptyException) {
-
-        } catch (e: ResourceException.InvalidStateException) {
-
-        } catch (e: ResourceException.NotFoundException) {}
+            recentlyMovedBoard = this
+        }
     }
 
     private fun toggleLayout() {
@@ -205,5 +209,9 @@ class ArchiveViewModel @Inject constructor(
 
     enum class EditMode {
         UNARCHIVE, DELETE
+    }
+
+    sealed class Event {
+        data class ShowSnackbar(@StringRes val message: Int) : Event()
     }
 }

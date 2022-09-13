@@ -86,7 +86,8 @@ fun FinitoNavHost(
            ArchiveScreen(
                navController = navHostController,
                drawerState = drawerState,
-               finishActivity = finishActivity
+               finishActivity = finishActivity,
+               showSnackbar = showSnackbar
            )
        }
 
@@ -113,7 +114,8 @@ fun FinitoNavHost(
            TrashScreen(
                navController = navHostController,
                drawerState = drawerState,
-               finishActivity = finishActivity
+               finishActivity = finishActivity,
+               showSnackbar = showSnackbar,
            )
        }
 

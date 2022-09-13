@@ -194,7 +194,6 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun showSearchBar(show: Boolean) {
-        if (show == showSearchBar) return
         if (!show) {
             searchQuery = ""
             fetchBoards()

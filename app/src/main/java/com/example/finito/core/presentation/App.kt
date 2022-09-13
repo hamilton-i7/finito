@@ -2,10 +2,12 @@ package com.example.finito.core.presentation
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
 import com.example.finito.core.presentation.util.rememberSnackbarState
@@ -36,8 +38,20 @@ fun App(finishActivity: () -> Unit) {
     val snackbarState = rememberSnackbarState()
     val (snackbarHostState, scope, navController) = snackbarState
 
+    // Dynamically change Snackbar bottom padding
+    var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
+    val snackbarModifier = if (currentRoute == Screen.Home.route
+        || currentRoute == Screen.Archive.route) {
+        // Include bottom bar height on screens that have it
+        Modifier
+            .navigationBarsPadding()
+            .padding(bottom = 80.dp)
+    } else Modifier.navigationBarsPadding()
+
     navController.addOnDestinationChangedListener(
         listener = { _, destination, arguments ->
+            currentRoute = destination.route
+
             if (!drawerRoutes.contains(destination.route)) {
                 return@addOnDestinationChangedListener
             }
@@ -83,7 +97,7 @@ fun App(finishActivity: () -> Unit) {
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = Modifier.navigationBarsPadding()
+                    modifier = snackbarModifier
                 )
             },
         ) {

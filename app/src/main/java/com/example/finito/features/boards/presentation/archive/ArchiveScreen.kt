@@ -1,22 +1,21 @@
 package com.example.finito.features.boards.presentation.archive
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.ArchivedBoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.domain.util.menu.ArchivedBoardCardMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
@@ -25,33 +24,50 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class, ExperimentalAnimationApi::class
+    ExperimentalAnimationApi::class
 )
 @Composable
 fun ArchiveScreen(
     navController: NavHostController,
     drawerState: DrawerState,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
-    finishActivity: () -> Unit = {}
+    finishActivity: () -> Unit = {},
+    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val simpleTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val isKeyboardVisible = WindowInsets.isImeVisible
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val unarchivedMessage = stringResource(id = R.string.board_moved_out_of_archive)
-    val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
-    val snackbarAction = stringResource(id = R.string.undo)
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
+        }
+        if (archiveViewModel.showSearchBar) {
+            archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
+            return@BackHandler
+        }
+        finishActivity()
+    }
 
-    HandleBackPress(drawerState, onBackPress =  finishActivity)
+    LaunchedEffect(Unit) {
+        archiveViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is ArchiveViewModel.Event.ShowSnackbar -> {
+                    showSnackbar(event.message) {
+                        archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             AnimatedContent(
                 targetState = archiveViewModel.showSearchBar,
@@ -85,8 +101,7 @@ fun ArchiveScreen(
                 }
             }
         },
-        bottomBar = bottomBar@{
-            if (isKeyboardVisible) return@bottomBar
+        bottomBar = {
             BottomBar(
                 fabDescription = R.string.add_board,
                 searchDescription = R.string.search_boards,
@@ -142,33 +157,9 @@ fun ArchiveScreen(
                 when (option) {
                     ArchivedBoardCardMenuOption.Unarchive -> {
                         archiveViewModel.onEvent(ArchiveEvent.UnarchiveBoard(board))
-                        // Dismiss current Snackbar to avoid having multiple instances
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = unarchivedMessage,
-                                actionLabel = snackbarAction,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
-                            }
-                        }
                     }
                     ArchivedBoardCardMenuOption.Delete -> {
                         archiveViewModel.onEvent(ArchiveEvent.DeleteBoard(board))
-                        // Dismiss current Snackbar to avoid having multiple instances
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = deletedMessage,
-                                actionLabel = snackbarAction,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
-                            }
-                        }
                     }
                 }
             }

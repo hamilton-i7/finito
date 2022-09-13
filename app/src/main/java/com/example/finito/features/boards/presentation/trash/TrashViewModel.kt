@@ -1,16 +1,20 @@
 package com.example.finito.features.boards.presentation.trash
 
 import android.content.SharedPreferences
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -46,6 +50,9 @@ class TrashViewModel @Inject constructor(
 
     var dialogType by mutableStateOf<TrashEvent.DialogType?>(null)
         private set
+
+    private val _eventFlow = MutableSharedFlow<Event>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         fetchBoards()
@@ -87,6 +94,7 @@ class TrashViewModel @Inject constructor(
             boardUseCases.updateBoard(
                 copy(board = this.board.copy(deleted = false, removedAt = null))
             )
+            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_was_restored))
             recentlyRestoredBoard = this
         }
     }
@@ -103,5 +111,9 @@ class TrashViewModel @Inject constructor(
     private fun onShowCardMenu(id: Int, show: Boolean) {
         selectedBoardId = if (!show) 0 else id
         showCardMenu = show
+    }
+
+    sealed class Event {
+        data class ShowSnackbar(@StringRes val message: Int) : Event()
     }
 }

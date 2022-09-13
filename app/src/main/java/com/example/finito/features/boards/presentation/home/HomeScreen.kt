@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.home
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,14 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.presentation.HandleBackPress
+import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
@@ -34,7 +33,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class,
     ExperimentalAnimationApi::class
 )
 @Composable
@@ -50,19 +48,17 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val isKeyboardVisible = WindowInsets.isImeVisible
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val archivedMessage = stringResource(id = R.string.board_archived)
-    val deletedMessage = stringResource(id = R.string.board_moved_to_trash)
-    val snackbarAction = stringResource(id = R.string.undo)
-
-    HandleBackPress(drawerState) {
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
+        }
         if (homeViewModel.showSearchBar) {
             homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
-        } else {
-            finishActivity()
+            return@BackHandler
         }
+        finishActivity()
     }
 
     LaunchedEffect(Unit) {
@@ -111,8 +107,7 @@ fun HomeScreen(
                 }
             }
         },
-        bottomBar = bottomBar@{
-            if (isKeyboardVisible) return@bottomBar
+        bottomBar = {
             BottomBar(
                 fabDescription = R.string.add_board,
                 searchDescription = R.string.search_boards,
@@ -172,33 +167,9 @@ fun HomeScreen(
                 when (option) {
                     ActiveBoardCardMenuOption.Archive -> {
                         homeViewModel.onEvent(HomeEvent.ArchiveBoard(board))
-                        // Dismiss current Snackbar to avoid having multiple instances
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        scope.launch { 
-                            val result = snackbarHostState.showSnackbar(
-                                message = archivedMessage,
-                                actionLabel = snackbarAction,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                homeViewModel.onEvent(HomeEvent.RestoreBoard)
-                            }
-                        }
                     }
                     ActiveBoardCardMenuOption.Delete -> {
                         homeViewModel.onEvent(HomeEvent.DeleteBoard(board))
-                        // Dismiss current Snackbar to avoid having multiple instances
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = deletedMessage,
-                                actionLabel = snackbarAction,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                homeViewModel.onEvent(HomeEvent.RestoreBoard)
-                            }
-                        }
                     }
                 }
             }

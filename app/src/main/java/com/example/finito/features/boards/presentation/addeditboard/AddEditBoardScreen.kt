@@ -28,8 +28,8 @@ import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
-import com.example.finito.core.presentation.components.util.TextFieldState
-import com.example.finito.core.presentation.components.util.noRippleClickable
+import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
 import com.example.finito.ui.theme.FinitoTheme

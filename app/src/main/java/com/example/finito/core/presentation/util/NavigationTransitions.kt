@@ -1,12 +1,11 @@
-package com.example.finito.core.presentation.components.util
+package com.example.finito.core.presentation.util
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.navigation.NavBackStackEntry
-import com.example.finito.core.presentation.components.util.AnimationDurationConstants.LongDurationMillis
-import com.example.finito.core.presentation.components.util.AnimationDurationConstants.RegularDurationMillis
-import com.example.finito.core.presentation.components.util.AnimationDurationConstants.ShortestDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.LongDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.RegularDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.ShortestDurationMillis
 
 @OptIn(ExperimentalAnimationApi::class)
 object NavigationTransitions  {

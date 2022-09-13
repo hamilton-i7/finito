@@ -29,6 +29,7 @@ import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
+import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.presentation.SharedBoardEvent
 import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
@@ -101,7 +102,7 @@ fun BoardScreen(
                     }
                     scope.launch { drawerState.open() }
                 },
-                boardName = detailedBoard?.board?.name ?: "",
+                board = detailedBoard?.board ?: Board(name = ""),
                 showMenu = boardViewModel.showScreenMenu,
                 onMoreOptionsClick = {
                     boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
@@ -169,7 +170,6 @@ fun BoardScreen(
                         }
                     }
                 },
-                previousRoute = previousRoute,
                 scrollBehavior = topBarScrollBehavior
             )
         },

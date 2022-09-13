@@ -1,10 +1,8 @@
 package com.example.finito.core.presentation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,6 +25,7 @@ private val dynamicDrawerRoutes = listOf(
 
 private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
@@ -78,8 +77,10 @@ fun App(finishActivity: () -> Unit) {
             }
         }
     ) {
-        Surface {
-            FinitoNavHost(navController, drawerState, finishActivity)
+        Scaffold {
+            Surface {
+                FinitoNavHost(navController, drawerState, finishActivity)
+            }
         }
     }
 }

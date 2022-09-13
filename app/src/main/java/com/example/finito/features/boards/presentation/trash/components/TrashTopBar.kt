@@ -28,8 +28,6 @@ fun TrashTopBar(
         options = listOf<TrashScreenMenuOption>(
             TrashScreenMenuOption.EmptyTrash
         ),
-        onOptionClick = {
-            onOptionClick(it as TrashScreenMenuOption)
-        }
+        onOptionClick = onOptionClick
     )
 }

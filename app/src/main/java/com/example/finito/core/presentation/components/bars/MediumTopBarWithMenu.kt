@@ -16,7 +16,7 @@ import com.example.finito.core.presentation.components.menu.FinitoMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MediumTopBarWithMenu(
+fun <M: MenuOption> MediumTopBarWithMenu(
     title: String,
     onNavigationIconClick: () -> Unit = {},
     navigationIcon: ImageVector = Icons.Outlined.Menu,
@@ -25,8 +25,8 @@ fun MediumTopBarWithMenu(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
-    options: List<MenuOption> = emptyList(),
-    onOptionClick: (MenuOption) -> Unit = {},
+    options: List<M> = emptyList(),
+    onOptionClick: (M) -> Unit = {},
 ) {
     MediumTopAppBar(
         navigationIcon = {

@@ -63,6 +63,6 @@ fun BoardTopBar(
            Screen.Trash.route -> deletedBoardOptions
            else -> activeBoardOptions
        },
-       onOptionClick = { onOptionClick(it as BoardScreenMenuOption) }
+       onOptionClick = onOptionClick
    )
 }

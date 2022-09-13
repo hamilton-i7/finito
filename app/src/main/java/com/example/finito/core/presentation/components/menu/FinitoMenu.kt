@@ -16,20 +16,19 @@ import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.ui.theme.finitoColors
 
 @Composable
-fun FinitoMenu(
+fun <M: MenuOption> FinitoMenu(
     show: Boolean,
     onDismiss: () -> Unit,
-    options: List<MenuOption>,
-    onOptionClick: (MenuOption) -> Unit,
+    options: List<M>,
+    onOptionClick: (M) -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-
     DropdownMenu(
         expanded = show,
         onDismissRequest = onDismiss,
         modifier = Modifier.widthIn(min = MENU_MIN_WIDTH)
     ) {
         options.forEach { option ->
+            val interactionSource = remember { MutableInteractionSource() }
             DropdownMenuItem(
                 text = { Text(stringResource(id = option.label)) },
                 onClick = { onOptionClick(option) },

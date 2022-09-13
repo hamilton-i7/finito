@@ -154,25 +154,27 @@ private fun BoardScreen(
                     onDateTimeClick(route)
                 }
             }
-            item {
-                RowToggle(
-                    showContent = showCompletedTasks,
-                    onShowContentToggle = onToggleShowCompletedTasks,
-                    label = stringResource(id = R.string.show_completed_tasks, completedTasks.size),
-                    showContentDescription = R.string.show_completed_tasks,
-                    hideContentDescription = R.string.hide_completed_tasks
-                )
-            }
-            items(
-                items = completedTasks,
-                contentType = { "completed tasks" },
-                key = { it.task.taskId }
-            ) {
-                AnimatedVisibility(
-                    visible = showCompletedTasks,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) { TaskItem(task = it.task) }
+            if (completedTasks.isNotEmpty()) {
+                item {
+                    RowToggle(
+                        showContent = showCompletedTasks,
+                        onShowContentToggle = onToggleShowCompletedTasks,
+                        label = stringResource(id = R.string.completed, completedTasks.size),
+                        showContentDescription = R.string.show_completed_tasks,
+                        hideContentDescription = R.string.hide_completed_tasks
+                    )
+                }
+                items(
+                    items = completedTasks,
+                    contentType = { "completed tasks" },
+                    key = { it.task.taskId }
+                ) {
+                    AnimatedVisibility(
+                        visible = showCompletedTasks,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) { TaskItem(task = it.task) }
+                }
             }
         }
     }

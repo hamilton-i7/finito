@@ -1,13 +1,13 @@
 package com.example.finito.core.presentation
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.example.finito.core.presentation.util.rememberSnackbarState
 import kotlinx.coroutines.launch
 
 private val staticDrawerRoutes = listOf(
@@ -26,13 +26,13 @@ private val dynamicDrawerRoutes = listOf(
 private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(finishActivity: () -> Unit) {
-    val navController = rememberAnimatedNavController()
-    val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val drawerViewModel = hiltViewModel<DrawerViewModel>()
+    val snackbarState = rememberSnackbarState()
+    val (snackbarHostState, scope, navController) = snackbarState
 
     navController.addOnDestinationChangedListener(
         listener = { _, destination, arguments ->
@@ -77,7 +77,14 @@ fun App(finishActivity: () -> Unit) {
             }
         }
     ) {
-        Scaffold {
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.navigationBarsPadding()
+                )
+            },
+        ) {
             Surface {
                 FinitoNavHost(navController, drawerState, finishActivity)
             }

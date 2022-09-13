@@ -80,6 +80,7 @@ object FinitoTextFieldDefaults {
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+        unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f)
     )
 
     @OptIn(ExperimentalMaterial3Api::class)

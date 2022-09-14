@@ -6,13 +6,6 @@ import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.repository.BoardLabelRepository
 import com.example.finito.features.boards.domain.repository.BoardRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-
-private var findBoardJob: Job? = null
 
 class UpdateBoard(
     private val boardRepository: BoardRepository,
@@ -33,10 +26,10 @@ class UpdateBoard(
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
-        findBoardJob?.cancel()
-        findBoardJob = boardRepository.findOne(board.boardId).onEach {
+
+        boardRepository.findOne(board.boardId).let {
             if (it == null) throw ResourceException.NotFoundException
-        }.launchIn(CoroutineScope(Dispatchers.IO))
+        }
 
         return boardRepository.update(board).also {
             with(boardLabelRepository.findAllByBoardId(board.boardId)) {

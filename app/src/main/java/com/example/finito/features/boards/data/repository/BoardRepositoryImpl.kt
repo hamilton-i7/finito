@@ -32,7 +32,7 @@ class BoardRepositoryImpl(
         return dao.findDeletedBoards()
     }
 
-    override fun findOne(id: Int): Flow<DetailedBoard?> {
+    override suspend fun findOne(id: Int): DetailedBoard? {
         return dao.findOne(id)
     }
 

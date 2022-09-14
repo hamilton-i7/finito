@@ -6,4 +6,6 @@ sealed class MenuOption(@StringRes val label: Int)
 
 sealed class BoardScreenMenuOption(label: Int) : MenuOption(label)
 
+sealed class EditBoardScreenMenuOption(label: Int) : MenuOption(label)
+
 sealed class BoardCardMenuOption(label: Int) : MenuOption(label)

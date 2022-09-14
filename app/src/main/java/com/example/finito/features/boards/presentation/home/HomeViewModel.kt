@@ -11,6 +11,7 @@ import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
@@ -114,7 +115,7 @@ class HomeViewModel @Inject constructor(
                 fetchBoards()
             }
             is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
-            is HomeEvent.DeleteBoard -> deactivateBoard(event.board, DeactivateMode.DELETE)
+            is HomeEvent.MoveBoardToTrash -> deactivateBoard(event.board, DeactivateMode.DELETE)
             is HomeEvent.SearchBoards -> {
                 searchQuery = event.query
 
@@ -158,14 +159,14 @@ class HomeViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(archived = true)))
+                    boardUseCases.updateBoard(copy(board = this.board.copy(state = BoardState.ARCHIVED)))
                     _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
                 }
                 DeactivateMode.DELETE -> {
                     boardUseCases.updateBoard(
                         copy(
                             board = this.board.copy(
-                                deleted = true, removedAt = LocalDateTime.now()
+                                state = BoardState.DELETED, removedAt = LocalDateTime.now()
                             )
                         )
                     )
@@ -187,7 +188,7 @@ class HomeViewModel @Inject constructor(
     private fun restoreBoard() = viewModelScope.launch {
         recentlyDeactivatedBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(archived = false, deleted = false, removedAt = null))
+                it.copy(board = it.board.copy(state = BoardState.ACTIVE, removedAt = null))
             )
             recentlyDeactivatedBoard = null
         }

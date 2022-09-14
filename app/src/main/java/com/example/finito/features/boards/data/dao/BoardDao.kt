@@ -35,7 +35,7 @@ interface BoardDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM boards WHERE board_id = :id")
-    fun findOne(id: Int): Flow<DetailedBoard?>
+    suspend fun findOne(id: Int): DetailedBoard?
 
     @Update
     suspend fun update(board: Board)

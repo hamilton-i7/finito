@@ -27,14 +27,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FinitoNavHost(
-    navHostController: NavHostController,
+    navController: NavHostController,
     drawerState: DrawerState,
     finishActivity: () -> Unit,
     showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
     sharedBoardViewModel: SharedBoardViewModel,
 ) {
    AnimatedNavHost(
-       navController = navHostController,
+       navController = navController,
        startDestination = Screen.Home.route
    ) {
        composable(
@@ -58,7 +58,7 @@ fun FinitoNavHost(
            }
        ) {
            HomeScreen(
-               navController = navHostController,
+               navController = navController,
                drawerState = drawerState,
                finishActivity = finishActivity,
                showSnackbar = showSnackbar
@@ -86,7 +86,7 @@ fun FinitoNavHost(
            }
        ) {
            ArchiveScreen(
-               navController = navHostController,
+               navController = navController,
                drawerState = drawerState,
                finishActivity = finishActivity,
                showSnackbar = showSnackbar
@@ -114,7 +114,7 @@ fun FinitoNavHost(
            }
        ) {
            TrashScreen(
-               navController = navHostController,
+               navController = navController,
                drawerState = drawerState,
                finishActivity = finishActivity,
                showSnackbar = showSnackbar,
@@ -144,7 +144,7 @@ fun FinitoNavHost(
            popExitTransition = childScreenPopExitTransition
        ) {
            BoardScreen(
-               navController = navHostController,
+               navController = navController,
                drawerState = drawerState,
                sharedBoardViewModel = sharedBoardViewModel,
                showSnackbar = showSnackbar
@@ -157,7 +157,17 @@ fun FinitoNavHost(
            exitTransition = childScreenExitTransition,
            popExitTransition = childScreenPopExitTransition
        ) {
-           AddEditBoardScreen(navController = navHostController)
+           AddEditBoardScreen(navController = navController)
+       }
+
+       composable(
+           route = Screen.EditBoard.route,
+           arguments = Screen.EditBoard.arguments,
+           enterTransition = childScreenEnterTransition,
+           exitTransition = childScreenExitTransition,
+           popExitTransition = childScreenPopExitTransition
+       ) {
+           AddEditBoardScreen(navController = navController)
        }
 
        composable(
@@ -167,7 +177,7 @@ fun FinitoNavHost(
            exitTransition = childScreenExitTransition,
            popExitTransition = childScreenPopExitTransition
        ) {
-           TaskDateTimeScreen(navController = navHostController)
+           TaskDateTimeScreen(navController = navController)
        }
    }
 }

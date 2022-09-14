@@ -12,7 +12,7 @@ sealed class HomeEvent {
 
     data class ArchiveBoard(val board: BoardWithLabelsAndTasks) : HomeEvent()
 
-    data class DeleteBoard(val board: BoardWithLabelsAndTasks) : HomeEvent()
+    data class MoveBoardToTrash(val board: BoardWithLabelsAndTasks) : HomeEvent()
 
     data class SearchBoards(val query: String) : HomeEvent()
 

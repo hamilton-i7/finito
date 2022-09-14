@@ -1,6 +1,7 @@
 package com.example.finito.core.presentation.components.bars
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.*
@@ -12,11 +13,12 @@ import com.example.finito.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
+    @StringRes title: Int,
     navigationIcon: ImageVector = Icons.Outlined.Menu,
     @StringRes navigationIconDescription: Int = R.string.open_menu,
     onNavigationIconClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    @StringRes title: Int,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         title = { Text(text = stringResource(id = title)) },
@@ -28,6 +30,7 @@ fun TopBar(
                 )
             }
         },
+        actions = actions,
         scrollBehavior = scrollBehavior
     )
 }

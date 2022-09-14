@@ -176,7 +176,8 @@ fun BoardScreen(
                 scrollBehavior = topBarScrollBehavior
             )
         },
-        floatingActionButton = {
+        floatingActionButton = fab@{
+            if (boardViewModel.boardState == BoardState.DELETED) return@fab
             CreateFab(
                 text = R.string.create_task,
                 onClick = { /*TODO*/ },
@@ -186,7 +187,7 @@ fun BoardScreen(
         floatingActionButtonPosition = FabPosition.Center,
         modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        if (boardViewModel.showDialog) {
+        if (boardViewModel.dialogType != null) {
             BoardDialogs(boardViewModel)
         }
 

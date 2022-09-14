@@ -11,6 +11,7 @@ import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -113,7 +114,7 @@ class ArchiveViewModel @Inject constructor(
                 fetchBoards()
             }
             is ArchiveEvent.UnarchiveBoard -> moveBoard(event.board, EditMode.UNARCHIVE)
-            is ArchiveEvent.DeleteBoard -> moveBoard(event.board, EditMode.DELETE)
+            is ArchiveEvent.MoveBoardToTrash -> moveBoard(event.board, EditMode.DELETE)
             is ArchiveEvent.SearchBoards -> {
                 searchQuery = event.query
 
@@ -158,14 +159,13 @@ class ArchiveViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 EditMode.UNARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(archived = false)))
+                    boardUseCases.updateBoard(copy(board = this.board.copy(state = BoardState.ACTIVE)))
                     _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_out_of_archive))
                 }
                 EditMode.DELETE -> {
                     boardUseCases.updateBoard(
                         copy(board = this.board.copy(
-                            deleted = true,
-                            archived = false,
+                            state = BoardState.DELETED,
                             removedAt = LocalDateTime.now()
                         ))
                     )
@@ -187,7 +187,7 @@ class ArchiveViewModel @Inject constructor(
     private fun restoreBoard() = viewModelScope.launch {
         recentlyMovedBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(archived = true, deleted = false, removedAt = null))
+                it.copy(board = it.board.copy(state = BoardState.ARCHIVED, removedAt = null))
             )
             recentlyMovedBoard = null
         }

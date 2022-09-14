@@ -13,5 +13,17 @@ sealed class AddEditBoardEvent {
 
     object EditBoard : AddEditBoardEvent()
 
-    object DeleteBoard : AddEditBoardEvent()
+    object MoveBoardToTrash : AddEditBoardEvent()
+
+    object DeleteForever : AddEditBoardEvent()
+
+    object RestoreBoard : AddEditBoardEvent()
+
+    data class ShowScreenMenu(val show: Boolean) : AddEditBoardEvent()
+
+    data class ShowDialog(val type: DialogType? = null) : AddEditBoardEvent()
+
+    sealed class DialogType {
+        object DeleteForever : DialogType()
+    }
 }

@@ -12,7 +12,7 @@ sealed class ArchiveEvent {
 
     data class UnarchiveBoard(val board: BoardWithLabelsAndTasks) : ArchiveEvent()
 
-    data class DeleteBoard(val board: BoardWithLabelsAndTasks) : ArchiveEvent()
+    data class MoveBoardToTrash(val board: BoardWithLabelsAndTasks) : ArchiveEvent()
 
     data class SearchBoards(val query: String) : ArchiveEvent()
 

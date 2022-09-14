@@ -170,7 +170,7 @@ fun HomeScreen(
                         homeViewModel.onEvent(HomeEvent.ArchiveBoard(board))
                     }
                     ActiveBoardCardMenuOption.Delete -> {
-                        homeViewModel.onEvent(HomeEvent.DeleteBoard(board))
+                        homeViewModel.onEvent(HomeEvent.MoveBoardToTrash(board))
                     }
                 }
             }

@@ -160,7 +160,7 @@ fun ArchiveScreen(
                         archiveViewModel.onEvent(ArchiveEvent.UnarchiveBoard(board))
                     }
                     ArchivedBoardCardMenuOption.Delete -> {
-                        archiveViewModel.onEvent(ArchiveEvent.DeleteBoard(board))
+                        archiveViewModel.onEvent(ArchiveEvent.MoveBoardToTrash(board))
                     }
                 }
             }

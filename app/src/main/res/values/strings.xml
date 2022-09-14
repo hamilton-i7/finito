@@ -12,8 +12,6 @@
     <string name="trash">Trash</string>
     <string name="create_new_board">Create new board</string>
     <string name="create_new_label">Create new label</string>
-    <string name="hide_boards">Hide boards</string>
-    <string name="show_more">Show more</string>
     <string name="remove_filters">Remove filters</string>
     <string name="filter_by_label">Filter by labels</string>
     <string name="sort_by">Sort by</string>
@@ -38,7 +36,6 @@
     <string name="delete">Delete</string>
     <string name="edit_board">Edit board</string>
     <string name="archive_board">Archive board</string>
-    <string name="delete_board">Delete board</string>
     <string name="delete_completed_tasks">Delete completed tasks</string>
     <string name="rename_label">Rename label</string>
     <string name="delete_label">Delete label</string>
@@ -48,8 +45,8 @@
     <string name="board_moved_out_of_archive">Board moved out of archive</string>
     <string name="board_was_restored">Board was restored</string>
     <string name="cancel">Cancel</string>
-    <string name="delete_board_confirmation">This board will be permanently deleted</string>
-    <string name="empty_trash_confirmation">All boards in trash will be permanently deleted</string>
+    <string name="delete_board_confirmation">This board will be deleted permanently</string>
+    <string name="empty_trash_confirmation">All boards in trash will be deleted permanently</string>
     <string name="empty_trash_confirmation_title">Empty trash?</string>
     <string name="tasks_completed">Tasks completed</string>
     <string name="mark_as_uncompleted">Mark as uncompleted</string>
@@ -72,7 +69,6 @@
     <string name="thirty_minutes_before">30 minutes before</string>
     <string name="confirm">Confirm</string>
     <string name="none">None</string>
-    <string name="ok">@android:string/ok</string>
     <string name="remove_date">Remove date</string>
     <string name="two_days_ago">2 days ago</string>
     <string name="three_days_ago">3 days ago</string>
@@ -94,4 +90,5 @@
     <string name="go_back">Go back</string>
     <string name="unarchive_board">Unarchive board</string>
     <string name="restore_board">Restore board</string>
+    <string name="move_to_trash">Move to trash</string>
 </resources>

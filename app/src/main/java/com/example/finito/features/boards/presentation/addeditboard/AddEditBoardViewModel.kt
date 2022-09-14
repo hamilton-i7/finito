@@ -9,16 +9,20 @@ import androidx.lifecycle.viewModelScope
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
+import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
+import com.example.finito.features.tasks.domain.entity.CompletedTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +32,10 @@ class AddEditBoardViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var board by mutableStateOf<Board?>(null)
+    var boardState by mutableStateOf(BoardState.ACTIVE)
+        private set
+
+    var board by mutableStateOf<DetailedBoard?>(null)
         private set
 
     var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
@@ -43,12 +50,19 @@ class AddEditBoardViewModel @Inject constructor(
     var showLabels by mutableStateOf(false)
         private set
 
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    var showScreenMenu by mutableStateOf(false)
+        private set
+
+    var dialogType by mutableStateOf<AddEditBoardEvent.DialogType?>(null)
+        private set
+
+    private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         fetchBoard()
         fetchLabels()
+        fetchBoardState()
     }
 
     fun onEvent(event: AddEditBoardEvent) {
@@ -66,31 +80,55 @@ class AddEditBoardViewModel @Inject constructor(
                     value = event.name
                 )
             }
-            AddEditBoardEvent.CreateBoard -> createBoard()
-            AddEditBoardEvent.DeleteBoard -> TODO()
+            AddEditBoardEvent.CreateBoard -> onCreateBoard()
+            AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
             AddEditBoardEvent.EditBoard -> TODO()
             AddEditBoardEvent.ToggleLabelsVisibility -> {
                 showLabels = !showLabels
             }
+            AddEditBoardEvent.DeleteForever -> onDeleteForever()
+            AddEditBoardEvent.RestoreBoard -> TODO()
+            is AddEditBoardEvent.ShowScreenMenu -> showScreenMenu = event.show
+            is AddEditBoardEvent.ShowDialog -> dialogType = event.type
         }
     }
 
-    private fun createBoard() = viewModelScope.launch {
+    private fun onDeleteForever() = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
+            boardUseCases.deleteBoard(board)
+        }
+    }
+
+    private fun onMoveToTrash() = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
+            BoardWithLabelsAndTasks(
+                board = board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
+                labels = labels,
+                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+            ).let { boardUseCases.updateBoard(it) }
+        }
+    }
+
+    private fun onCreateBoard() = viewModelScope.launch {
         val board = BoardWithLabelsAndTasks(
             board = Board(name = nameState.value),
             labels = selectedLabels
         )
-        boardUseCases.createBoard(board).let {
-            _eventFlow.emit(UiEvent.CreateBoard(it))
+        boardUseCases.createBoard(board).also {
+            _eventFlow.emit(Event.CreateBoard(it))
         }
     }
 
     private fun fetchBoard() {
-        savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ARGUMENT)?.let { boardId ->
+        savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
             viewModelScope.launch {
-                boardUseCases.findOneBoard(boardId).onEach {
-                    board = it.board
-                }.launchIn(viewModelScope)
+                boardUseCases.findOneBoard(boardId).also {
+                    board = it
+                    nameState = TextFieldState(value = it.board.name)
+                    selectedLabels = it.labels
+                }
             }
         }
     }
@@ -101,7 +139,17 @@ class AddEditBoardViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    sealed class UiEvent {
-        data class CreateBoard(val boardId: Int) : UiEvent()
+    private fun fetchBoardState() {
+        savedStateHandle.get<String>(Screen.BOARD_ROUTE_STATE_ARGUMENT)?.let { state ->
+            boardState = when (state) {
+                BoardState.ARCHIVED.name -> BoardState.ARCHIVED
+                BoardState.DELETED.name -> BoardState.DELETED
+                else -> BoardState.ACTIVE
+            }
+        }
+    }
+
+    sealed class Event {
+        data class CreateBoard(val boardId: Int) : Event()
     }
 }

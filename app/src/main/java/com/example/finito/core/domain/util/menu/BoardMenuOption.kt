@@ -7,7 +7,7 @@ sealed class ActiveBoardScreenOption(label: Int) : BoardScreenMenuOption(label) 
 
     object ArchiveBoard : ActiveBoardScreenOption(R.string.archive_board)
 
-    object DeleteBoard : ActiveBoardScreenOption(R.string.delete_board)
+    object DeleteBoard : ActiveBoardScreenOption(R.string.move_to_trash)
 
     object DeleteCompletedTasks : ActiveBoardScreenOption(R.string.delete_completed_tasks)
 }
@@ -17,7 +17,7 @@ sealed class ArchivedBoardScreenMenuOption(label: Int) : BoardScreenMenuOption(l
 
     object UnarchiveBoard : ArchivedBoardScreenMenuOption(R.string.unarchive_board)
 
-    object DeleteBoard : ArchivedBoardScreenMenuOption(R.string.delete_board)
+    object DeleteBoard : ArchivedBoardScreenMenuOption(R.string.move_to_trash)
 
     object DeleteCompletedTasks : ArchivedBoardScreenMenuOption(R.string.delete_completed_tasks)
 }

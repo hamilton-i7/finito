@@ -48,9 +48,6 @@ class BoardViewModel @Inject constructor(
     var showScreenMenu by mutableStateOf(false)
         private set
 
-    var showDialog by mutableStateOf(false)
-        private set
-
     var dialogType by mutableStateOf<BoardEvent.DialogType?>(null)
         private set
 
@@ -88,21 +85,17 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun onEditBoard() = viewModelScope.launch {
-        val route = "${Screen.EditBoard.prefix}/${board!!.board.boardId}"
+        val route = "${Screen.EditBoard.prefix}/${board!!.board.boardId}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${boardState.name}"
         _eventFlow.emit(Event.Navigate(route = route))
     }
 
     private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
         dialogType?.let {
-            showDialog = true
             this.dialogType = it
             selectedPriority = if (it is BoardEvent.DialogType.Priority) {
                 it.taskWithSubtasks.task.priority
             } else null
-        } ?: run {
-            showDialog = false
-            selectedPriority = null
-        }
+        } ?: run { selectedPriority = null }
     }
 
     private fun onChangeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
@@ -126,9 +119,9 @@ class BoardViewModel @Inject constructor(
     private fun fetchBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
             viewModelScope.launch {
-                boardUseCases.findOneBoard(boardId).onEach {
+                boardUseCases.findOneBoard(boardId).also {
                     board = it
-                }.launchIn(viewModelScope)
+                }
             }
         }
     }

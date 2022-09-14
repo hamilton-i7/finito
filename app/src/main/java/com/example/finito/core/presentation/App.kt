@@ -7,9 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.core.presentation.components.Drawer
+import com.example.finito.core.presentation.components.bars.BottomBarHeight
 import com.example.finito.core.presentation.util.rememberSnackbarState
 import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import kotlinx.coroutines.launch
@@ -42,13 +42,12 @@ fun App(finishActivity: () -> Unit) {
 
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
-    val snackbarModifier = if (currentRoute == Screen.Home.route
-        || currentRoute == Screen.Archive.route) {
-        // Include bottom bar height on screens that have it
-        Modifier
+    val snackbarModifier = when(currentRoute) {
+        Screen.Home.route, Screen.Archive.route, Screen.Board.route -> Modifier
             .navigationBarsPadding()
-            .padding(bottom = 80.dp)
-    } else Modifier.navigationBarsPadding()
+            .padding(bottom = BottomBarHeight)
+        else -> Modifier.navigationBarsPadding()
+    }
 
     navController.addOnDestinationChangedListener(
         listener = { _, destination, arguments ->
@@ -61,7 +60,7 @@ fun App(finishActivity: () -> Unit) {
             val route: String = if (staticDrawerRoutes.contains(destination.route)) {
                 destination.route!!
             } else if (destination.route == Screen.Board.route) {
-                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ROUTE_ARGUMENT)}"
+                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ROUTE_ID_ARGUMENT)}"
             } else {
                 "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ROUTE_ARGUMENT)}"
             }
@@ -105,7 +104,7 @@ fun App(finishActivity: () -> Unit) {
         ) {
             Surface {
                 FinitoNavHost(
-                    navHostController = navController,
+                    navController = navController,
                     drawerState = drawerState,
                     sharedBoardViewModel = sharedBoardViewModel,
                     finishActivity = finishActivity,

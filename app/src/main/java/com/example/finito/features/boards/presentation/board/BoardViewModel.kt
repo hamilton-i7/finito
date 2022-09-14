@@ -90,12 +90,10 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
-        dialogType?.let {
-            this.dialogType = it
-            selectedPriority = if (it is BoardEvent.DialogType.Priority) {
-                it.taskWithSubtasks.task.priority
-            } else null
-        } ?: run { selectedPriority = null }
+        this.dialogType = dialogType
+        selectedPriority = if (dialogType is BoardEvent.DialogType.Priority) {
+            dialogType.taskWithSubtasks.task.priority
+        } else null
     }
 
     private fun onChangeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
@@ -105,7 +103,7 @@ class BoardViewModel @Inject constructor(
                 task = task.task.copy(priority = selectedPriority),
                 subtasks = task.subtasks
             )
-        )
+        ).also { fetchBoard() }
     }
 
     private fun onShowCompletedTasksChange() {
@@ -118,7 +116,7 @@ class BoardViewModel @Inject constructor(
 
     private fun fetchBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
-            viewModelScope.launch {
+             viewModelScope.launch {
                 boardUseCases.findOneBoard(boardId).also {
                     board = it
                 }

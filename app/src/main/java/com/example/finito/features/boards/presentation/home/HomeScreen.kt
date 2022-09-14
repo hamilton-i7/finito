@@ -42,9 +42,9 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     navController: NavHostController,
     drawerState: DrawerState,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
-    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -68,7 +68,7 @@ fun HomeScreen(
         homeViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is HomeViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message) {
+                    showSnackbar(event.message, R.string.undo) {
                         homeViewModel.onEvent(HomeEvent.RestoreBoard)
                     }
                 }

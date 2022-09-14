@@ -49,7 +49,7 @@ fun BoardScreen(
     drawerState: DrawerState,
     sharedBoardViewModel: SharedBoardViewModel,
     boardViewModel: BoardViewModel = hiltViewModel(),
-    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
 ) {
     val detailedBoard = boardViewModel.board
     val previousRoute = navController.previousBackStackEntry?.destination?.route
@@ -81,8 +81,8 @@ fun BoardScreen(
         boardViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is BoardViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message) {
-                        sharedBoardViewModel.onEvent(SharedBoardEvent.ResetBoard(
+                    showSnackbar(event.message, R.string.undo) {
+                        sharedBoardViewModel.onEvent(SharedBoardEvent.UndoBoardChange(
                             board = event.board
                         ))
                     }

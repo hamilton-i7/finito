@@ -43,9 +43,18 @@ fun App(finishActivity: () -> Unit) {
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
     val snackbarModifier = when(currentRoute) {
-        Screen.Home.route, Screen.Archive.route, Screen.Board.route -> Modifier
+        Screen.Home.route, Screen.Archive.route -> Modifier
             .navigationBarsPadding()
             .padding(bottom = BottomBarHeight)
+        Screen.Board.route -> {
+            if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
+                Modifier.navigationBarsPadding()
+            } else {
+                Modifier
+                    .navigationBarsPadding()
+                    .padding(bottom = BottomBarHeight)
+            }
+        }
         else -> Modifier.navigationBarsPadding()
     }
 
@@ -108,10 +117,11 @@ fun App(finishActivity: () -> Unit) {
                     drawerState = drawerState,
                     sharedBoardViewModel = sharedBoardViewModel,
                     finishActivity = finishActivity,
-                    showSnackbar = { message, onActionClick ->
+                    showSnackbar = { message, actionLabel, onActionClick ->
                         snackbarState.showSnackbar(
                             context = context,
                             message = message,
+                            actionLabel = actionLabel,
                             onActionClick = onActionClick
                         )
                     }

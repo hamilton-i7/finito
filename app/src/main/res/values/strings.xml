@@ -91,4 +91,5 @@
     <string name="unarchive_board">Unarchive board</string>
     <string name="restore_board">Restore board</string>
     <string name="move_to_trash">Move to trash</string>
+    <string name="board_not_editable">Cannot edit board while in trash</string>
 </resources>

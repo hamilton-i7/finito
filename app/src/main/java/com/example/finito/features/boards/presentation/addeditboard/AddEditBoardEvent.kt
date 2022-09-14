@@ -17,7 +17,11 @@ sealed class AddEditBoardEvent {
 
     object DeleteForever : AddEditBoardEvent()
 
-    object RestoreBoard : AddEditBoardEvent()
+    data class RestoreBoard(val showSnackbar: Boolean = false) : AddEditBoardEvent()
+
+    object UndoRestore : AddEditBoardEvent()
+
+    object AlertNotEditable : AddEditBoardEvent()
 
     data class ShowScreenMenu(val show: Boolean) : AddEditBoardEvent()
 

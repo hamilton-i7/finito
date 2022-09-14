@@ -2,6 +2,7 @@ package com.example.finito.core.presentation.components.textfields
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.border
+import com.example.finito.ui.theme.DisabledAlpha
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,7 +81,8 @@ object FinitoTextFieldDefaults {
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         containerColor = finitoColors.surfaceColorAtElevation(1.dp),
-        unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f)
+        unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f),
+        disabledIndicatorColor = Color.Transparent,
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -97,15 +99,14 @@ object FinitoTextFieldDefaults {
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant,
             )
         } else {
-            val disabledAlpha = 0.38f
             TextFieldDefaults.textFieldColors(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 containerColor = finitoColors.surfaceColorAtElevation(1.dp),
                 disabledIndicatorColor = Color.Transparent,
-                disabledTextColor = finitoColors.onSurface.copy(alpha = disabledAlpha),
-                disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
-                disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
+                disabledTextColor = finitoColors.onSurface.copy(alpha = DisabledAlpha),
+                disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
+                disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
             )
         }
     }

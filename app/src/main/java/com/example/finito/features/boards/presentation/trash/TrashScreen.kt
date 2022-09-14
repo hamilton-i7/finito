@@ -14,6 +14,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.finito.R
 import com.example.finito.core.domain.util.menu.DeletedBoardCardMenuOption
 import com.example.finito.core.domain.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.Screen
@@ -33,7 +34,7 @@ fun TrashScreen(
     drawerState: DrawerState,
     trashViewModel: TrashViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
-    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -50,7 +51,7 @@ fun TrashScreen(
         trashViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is TrashViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message) {
+                    showSnackbar(event.message, R.string.undo) {
                         trashViewModel.onEvent(TrashEvent.UndoRestore)
                     }
                 }

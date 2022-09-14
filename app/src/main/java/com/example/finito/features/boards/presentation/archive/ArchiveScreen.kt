@@ -38,7 +38,7 @@ fun ArchiveScreen(
     drawerState: DrawerState,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
-    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val simpleTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -60,7 +60,7 @@ fun ArchiveScreen(
         archiveViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is ArchiveViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message) {
+                    showSnackbar(event.message, R.string.undo) {
                         archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
                     }
                 }

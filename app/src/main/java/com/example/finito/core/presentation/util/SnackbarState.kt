@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
-import com.example.finito.R
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -24,18 +23,19 @@ data class SnackbarState(
     fun showSnackbar(
         context: Context,
         @StringRes message: Int,
-        onActionClick: () -> Unit,
+        @StringRes actionLabel: Int?,
+        onActionClick: (() -> Unit)?,
     ) {
         // Dismiss current Snackbar to avoid having multiple instances
         snackbarHostState.currentSnackbarData?.dismiss()
         scope.launch {
             val result = snackbarHostState.showSnackbar(
                 message = context.resources.getString(message),
-                actionLabel = context.resources.getString(R.string.undo),
+                actionLabel = actionLabel?.let { context.resources.getString(it) },
                 duration = SnackbarDuration.Short
             )
             if (result == SnackbarResult.ActionPerformed) {
-                onActionClick()
+                onActionClick?.invoke()
             }
         }
     }

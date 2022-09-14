@@ -30,7 +30,7 @@ fun FinitoNavHost(
     navController: NavHostController,
     drawerState: DrawerState,
     finishActivity: () -> Unit,
-    showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: (() -> Unit)?) -> Unit,
     sharedBoardViewModel: SharedBoardViewModel,
 ) {
    AnimatedNavHost(
@@ -157,7 +157,10 @@ fun FinitoNavHost(
            exitTransition = childScreenExitTransition,
            popExitTransition = childScreenPopExitTransition
        ) {
-           AddEditBoardScreen(navController = navController)
+           AddEditBoardScreen(
+               navController = navController,
+               showSnackbar = showSnackbar,
+           )
        }
 
        composable(
@@ -167,7 +170,10 @@ fun FinitoNavHost(
            exitTransition = childScreenExitTransition,
            popExitTransition = childScreenPopExitTransition
        ) {
-           AddEditBoardScreen(navController = navController)
+           AddEditBoardScreen(
+               navController = navController,
+               showSnackbar = showSnackbar,
+           )
        }
 
        composable(

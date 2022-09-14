@@ -17,12 +17,12 @@ class SharedBoardViewModel @Inject constructor(
 
     fun onEvent(event: SharedBoardEvent) {
         when (event) {
-            is SharedBoardEvent.ResetBoard -> resetBoard(event.board)
+            is SharedBoardEvent.UndoBoardChange -> onUndoBoardChange(event.board)
         }
     }
 
-    private fun resetBoard(board: DetailedBoard) = viewModelScope.launch {
-        board.let {
+    private fun onUndoBoardChange(originalBoard: DetailedBoard) = viewModelScope.launch {
+        originalBoard.let {
             boardUseCases.updateBoard(
                 BoardWithLabelsAndTasks(
                     board = it.board,

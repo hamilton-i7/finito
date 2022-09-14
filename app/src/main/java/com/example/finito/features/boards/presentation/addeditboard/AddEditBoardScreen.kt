@@ -32,7 +32,6 @@ import com.example.finito.core.presentation.components.textfields.FinitoTextFiel
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.domain.entity.BoardState
-import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.addeditboard.components.AddEditBoardDialogs
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
@@ -43,6 +42,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AddEditBoardScreen(
     navController: NavController,
+    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: (() -> Unit)?) -> Unit,
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -57,6 +57,22 @@ fun AddEditBoardScreen(
                     val route = "${Screen.Board.prefix}/${event.boardId}"
                     navController.navigate(route = route) {
                         popUpTo(Screen.CreateBoard.route) { inclusive = true }
+                    }
+                }
+                is AddEditBoardViewModel.Event.Snackbar -> {
+                    when (event) {
+                        AddEditBoardViewModel.Event.Snackbar.RestoredBoard -> {
+                            showSnackbar(event.message, event.actionLabel) {
+                                addEditBoardViewModel.onEvent(AddEditBoardEvent.UndoRestore)
+                            }
+                        }
+                        AddEditBoardViewModel.Event.Snackbar.UneditableBoard -> {
+                            showSnackbar(event.message, event.actionLabel) {
+                                addEditBoardViewModel.onEvent(
+                                    AddEditBoardEvent.RestoreBoard()
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -86,7 +102,9 @@ fun AddEditBoardScreen(
                         }
                         BoardState.DELETED -> {
                             IconButton(onClick = {
-                                addEditBoardViewModel.onEvent(AddEditBoardEvent.RestoreBoard)
+                                addEditBoardViewModel.onEvent(
+                                    AddEditBoardEvent.RestoreBoard(showSnackbar = true)
+                                )
                             }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Restore,
@@ -148,6 +166,7 @@ fun AddEditBoardScreen(
         AddEditBoardScreen(
             paddingValues = innerPadding,
             createMode = createMode,
+            isDeleted = addEditBoardViewModel.boardState == BoardState.DELETED,
             nameState = addEditBoardViewModel.nameState.copy(
                 onValueChange = {
                     addEditBoardViewModel.onEvent(AddEditBoardEvent.ChangeName(it))
@@ -164,6 +183,9 @@ fun AddEditBoardScreen(
             },
             onCreateBoard = {
                 addEditBoardViewModel.onEvent(AddEditBoardEvent.CreateBoard)
+            },
+            onScreenClick = {
+                addEditBoardViewModel.onEvent(AddEditBoardEvent.AlertNotEditable)
             }
         )
     }
@@ -174,14 +196,15 @@ fun AddEditBoardScreen(
 private fun AddEditBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     createMode: Boolean = true,
+    isDeleted: Boolean = false,
     nameState: TextFieldState = TextFieldState(),
-    nameFieldEnabled: Boolean = true,
     showLabels: Boolean = true,
     onShowLabelsChange: () -> Unit = {},
     labels: List<SimpleLabel> = emptyList(),
     selectedLabels: List<SimpleLabel> = emptyList(),
     onLabelClick: (SimpleLabel) -> Unit = {},
     onCreateBoard: () -> Unit = {},
+    onScreenClick: () -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
     val selectedLabelsIds = selectedLabels.groupBy { it.labelId }
@@ -190,6 +213,9 @@ private fun AddEditBoardScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
+            .noRippleClickable(onClick = {
+                if (isDeleted) onScreenClick()
+            })
     ) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 32.dp),
@@ -199,7 +225,7 @@ private fun AddEditBoardScreen(
                 FinitoTextField(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
-                    enabled = nameFieldEnabled,
+                    enabled = !isDeleted,
                     label = { Text(text = stringResource(id = R.string.name)) },
                     error = nameState.error,
                     errorFeedback = R.string.empty_name_error,
@@ -227,6 +253,7 @@ private fun AddEditBoardScreen(
                     LabelItem(
                         label = it,
                         selected = selectedLabelsIds[it.labelId] != null,
+                        enabled = !isDeleted,
                         onLabelClick = { onLabelClick(it) }
                     )
                 }
@@ -239,7 +266,7 @@ private fun AddEditBoardScreen(
                 ) { validName ->
                     Button(
                         onClick = onCreateBoard,
-                        enabled = validName,
+                        enabled = validName && !isDeleted,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .widthIn(max = 350.dp)

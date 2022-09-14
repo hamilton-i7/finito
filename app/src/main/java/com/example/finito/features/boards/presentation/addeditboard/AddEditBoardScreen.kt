@@ -32,6 +32,8 @@ import com.example.finito.core.presentation.components.textfields.FinitoTextFiel
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.domain.entity.BoardState
+import com.example.finito.features.boards.presentation.SharedBoardEvent
+import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.addeditboard.components.AddEditBoardDialogs
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
@@ -42,6 +44,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AddEditBoardScreen(
     navController: NavController,
+    sharedBoardViewModel: SharedBoardViewModel,
     showSnackbar: (message: Int, actionLabel: Int?, onActionClick: (() -> Unit)?) -> Unit,
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
 ) {
@@ -73,6 +76,13 @@ fun AddEditBoardScreen(
                                 )
                             }
                         }
+                        AddEditBoardViewModel.Event.Snackbar.DeletedBoard -> {
+                            showSnackbar(event.message, event.actionLabel) {
+                                sharedBoardViewModel.onEvent(SharedBoardEvent.UndoBoardChange(
+                                    board = addEditBoardViewModel.board!!
+                                ))
+                            }
+                        }
                     }
                 }
             }
@@ -93,6 +103,15 @@ fun AddEditBoardScreen(
                         BoardState.ACTIVE, BoardState.ARCHIVED -> {
                             IconButton(onClick = {
                                 addEditBoardViewModel.onEvent(AddEditBoardEvent.MoveBoardToTrash)
+                                if (addEditBoardViewModel.boardState == BoardState.ACTIVE) {
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
+                                } else if (addEditBoardViewModel.boardState == BoardState.ARCHIVED) {
+                                    navController.navigate(Screen.Archive.route) {
+                                        popUpTo(Screen.Archive.route) { inclusive = true }
+                                    }
+                                }
                             }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Delete,

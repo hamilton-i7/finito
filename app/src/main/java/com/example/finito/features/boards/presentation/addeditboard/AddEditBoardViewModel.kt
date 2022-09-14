@@ -148,7 +148,9 @@ class AddEditBoardViewModel @Inject constructor(
                 board = board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
                 labels = labels,
                 tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-            ).let { boardUseCases.updateBoard(it) }
+            ).let {
+                boardUseCases.updateBoard(it)
+            }.also { _eventFlow.emit(Event.Snackbar.DeletedBoard) }
         }
     }
 
@@ -204,6 +206,11 @@ class AddEditBoardViewModel @Inject constructor(
 
             object RestoredBoard : Snackbar(
                 message = R.string.board_was_restored,
+                actionLabel = R.string.undo
+            )
+
+            object DeletedBoard : Snackbar(
+                message = R.string.board_moved_to_trash,
                 actionLabel = R.string.undo
             )
         }

@@ -160,6 +160,7 @@ fun FinitoNavHost(
            AddEditBoardScreen(
                navController = navController,
                showSnackbar = showSnackbar,
+               sharedBoardViewModel = sharedBoardViewModel,
            )
        }
 
@@ -173,6 +174,7 @@ fun FinitoNavHost(
            AddEditBoardScreen(
                navController = navController,
                showSnackbar = showSnackbar,
+               sharedBoardViewModel = sharedBoardViewModel,
            )
        }
 

@@ -3,7 +3,9 @@ package com.example.finito.features.boards.presentation.home
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +74,10 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    LaunchedEffect(navController.currentDestination?.route) {
+        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
     }
 
     Scaffold(

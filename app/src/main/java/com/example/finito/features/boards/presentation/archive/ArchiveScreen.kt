@@ -68,6 +68,10 @@ fun ArchiveScreen(
         }
     }
 
+    LaunchedEffect(navController.currentDestination?.route) {
+        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
+    }
+
     Scaffold(
         topBar = {
             AnimatedContent(
@@ -196,7 +200,9 @@ private fun ArchiveScreen(
         SortingOption.Common.NameZA,
     )
 
-    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+    Surface(modifier = Modifier
+        .fillMaxSize()
+        .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
             labels = labels,

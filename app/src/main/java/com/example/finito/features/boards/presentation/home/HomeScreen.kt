@@ -23,6 +23,7 @@ import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.noRippleClickable
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.home.components.HomeTopBar
@@ -144,7 +145,7 @@ fun HomeScreen(
             },
             boards = homeViewModel.boards,
             onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}"
+                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.ACTIVE.name}"
                 navController.navigate(route)
             },
             selectedSortingOption = homeViewModel.boardsOrder,

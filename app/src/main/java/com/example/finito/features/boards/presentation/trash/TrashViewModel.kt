@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -92,7 +93,7 @@ class TrashViewModel @Inject constructor(
     private fun restoreBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
         with(board) {
             boardUseCases.updateBoard(
-                copy(board = this.board.copy(deleted = false, removedAt = null))
+                copy(board = this.board.copy(state = BoardState.ACTIVE, removedAt = null))
             )
             _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_was_restored))
             recentlyRestoredBoard = this
@@ -102,7 +103,10 @@ class TrashViewModel @Inject constructor(
     private fun undoRestore() = viewModelScope.launch {
         recentlyRestoredBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(deleted = true, removedAt = it.board.removedAt))
+                it.copy(board = it.board.copy(
+                    state = BoardState.DELETED,
+                    removedAt = it.board.removedAt
+                ))
             )
             recentlyRestoredBoard = null
         }

@@ -33,11 +33,6 @@ class UpdateBoard(
         if (board.name.isBlank()) {
             throw ResourceException.EmptyException
         }
-        if (board.archived && board.deleted) {
-            throw ResourceException.InvalidStateException(
-                message = "Board must be either archived or deleted. Not both"
-            )
-        }
         findBoardJob?.cancel()
         findBoardJob = boardRepository.findOne(board.boardId).onEach {
             if (it == null) throw ResourceException.NotFoundException

@@ -3,6 +3,7 @@ package com.example.finito.core.presentation
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.finito.features.boards.domain.entity.BoardState
 
 sealed class Screen(
     val route: String,
@@ -23,9 +24,15 @@ sealed class Screen(
     object Urgent : Screen(route = "urgent")
 
     object Board : Screen(
-        route = "board/{$BOARD_ROUTE_ARGUMENT}",
+        route = "board/{$BOARD_ROUTE_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
         prefix = "board",
-        arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
+        arguments = listOf(
+            navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = BoardState.ACTIVE.name
+            }
+        )
     ) {
         val childRoutes = listOf(
             TaskDateTime.route,
@@ -41,9 +48,9 @@ sealed class Screen(
     object CreateBoard : Screen(route = "create_board")
 
     object EditBoard : Screen(
-        route = "edit_board/{$BOARD_ROUTE_ARGUMENT}",
+        route = "edit_board/{$BOARD_ROUTE_ID_ARGUMENT}",
         prefix = "edit_board",
-        arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
+        arguments = listOf(navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType })
     )
 
     object Label : Screen(
@@ -67,7 +74,8 @@ sealed class Screen(
     )
 
     companion object {
-        const val BOARD_ROUTE_ARGUMENT = "boardId"
+        const val BOARD_ROUTE_ID_ARGUMENT = "boardId"
+        const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
         const val TASK_ROUTE_ARGUMENT = "taskId"
     }

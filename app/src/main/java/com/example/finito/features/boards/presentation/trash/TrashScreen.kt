@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import com.example.finito.core.domain.util.menu.DeletedBoardCardMenuOption
 import com.example.finito.core.domain.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.Screen
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.trash.components.TrashDialogs
@@ -94,7 +95,7 @@ fun TrashScreen(
             gridLayout = trashViewModel.gridLayout,
             boards = trashViewModel.boards,
             onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}"
+                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.DELETED.name}"
                 navController.navigate(route)
             },
             onCardOptionsClick = {

@@ -6,6 +6,8 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 sealed class BoardEvent {
     data class ShowScreenMenu(val show: Boolean) : BoardEvent()
 
+    object EditBoard : BoardEvent()
+
     object ArchiveBoard : BoardEvent()
 
     object DeleteBoard : BoardEvent()
@@ -13,6 +15,8 @@ sealed class BoardEvent {
     object RestoreBoard : BoardEvent()
 
     object DeleteCompletedTasks : BoardEvent()
+
+    data class EditTaskDateTime(val taskId: Int) : BoardEvent()
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 

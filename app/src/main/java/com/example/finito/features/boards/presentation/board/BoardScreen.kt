@@ -29,7 +29,7 @@ import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
-import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.SharedBoardEvent
 import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.board.components.BoardDialogs
@@ -52,7 +52,6 @@ fun BoardScreen(
     showSnackbar: (message: Int, onActionClick: () -> Unit) -> Unit,
 ) {
     val detailedBoard = boardViewModel.board
-    val activeBoard = detailedBoard?.board?.archived == false && !detailedBoard.board.deleted
     val previousRoute = navController.previousBackStackEntry?.destination?.route
 
     val scope = rememberCoroutineScope()
@@ -88,6 +87,9 @@ fun BoardScreen(
                         ))
                     }
                 }
+                is BoardViewModel.Event.Navigate -> {
+                    navController.navigate(route = event.route)
+                }
             }
         }
     }
@@ -96,13 +98,14 @@ fun BoardScreen(
         topBar = {
             BoardTopBar(
                 onNavigationClick = onNavigationClick@{
-                    if (!activeBoard) {
+                    if (detailedBoard?.board?.state != BoardState.ACTIVE) {
                         navController.navigateUp()
                         return@onNavigationClick
                     }
                     scope.launch { drawerState.open() }
                 },
-                board = detailedBoard?.board ?: Board(name = ""),
+                boardName = detailedBoard?.board?.name ?: "",
+                boardState = boardViewModel.boardState,
                 showMenu = boardViewModel.showScreenMenu,
                 onMoreOptionsClick = {
                     boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
@@ -124,7 +127,7 @@ fun BoardScreen(
                                     boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
                                 }
                                 ArchivedBoardScreenMenuOption.EditBoard -> {
-                                    TODO(reason = "Navigate to edit screen")
+                                    boardViewModel.onEvent(BoardEvent.EditBoard)
                                 }
                                 ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
                                     boardViewModel.onEvent(BoardEvent.RestoreBoard)
@@ -138,7 +141,7 @@ fun BoardScreen(
                                     boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
                                 }
                                 DeletedBoardScreenMenuOption.EditBoard -> {
-                                    TODO(reason = "Navigate to edit screen")
+                                    boardViewModel.onEvent(BoardEvent.EditBoard)
                                 }
                                 DeletedBoardScreenMenuOption.RestoreBoard -> {
                                     boardViewModel.onEvent(BoardEvent.RestoreBoard)
@@ -164,7 +167,7 @@ fun BoardScreen(
                                     boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
                                 }
                                 ActiveBoardScreenOption.EditBoard -> {
-                                    TODO(reason = "Navigate to edit screen")
+                                    boardViewModel.onEvent(BoardEvent.EditBoard)
                                 }
                             }
                         }

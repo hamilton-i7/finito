@@ -20,6 +20,7 @@ import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -134,7 +135,7 @@ fun ArchiveScreen(
             },
             boards = archiveViewModel.boards,
             onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}"
+                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.ARCHIVED.name}"
                 navController.navigate(route)
             },
             selectedSortingOption = archiveViewModel.boardsOrder,

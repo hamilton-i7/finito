@@ -12,6 +12,7 @@ import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.presentation.Screen
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -21,10 +22,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -35,6 +33,9 @@ class BoardViewModel @Inject constructor(
     private val preferences: SharedPreferences,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
+
+    var boardState by mutableStateOf(BoardState.ACTIVE)
+        private set
 
     var board by mutableStateOf<DetailedBoard?>(null)
         private set
@@ -61,21 +62,34 @@ class BoardViewModel @Inject constructor(
 
     init {
         fetchBoard()
+        fetchBoardState()
     }
 
     fun onEvent(event: BoardEvent) {
         when (event) {
-            BoardEvent.ArchiveBoard -> deactivateBoard(DeactivateMode.ARCHIVE)
-            BoardEvent.DeleteBoard -> deactivateBoard(DeactivateMode.DELETE)
+            BoardEvent.ArchiveBoard -> onDeactivateBoard(DeactivateMode.ARCHIVE)
+            BoardEvent.DeleteBoard -> onDeactivateBoard(DeactivateMode.DELETE)
             BoardEvent.RestoreBoard -> restoreBoard()
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
-            is BoardEvent.ChangeTaskPriorityConfirm -> changeTaskPriorityConfirm(event.task)
+            is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> TODO()
             BoardEvent.DeleteCompletedTasks -> TODO()
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
+            BoardEvent.EditBoard -> onEditBoard()
+            is BoardEvent.EditTaskDateTime -> onEditTaskDateTime(event.taskId)
         }
+    }
+
+    private fun onEditTaskDateTime(taskId: Int) = viewModelScope.launch {
+        val route = "${Screen.TaskDateTime.prefix}/${taskId}"
+        _eventFlow.emit(Event.Navigate(route = route))
+    }
+
+    private fun onEditBoard() = viewModelScope.launch {
+        val route = "${Screen.EditBoard.prefix}/${board!!.board.boardId}"
+        _eventFlow.emit(Event.Navigate(route = route))
     }
 
     private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
@@ -91,7 +105,7 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun changeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
+    private fun onChangeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
         if (task.task.priority == selectedPriority) return@launch
         taskUseCases.updateTask(
             TaskWithSubtasks(
@@ -110,7 +124,7 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun fetchBoard() {
-        savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ARGUMENT)?.let { boardId ->
+        savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
             viewModelScope.launch {
                 boardUseCases.findOneBoard(boardId).onEach {
                     board = it
@@ -119,10 +133,20 @@ class BoardViewModel @Inject constructor(
         }
     }
 
+    private fun fetchBoardState() {
+        savedStateHandle.get<String>(Screen.BOARD_ROUTE_STATE_ARGUMENT)?.let { state ->
+            boardState = when (state) {
+                BoardState.ARCHIVED.name -> BoardState.ARCHIVED
+                BoardState.DELETED.name -> BoardState.DELETED
+                else -> BoardState.ACTIVE
+            }
+        }
+    }
+
     private fun restoreBoard() = viewModelScope.launch {
         board?.let {
             val restoredBoard = BoardWithLabelsAndTasks(
-                board = it.board.copy(archived = false, deleted = false, removedAt = null),
+                board = it.board.copy(state = BoardState.ACTIVE, removedAt = null),
                 labels = it.labels,
                 tasks = it.tasks.map { task -> CompletedTask(completed = task.task.completed) }
             )
@@ -134,16 +158,17 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun deactivateBoard(mode: DeactivateMode) = viewModelScope.launch {
+    private fun onDeactivateBoard(mode: DeactivateMode) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
                     BoardWithLabelsAndTasks(
-                        board = board.copy(archived = true, deleted = false, removedAt = null),
+                        board = board.copy(state = BoardState.ARCHIVED, removedAt = null),
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
                     ).let { boardUseCases.updateBoard(it) }
+                    _eventFlow.emit(Event.Navigate(route = Screen.Home.route))
                     _eventFlow.emit(Event.ShowSnackbar(
                         message = R.string.board_archived,
                         board = this,
@@ -152,8 +177,7 @@ class BoardViewModel @Inject constructor(
                 DeactivateMode.DELETE -> {
                     BoardWithLabelsAndTasks(
                         board = board.copy(
-                            archived = false,
-                            deleted = true,
+                            state = BoardState.DELETED,
                             removedAt = LocalDateTime.now()
                         ),
                         labels = labels,
@@ -161,7 +185,7 @@ class BoardViewModel @Inject constructor(
                     ).let { boardUseCases.updateBoard(it) }
                     _eventFlow.emit(Event.ShowSnackbar(
                         message = R.string.board_moved_to_trash,
-                        board = this
+                        board = this@with
                     ))
                 }
             }
@@ -169,9 +193,8 @@ class BoardViewModel @Inject constructor(
     }
 
     sealed class Event {
-        data class ShowSnackbar(
-            @StringRes val message: Int,
-            val board: DetailedBoard,
-        ) : Event()
+        data class ShowSnackbar(@StringRes val message: Int, val board: DetailedBoard) : Event()
+
+        data class Navigate(val route: String) : Event()
     }
 }

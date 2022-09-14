@@ -12,7 +12,7 @@ import com.example.finito.core.domain.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.domain.util.menu.BoardScreenMenuOption
 import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.core.presentation.components.bars.MediumTopBarWithMenu
-import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardState
 
 private val activeBoardOptions = listOf(
     ActiveBoardScreenOption.EditBoard,
@@ -37,7 +37,8 @@ private val deletedBoardOptions = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BoardTopBar(
-    board: Board,
+    boardName: String,
+    boardState: BoardState,
     onNavigationClick: () -> Unit = {},
     onMoreOptionsClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -45,23 +46,26 @@ fun BoardTopBar(
     onDismissMenu: () -> Unit = {},
     onOptionClick: (BoardScreenMenuOption) -> Unit = {}
 ) {
-    val isInactiveBoard = board.archived || board.deleted
-
    MediumTopBarWithMenu(
-       title = board.name,
+       title = boardName,
        onNavigationIconClick = onNavigationClick,
-       navigationIcon = if (isInactiveBoard) Icons.Outlined.ArrowBack else Icons.Outlined.Menu,
-       navigationIconDescription = if (isInactiveBoard) R.string.go_back else R.string.open_menu,
+       navigationIcon = if (boardState == BoardState.ACTIVE)
+           Icons.Outlined.Menu
+       else
+           Icons.Outlined.ArrowBack,
+       navigationIconDescription = if (boardState == BoardState.ACTIVE)
+           R.string.open_menu
+       else
+           R.string.go_back,
        onMoreOptionsClick = onMoreOptionsClick,
        scrollBehavior = scrollBehavior,
        showMenu = showMenu,
        onDismissMenu = onDismissMenu,
-       options = if (board.archived)
-           archivedBoardOptions
-       else if (board.deleted)
-           deletedBoardOptions
-       else
-           activeBoardOptions,
+       options = when (boardState) {
+           BoardState.ARCHIVED -> archivedBoardOptions
+           BoardState.DELETED -> deletedBoardOptions
+           else -> activeBoardOptions
+       },
        onOptionClick = onOptionClick
    )
 }

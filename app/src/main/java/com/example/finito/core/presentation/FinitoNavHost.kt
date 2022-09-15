@@ -39,7 +39,14 @@ fun FinitoNavHost(
    ) {
        composable(
            route = Screen.Home.route,
-           enterTransition = peerScreenEnterTransition,
+           enterTransition = {
+               when {
+                   Screen.Home.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           },
            exitTransition = {
                when {
                    Screen.Home.childRoutes.contains(targetState.destination.route) -> {
@@ -48,14 +55,6 @@ fun FinitoNavHost(
                    else -> peerScreenExitTransition()
                }
            },
-           popEnterTransition = {
-               when {
-                   Screen.Home.childRoutes.contains(initialState.destination.route) -> {
-                       childScreenPopEnterTransition()
-                   }
-                   else -> peerScreenEnterTransition()
-               }
-           }
        ) {
            HomeScreen(
                navController = navController,

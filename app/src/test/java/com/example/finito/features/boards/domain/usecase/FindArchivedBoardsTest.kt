@@ -5,6 +5,7 @@ import com.example.finito.features.boards.data.repository.FakeBoardLabelReposito
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -13,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
 class FindArchivedBoardsTest {
@@ -40,16 +40,7 @@ class FindArchivedBoardsTest {
             Label(name = "Label name"),
         )
 
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                )
-            )
-        }
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
@@ -66,9 +57,9 @@ class FindArchivedBoardsTest {
     }
 
     @Test
-    fun `Should return archived boards only when asked`() = runTest {
+    fun `Should return archived boards only`() = runTest {
         val boards = findArchivedBoards().first()
-        assertThat(boards.all { it.board.archived }).isTrue()
+        assertThat(boards.all { it.board.state == BoardState.ARCHIVED }).isTrue()
     }
 
     @Test
@@ -126,7 +117,7 @@ class FindArchivedBoardsTest {
         assertThat(filteredBoards).isNotEmpty()
         assertThat(archiveLabeledBoards.size).isEqualTo(filteredBoards.size)
         assertThat(boards.size).isGreaterThan(filteredBoards.size)
-        assertThat(filteredBoards.all { it.board.archived }).isTrue()
+        assertThat(filteredBoards.all { it.board.state == BoardState.ARCHIVED }).isTrue()
 
         val filteredBoards2 = findArchivedBoards(
             labelIds = archiveLabeledBoards.flatMap {

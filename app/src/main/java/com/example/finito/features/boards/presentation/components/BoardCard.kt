@@ -64,7 +64,7 @@ fun BoardCard(
                             onDismiss = onDismissMenu,
                             options = options,
                             onOptionClick = {
-                                onMenuItemClick(it as BoardCardMenuOption)
+                                onMenuItemClick(it)
                             }
                         )
                     }

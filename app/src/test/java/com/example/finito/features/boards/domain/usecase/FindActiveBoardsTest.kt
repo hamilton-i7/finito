@@ -5,6 +5,7 @@ import com.example.finito.features.boards.data.repository.FakeBoardLabelReposito
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -13,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
 class FindActiveBoardsTest {
@@ -38,16 +38,7 @@ class FindActiveBoardsTest {
             Label(name = "Label name"),
         )
 
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 5 == 0,
-                    deleted = index % 7 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                )
-            )
-        }
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
@@ -64,10 +55,10 @@ class FindActiveBoardsTest {
     }
 
     @Test
-    fun `Should return active boards only when asked`() = runTest {
+    fun `Should return active boards only`() = runTest {
         val boards = findActiveBoards().first()
         assertThat(boards).isNotEmpty()
-        assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
+        assertThat(boards.all { it.board.state == BoardState.ACTIVE }).isTrue()
     }
 
     @Test
@@ -123,7 +114,9 @@ class FindActiveBoardsTest {
         assertThat(boards).isNotEmpty()
         assertThat(filteredBoards).isNotEmpty()
         assertThat(boards.size).isGreaterThan(filteredBoards.size)
-        assertThat(filteredBoards.any { it.board.archived && it.board.deleted }).isFalse()
+        assertThat(filteredBoards.any {
+            it.board.state == BoardState.ARCHIVED || it.board.state == BoardState.DELETED
+        }).isFalse()
 
         val filteredBoards2 = findActiveBoards(labelIds = labelIds.take(1).toIntArray()).first()
         assertThat(filteredBoards2).isNotEmpty()

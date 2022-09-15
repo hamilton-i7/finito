@@ -61,20 +61,6 @@ class CreateBoardTest {
     }
 
     @Test
-    fun `Should throw InvalidStateException when board state is invalid`() {
-        val board = BoardWithLabelsAndTasks(
-            board = Board(
-                name = "Invalid Board",
-                archived = true,
-                deleted = true
-            )
-        )
-        assertThrows(ResourceException::class.java) {
-            runTest { createBoard(board) }
-        }
-    }
-
-    @Test
     fun `Should insert new board into list when board state is valid`() = runTest {
         val board = BoardWithLabelsAndTasks(
             board = Board(name = "Board name")

@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.ui.theme.finitoColors
-import kotlin.math.floor
 
 @Composable
 fun CompletedTasksProgressBar(

@@ -6,7 +6,6 @@ import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.repository.TaskRepository
-import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
 class ArrangeTomorrowTasks(

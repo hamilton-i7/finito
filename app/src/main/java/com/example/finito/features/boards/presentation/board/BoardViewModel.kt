@@ -76,6 +76,10 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
             BoardEvent.EditBoard -> onEditBoard()
             is BoardEvent.EditTaskDateTime -> onEditTaskDateTime(event.taskId)
+            BoardEvent.RefreshBoard -> {
+                fetchBoard()
+                fetchBoardState()
+            }
         }
     }
 

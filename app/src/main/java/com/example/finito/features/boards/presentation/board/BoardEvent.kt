@@ -14,6 +14,8 @@ sealed class BoardEvent {
 
     object RestoreBoard : BoardEvent()
 
+    object RefreshBoard : BoardEvent()
+
     object DeleteCompletedTasks : BoardEvent()
 
     data class EditTaskDateTime(val taskId: Int) : BoardEvent()

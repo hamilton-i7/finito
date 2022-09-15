@@ -79,6 +79,7 @@ fun BoardScreen(
 
     LaunchedEffect(Unit) {
         boardViewModel.eventFlow.collectLatest { event ->
+            println("Running working launched")
             when (event) {
                 is BoardViewModel.Event.ShowSnackbar -> {
                     showSnackbar(event.message, R.string.undo) {

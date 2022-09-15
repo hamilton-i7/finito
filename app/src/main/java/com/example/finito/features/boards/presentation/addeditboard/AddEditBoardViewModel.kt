@@ -84,7 +84,7 @@ class AddEditBoardViewModel @Inject constructor(
             }
             AddEditBoardEvent.CreateBoard -> onCreateBoard()
             AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
-            AddEditBoardEvent.EditBoard -> TODO()
+            AddEditBoardEvent.EditBoard -> onEditBoard()
             AddEditBoardEvent.ToggleLabelsVisibility -> {
                 showLabels = !showLabels
             }
@@ -160,7 +160,27 @@ class AddEditBoardViewModel @Inject constructor(
             labels = selectedLabels
         )
         boardUseCases.createBoard(board).also {
-            _eventFlow.emit(Event.CreateBoard(it))
+            val route = "${Screen.Board.prefix}/${it}"
+            _eventFlow.emit(Event.Navigate(route = route))
+        }
+    }
+
+    private fun onEditBoard() = viewModelScope.launch {
+        if (board == null) return@launch
+        if (!boardChanged()) return@launch
+
+        with(board!!) {
+            BoardWithLabelsAndTasks(
+                board = board.copy(name = nameState.value),
+                labels = selectedLabels,
+                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+            ).let { boardUseCases.updateBoard(it) }.also {
+                val route = "${Screen.Board.prefix}/${board.boardId}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${board.state.name}"
+                _eventFlow.emit(Event.Navigate(
+                    route = route,
+                    popUpRoute = Screen.Board.route
+                ))
+            }
         }
     }
 
@@ -192,8 +212,17 @@ class AddEditBoardViewModel @Inject constructor(
         }
     }
 
+    private fun boardChanged(): Boolean {
+        return if (nameState.value != board?.board?.name) {
+            true
+        } else selectedLabels != board?.labels
+    }
+
     sealed class Event {
-        data class CreateBoard(val boardId: Int) : Event()
+        data class Navigate(
+            val route: String,
+            val popUpRoute: String? = null
+        ) : Event()
 
         sealed class Snackbar(
             @StringRes val message: Int,

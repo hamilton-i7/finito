@@ -55,10 +55,9 @@ fun AddEditBoardScreen(
     LaunchedEffect(Unit) {
         addEditBoardViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is AddEditBoardViewModel.Event.CreateBoard -> {
-                    val route = "${Screen.Board.prefix}/${event.boardId}"
-                    navController.navigate(route = route) {
-                        popUpTo(Screen.CreateBoard.route) { inclusive = true }
+                is AddEditBoardViewModel.Event.Navigate -> {
+                    navController.navigate(route = event.route) {
+                        event.popUpRoute?.let { popUpTo(it) { inclusive = true } }
                     }
                 }
                 is AddEditBoardViewModel.Event.Snackbar -> {
@@ -199,8 +198,12 @@ fun AddEditBoardScreen(
             onLabelClick = {
                 addEditBoardViewModel.onEvent(AddEditBoardEvent.SelectLabel(it))
             },
-            onCreateBoard = {
-                addEditBoardViewModel.onEvent(AddEditBoardEvent.CreateBoard)
+            onButtonClick = onButtonClick@{
+                if (createMode) {
+                    addEditBoardViewModel.onEvent(AddEditBoardEvent.CreateBoard)
+                    return@onButtonClick
+                }
+                addEditBoardViewModel.onEvent(AddEditBoardEvent.EditBoard)
             },
             onScreenClick = {
                 addEditBoardViewModel.onEvent(AddEditBoardEvent.AlertNotEditable)
@@ -221,7 +224,7 @@ private fun AddEditBoardScreen(
     labels: List<SimpleLabel> = emptyList(),
     selectedLabels: List<SimpleLabel> = emptyList(),
     onLabelClick: (SimpleLabel) -> Unit = {},
-    onCreateBoard: () -> Unit = {},
+    onButtonClick: () -> Unit = {},
     onScreenClick: () -> Unit = {},
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -283,7 +286,7 @@ private fun AddEditBoardScreen(
                     transitionSpec = { fadeIn() with fadeOut() }
                 ) { validName ->
                     Button(
-                        onClick = onCreateBoard,
+                        onClick = onButtonClick,
                         enabled = validName && !isDeleted,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)

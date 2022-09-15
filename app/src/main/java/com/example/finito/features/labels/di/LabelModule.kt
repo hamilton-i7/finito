@@ -25,6 +25,7 @@ object LabelModule {
     fun provideLabelUseCases(repository: LabelRepository): LabelUseCases {
         return LabelUseCases(
             createLabel = CreateLabel(repository),
+            findLabel = FindLabel(repository),
             findSimpleLabels = FindSimpleLabels(repository),
             updateLabel = UpdateLabel(repository),
             deleteLabel = DeleteLabel(repository),

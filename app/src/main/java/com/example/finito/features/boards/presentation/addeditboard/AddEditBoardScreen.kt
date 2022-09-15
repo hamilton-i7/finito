@@ -45,13 +45,12 @@ import kotlinx.coroutines.flow.collectLatest
 fun AddEditBoardScreen(
     navController: NavController,
     sharedBoardViewModel: SharedBoardViewModel,
+    createMode: Boolean,
     showSnackbar: (message: Int, actionLabel: Int?, onActionClick: (() -> Unit)?) -> Unit,
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val focusManager = LocalFocusManager.current
-    val currentRoute = navController.currentDestination?.route
-    val createMode = currentRoute == Screen.CreateBoard.route
 
     LaunchedEffect(Unit) {
         addEditBoardViewModel.eventFlow.collectLatest { event ->

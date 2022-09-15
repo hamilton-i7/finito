@@ -161,6 +161,7 @@ fun FinitoNavHost(
                navController = navController,
                showSnackbar = showSnackbar,
                sharedBoardViewModel = sharedBoardViewModel,
+               createMode = true,
            )
        }
 
@@ -175,6 +176,7 @@ fun FinitoNavHost(
                navController = navController,
                showSnackbar = showSnackbar,
                sharedBoardViewModel = sharedBoardViewModel,
+               createMode = false,
            )
        }
 

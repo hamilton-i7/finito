@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.WeekFields
 import java.util.*
 
 fun toFormattedChipDate(
@@ -34,7 +35,7 @@ private fun setupResult(
 private fun LocalDate.toFutureFormat(today: LocalDate, context: Context, locale: Locale): String {
     val result: String = when {
         isTomorrow(today) -> context.getString(R.string.tomorrow)
-        isNextWeek(today) -> context.getString(R.string.next_week)
+        isNextWeek(today, locale) -> context.getString(R.string.next_week)
         isNextMonth(today) -> context.getString(R.string.next_month)
         isCurrentYear(today) -> toCurrentYearFormat(locale)
         else -> toFullFormat(locale)
@@ -50,8 +51,8 @@ private fun LocalDate.toPastFormat(today: LocalDate, context: Context, locale: L
         isDaysAgo(today, days = 4) -> context.getString(R.string.four_days_ago)
         isDaysAgo(today, days = 5) -> context.getString(R.string.five_days_ago)
         isDaysAgo(today, days = 6) -> context.getString(R.string.six_days_ago)
-        isLastWeek(today) -> context.getString(R.string.last_week)
-        isTwoWeeksAgo(today) -> context.getString(R.string.two_weeks_ago)
+        isLastWeek(today, locale) -> context.getString(R.string.last_week)
+        isTwoWeeksAgo(today, locale) -> context.getString(R.string.two_weeks_ago)
         isLastMonth(today) -> context.getString(R.string.last_month)
         isCurrentYear(today) -> toCurrentYearFormat(locale)
         else -> toFullFormat(locale)
@@ -85,29 +86,35 @@ private fun LocalDate.isTomorrow(today: LocalDate): Boolean = isEqual(today.plus
 
 private fun LocalDate.isDaysAgo(today: LocalDate, days: Long): Boolean = isEqual(today.minusDays(days))
 
-private fun LocalDate.isNextWeek(today: LocalDate): Boolean {
-    val nextWeek = today.plusWeeks(1)
-    return (isEqual(nextWeek) || isAfter(nextWeek)) && isBefore(nextWeek.plusWeeks(1))
+private fun LocalDate.isNextWeek(today: LocalDate, locale: Locale): Boolean {
+    val selectedWeekNumber = get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val currentWeekNumber = today.get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val nextWeekNumber = currentWeekNumber + 1
+    return selectedWeekNumber == nextWeekNumber
 }
 
-private fun LocalDate.isLastWeek(today: LocalDate): Boolean {
-    val lastWeek = today.minusWeeks(1)
-    return (isEqual(lastWeek) || isBefore(lastWeek)) && isAfter(lastWeek.minusWeeks(1))
+private fun LocalDate.isLastWeek(today: LocalDate, locale: Locale): Boolean {
+    val selectedWeekNumber = get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val currentWeekNumber = today.get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val lastWeekNumber = currentWeekNumber - 1
+    return selectedWeekNumber == lastWeekNumber
 }
 
-private fun LocalDate.isTwoWeeksAgo(today: LocalDate): Boolean {
-    val last2Weeks = today.minusWeeks(2)
-    return (isEqual(last2Weeks) || isBefore(last2Weeks)) && isAfter(last2Weeks.minusWeeks(1))
+private fun LocalDate.isTwoWeeksAgo(today: LocalDate, locale: Locale): Boolean {
+    val selectedWeekNumber = get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val currentWeekNumber = today.get(WeekFields.of(locale).weekOfWeekBasedYear())
+    val last2WeeksNumber = currentWeekNumber - 2
+    return selectedWeekNumber == last2WeeksNumber
 }
 
 private fun LocalDate.isNextMonth(today: LocalDate): Boolean {
-    val nextMonth = today.plusMonths(1)
-    return (isEqual(nextMonth) || isAfter(nextMonth)) && isBefore(nextMonth.plusMonths(1))
+    val nextMonth = today.monthValue + 1
+    return monthValue == nextMonth
 }
 
 private fun LocalDate.isLastMonth(today: LocalDate): Boolean {
-    val lastMonth = today.minusMonths(1)
-    return (isEqual(lastMonth) || isBefore(lastMonth)) && isAfter(lastMonth.minusMonths(1))
+    val lastMonth = today.monthValue - 1
+    return monthValue == lastMonth
 }
 
 fun LocalDate.isCurrentYear(today: LocalDate): Boolean = year == today.year

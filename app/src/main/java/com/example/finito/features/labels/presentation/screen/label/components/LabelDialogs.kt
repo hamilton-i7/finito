@@ -10,7 +10,10 @@ import com.example.finito.features.labels.presentation.screen.label.LabelEvent
 import com.example.finito.features.labels.presentation.screen.label.LabelViewModel
 
 @Composable
-fun LabelDialogs(labelViewModel: LabelViewModel, navController: NavController) {
+fun LabelDialogs(
+    labelViewModel: LabelViewModel,
+    onNavigateToHome: () -> Unit,
+) {
     when (labelViewModel.dialogType) {
         LabelEvent.DialogType.Delete -> {
             DeleteDialog(
@@ -24,9 +27,7 @@ fun LabelDialogs(labelViewModel: LabelViewModel, navController: NavController) {
                 },
                 onConfirmClick = {
                     labelViewModel.onEvent(LabelEvent.DeleteLabel)
-                    navController.navigate(route = Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
+                    onNavigateToHome()
                 }
             )
         }

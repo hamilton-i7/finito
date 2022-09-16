@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.screen.addeditboard
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,19 +22,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
-import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
 import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.features.boards.domain.entity.BoardState
-import com.example.finito.features.boards.presentation.SharedBoardEvent
-import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.screen.addeditboard.components.AddEditBoardDialogs
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
@@ -43,45 +42,62 @@ import kotlinx.coroutines.flow.collectLatest
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditBoardScreen(
-    navController: NavController,
-    sharedBoardViewModel: SharedBoardViewModel,
+    appViewModel: AppViewModel,
     createMode: Boolean,
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: (() -> Unit)?) -> Unit,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToArchive: () -> Unit = {},
+    onNavigateToTrash: () -> Unit = {},
+    onNavigateToBoardFlow: (boardId: Int) -> Unit = {},
+    onNavigateToBoard: (boardId: Int, BoardState) -> Unit = {_, _ -> },
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val focusManager = LocalFocusManager.current
 
+    BackHandler {
+        if (createMode) {
+            onNavigateBack()
+            return@BackHandler
+        }
+        onNavigateToBoard(
+            addEditBoardViewModel.board!!.board.boardId,
+            addEditBoardViewModel.boardState
+        )
+    }
+
     LaunchedEffect(Unit) {
         addEditBoardViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is AddEditBoardViewModel.Event.Navigate -> {
-                    navController.navigate(route = event.route) {
-                        event.popUpRoute?.let { popUpTo(it) { inclusive = true } }
-                    }
-                }
                 is AddEditBoardViewModel.Event.Snackbar -> {
                     when (event) {
                         AddEditBoardViewModel.Event.Snackbar.RestoredBoard -> {
-                            showSnackbar(event.message, event.actionLabel) {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 addEditBoardViewModel.onEvent(AddEditBoardEvent.UndoRestore)
                             }
                         }
                         AddEditBoardViewModel.Event.Snackbar.UneditableBoard -> {
-                            showSnackbar(event.message, event.actionLabel) {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 addEditBoardViewModel.onEvent(
                                     AddEditBoardEvent.RestoreBoard()
                                 )
                             }
                         }
                         AddEditBoardViewModel.Event.Snackbar.DeletedBoard -> {
-                            showSnackbar(event.message, event.actionLabel) {
-                                sharedBoardViewModel.onEvent(SharedBoardEvent.UndoBoardChange(
+                            onShowSnackbar(event.message, event.actionLabel) {
+                                appViewModel.onEvent(AppEvent.UndoBoardChange(
                                     board = addEditBoardViewModel.board!!
                                 ))
                             }
                         }
                     }
+                }
+                is AddEditBoardViewModel.Event.NavigateToCreatedBoard -> {
+                    onNavigateToBoardFlow(event.id)
+                }
+                is AddEditBoardViewModel.Event.NavigateToUpdatedBoard -> {
+                    onNavigateToBoard(event.id, addEditBoardViewModel.boardState)
                 }
             }
         }
@@ -94,7 +110,16 @@ fun AddEditBoardScreen(
                 navigationIcon = Icons.Outlined.ArrowBack,
                 navigationIconDescription = R.string.go_back,
                 scrollBehavior = topBarScrollBehavior,
-                onNavigationIconClick = { navController.navigateUp() },
+                onNavigationIconClick = onNavigationIconClick@{
+                    if (createMode) {
+                        onNavigateBack()
+                        return@onNavigationIconClick
+                    }
+                    onNavigateToBoard(
+                        addEditBoardViewModel.board!!.board.boardId,
+                        addEditBoardViewModel.boardState
+                    )
+                },
                 actions = actions@{
                     if (createMode) return@actions
                     when (addEditBoardViewModel.boardState) {
@@ -102,13 +127,9 @@ fun AddEditBoardScreen(
                             IconButton(onClick = {
                                 addEditBoardViewModel.onEvent(AddEditBoardEvent.MoveBoardToTrash)
                                 if (addEditBoardViewModel.boardState == BoardState.ACTIVE) {
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Home.route) { inclusive = true }
-                                    }
+                                    onNavigateToHome()
                                 } else if (addEditBoardViewModel.boardState == BoardState.ARCHIVED) {
-                                    navController.navigate(Screen.Archive.route) {
-                                        popUpTo(Screen.Archive.route) { inclusive = true }
-                                    }
+                                    onNavigateToArchive()
                                 }
                             }) {
                                 Icon(
@@ -176,9 +197,7 @@ fun AddEditBoardScreen(
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             .noRippleClickable { focusManager.clearFocus() }
     ) { innerPadding ->
-        if (addEditBoardViewModel.dialogType != null) {
-            AddEditBoardDialogs(addEditBoardViewModel, navController)
-        }
+        AddEditBoardDialogs(addEditBoardViewModel, onNavigateToTrash)
 
         AddEditBoardScreen(
             paddingValues = innerPadding,

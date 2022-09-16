@@ -2,22 +2,18 @@ package com.example.finito.core.presentation.util
 
 import android.content.Context
 import androidx.annotation.StringRes
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.navigation.NavHostController
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 data class SnackbarState(
     val snackbarHostState: SnackbarHostState,
     val scope: CoroutineScope,
-    val navController: NavHostController,
 ) {
 
     fun showSnackbar(
@@ -41,12 +37,10 @@ data class SnackbarState(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun rememberSnackbarState(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    navController: NavHostController = rememberAnimatedNavController(),
     scope: CoroutineScope = rememberCoroutineScope(),
-) = remember(snackbarHostState, navController, scope) {
-    SnackbarState(snackbarHostState, scope, navController)
+) = remember(snackbarHostState, scope) {
+    SnackbarState(snackbarHostState, scope)
 }

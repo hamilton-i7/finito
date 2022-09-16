@@ -2,11 +2,11 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import com.example.finito.core.domain.Priority
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import java.time.LocalDate
+import java.time.LocalTime
 
 sealed class BoardEvent {
     data class ShowScreenMenu(val show: Boolean) : BoardEvent()
-
-    object EditBoard : BoardEvent()
 
     object ArchiveBoard : BoardEvent()
 
@@ -18,15 +18,21 @@ sealed class BoardEvent {
 
     object DeleteCompletedTasks : BoardEvent()
 
-    data class EditTaskDateTime(val taskId: Int) : BoardEvent()
-
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 
     data class ShowDialog(val type: DialogType? = null) : BoardEvent()
 
+    data class ShowTaskDateTimeFullDialog(val task: TaskWithSubtasks?) : BoardEvent()
+
     data class ChangeTaskPriorityConfirm(val task: TaskWithSubtasks) : BoardEvent()
 
     data class ChangeTaskPriority(val priority: Priority?) : BoardEvent()
+
+    data class ChangeTaskDate(val date: LocalDate? = null) : BoardEvent()
+
+    data class ChangeTaskTime(val time: LocalTime? = null) : BoardEvent()
+
+    object SaveTaskDateTimeChanges : BoardEvent()
 
     object ToggleCompletedTasksVisibility : BoardEvent()
 
@@ -34,5 +40,11 @@ sealed class BoardEvent {
         object DeleteCompletedTasks : DialogType()
 
         data class Priority(val taskWithSubtasks: TaskWithSubtasks) : DialogType()
+
+        object TaskDate : DialogType()
+
+        object TaskTime : DialogType()
+
+        object DiscardChanges : DialogType()
     }
 }

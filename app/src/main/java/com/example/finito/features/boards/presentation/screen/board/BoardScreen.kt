@@ -2,13 +2,8 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -21,23 +16,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
-import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
-import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
+import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
+import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
+import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.features.boards.domain.entity.BoardState
-import com.example.finito.features.boards.presentation.SharedBoardEvent
-import com.example.finito.features.boards.presentation.SharedBoardViewModel
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
 import com.example.finito.features.boards.presentation.screen.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
 import com.example.finito.features.tasks.presentation.components.TaskItem
+import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -45,14 +40,16 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BoardScreen(
-    navController: NavController,
     drawerState: DrawerState,
-    sharedBoardViewModel: SharedBoardViewModel,
-    boardViewModel: BoardViewModel = hiltViewModel(),
+    appViewModel: AppViewModel,
     showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    boardViewModel: BoardViewModel = hiltViewModel(),
+    previousRoute: String? = null,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateBack: () -> Unit = {},
+    onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
 ) {
     val detailedBoard = boardViewModel.board
-    val previousRoute = navController.previousBackStackEntry?.destination?.route
 
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -68,17 +65,12 @@ fun BoardScreen(
             return@BackHandler
         }
         if (previousRoute == Screen.Archive.route
-            || previousRoute == Screen.Trash.route) {
-            navController.navigateUp()
+            || previousRoute == Screen.Trash.route
+            || previousRoute == Screen.Label.route) {
+            onNavigateBack()
             return@BackHandler
         }
-        if (previousRoute == Screen.Label.route) {
-            navController.navigateUp()
-            return@BackHandler
-        }
-        navController.navigate(route = Screen.Home.route) {
-            popUpTo(route = Screen.Home.route) { inclusive = true }
-        }
+        onNavigateToHome()
     }
 
     LaunchedEffect(Unit) {
@@ -86,130 +78,176 @@ fun BoardScreen(
             when (event) {
                 is BoardViewModel.Event.ShowSnackbar -> {
                     showSnackbar(event.message, R.string.undo) {
-                        sharedBoardViewModel.onEvent(SharedBoardEvent.UndoBoardChange(
+                        appViewModel.onEvent(AppEvent.UndoBoardChange(
                             board = event.board
                         ))
                     }
-                }
-                is BoardViewModel.Event.Navigate -> {
-                    navController.navigate(route = event.route)
                 }
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            BoardTopBar(
-                onNavigationClick = onNavigationClick@{
-                    if (detailedBoard?.board?.state != BoardState.ACTIVE) {
-                        navController.navigateUp()
-                        return@onNavigationClick
-                    }
-                    scope.launch { drawerState.open() }
-                },
-                boardName = detailedBoard?.board?.name ?: "",
-                boardState = boardViewModel.boardState,
-                showMenu = boardViewModel.showScreenMenu,
-                onMoreOptionsClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
-                },
-                onDismissMenu = {
-                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
-                },
-                onOptionClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+    Box {
+        Scaffold(
+            topBar = {
+                BoardTopBar(
+                    onNavigationClick = onNavigationClick@{
+                        if (detailedBoard?.board?.state != BoardState.ACTIVE) {
+                            onNavigateBack()
+                            return@onNavigationClick
+                        }
+                        scope.launch { drawerState.open() }
+                    },
+                    boardName = detailedBoard?.board?.name ?: "",
+                    boardState = boardViewModel.boardState,
+                    showMenu = boardViewModel.showScreenMenu,
+                    onMoreOptionsClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
+                    },
+                    onDismissMenu = {
+                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+                    },
+                    onOptionClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
 
-                    when (previousRoute) {
-                        Screen.Archive.route -> {
-                            when (it as ArchivedBoardScreenMenuOption) {
-                                ArchivedBoardScreenMenuOption.DeleteBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                    navController.navigateUp()
-                                }
-                                ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                }
-                                ArchivedBoardScreenMenuOption.EditBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.EditBoard)
-                                }
-                                ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                    navController.navigateUp()
-                                }
-                            }
-                        }
-                        Screen.Trash.route -> {
-                            when (it as DeletedBoardScreenMenuOption) {
-                                DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                }
-                                DeletedBoardScreenMenuOption.EditBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.EditBoard)
-                                }
-                                DeletedBoardScreenMenuOption.RestoreBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                    navController.navigateUp()
-                                }
-                            }
-                        }
-                        else -> {
-                            when (it as ActiveBoardScreenOption) {
-                                ActiveBoardScreenOption.ArchiveBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.ArchiveBoard)
-                                    navController.navigate(route = Screen.Home.route) {
-                                        popUpTo(route = Screen.Home.route) { inclusive = true }
+                        when (boardViewModel.boardState) {
+                            BoardState.ARCHIVED -> {
+                                when (it as ArchivedBoardScreenMenuOption) {
+                                    ArchivedBoardScreenMenuOption.DeleteBoard -> {
+                                        boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                        onNavigateBack()
+                                    }
+                                    ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                    }
+                                    ArchivedBoardScreenMenuOption.EditBoard -> {
+                                        onNavigateToEditBoard(
+                                            detailedBoard!!.board.boardId,
+                                            BoardState.ARCHIVED
+                                        )
+                                    }
+                                    ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
+                                        boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                        onNavigateBack()
                                     }
                                 }
-                                ActiveBoardScreenOption.DeleteBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                    navController.navigate(route = Screen.Home.route) {
-                                        popUpTo(route = Screen.Home.route) { inclusive = true }
+                            }
+                            BoardState.DELETED -> {
+                                when (it as DeletedBoardScreenMenuOption) {
+                                    DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                    }
+                                    DeletedBoardScreenMenuOption.EditBoard -> {
+                                        onNavigateToEditBoard(
+                                            detailedBoard!!.board.boardId,
+                                            BoardState.DELETED
+                                        )
+                                    }
+                                    DeletedBoardScreenMenuOption.RestoreBoard -> {
+                                        boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                        onNavigateBack()
                                     }
                                 }
-                                ActiveBoardScreenOption.DeleteCompletedTasks -> {
-                                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                }
-                                ActiveBoardScreenOption.EditBoard -> {
-                                    boardViewModel.onEvent(BoardEvent.EditBoard)
+                            }
+                            BoardState.ACTIVE -> {
+                                when (it as ActiveBoardScreenOption) {
+                                    ActiveBoardScreenOption.ArchiveBoard -> {
+                                        boardViewModel.onEvent(BoardEvent.ArchiveBoard)
+                                        onNavigateToHome()
+                                    }
+                                    ActiveBoardScreenOption.DeleteBoard -> {
+                                        boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                        onNavigateToHome()
+                                    }
+                                    ActiveBoardScreenOption.DeleteCompletedTasks -> {
+                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                    }
+                                    ActiveBoardScreenOption.EditBoard -> {
+                                        onNavigateToEditBoard(
+                                            detailedBoard!!.board.boardId,
+                                            BoardState.ACTIVE
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                },
-                scrollBehavior = topBarScrollBehavior
-            )
-        },
-        floatingActionButton = fab@{
-            if (boardViewModel.boardState == BoardState.DELETED) return@fab
-            CreateFab(
-                text = R.string.create_task,
-                onClick = { /*TODO*/ },
-                expanded = expandedFab
-            )
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-    ) { innerPadding ->
-        if (boardViewModel.dialogType != null) {
+                    },
+                    scrollBehavior = topBarScrollBehavior
+                )
+            },
+            floatingActionButton = fab@{
+                if (boardViewModel.boardState == BoardState.DELETED) return@fab
+                CreateFab(
+                    text = R.string.create_task,
+                    onClick = { /*TODO*/ },
+                    expanded = expandedFab
+                )
+            },
+            floatingActionButtonPosition = FabPosition.Center,
+            modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+        ) { innerPadding ->
             BoardDialogs(boardViewModel)
+
+            BoardScreen(
+                paddingValues = innerPadding,
+                listState = listState,
+                tasks = boardViewModel.board?.tasks ?: emptyList(),
+                showCompletedTasks = boardViewModel.showCompletedTasks,
+                onToggleShowCompletedTasks = {
+                    boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
+                },
+                onPriorityClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.Priority(it)
+                    ))
+                },
+                onDateTimeClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
+                }
+            )
         }
 
-        BoardScreen(
-            paddingValues = innerPadding,
-            listState = listState,
-            tasks = boardViewModel.board?.tasks ?: emptyList(),
-            showCompletedTasks = boardViewModel.showCompletedTasks,
-            onToggleShowCompletedTasks = {
-                boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
-            },
-            onPriorityClick = {
-                boardViewModel.onEvent(BoardEvent.ShowDialog(
-                    type = BoardEvent.DialogType.Priority(it)
-                ))
-            },
-            onDateTimeClick = { navController.navigate(it) }
-        )
+        AnimatedVisibility(
+            visible = boardViewModel.selectedTask != null,
+            enter = slideInVertically { it / 2 },
+            exit = slideOutVertically { it }
+        ) {
+            TaskDateTimeFullDialog(
+                task = boardViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
+                date = boardViewModel.selectedDate,
+                onDateFieldClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.TaskDate
+                    ))
+                },
+                onDateRemove = { /*TODO*/ },
+                time = boardViewModel.selectedTime,
+                onTimeFieldClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.TaskTime
+                    ))
+                },
+                onTimeRemove = { /*TODO*/ },
+                onAlertChangesMade = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.DiscardChanges
+                    ))
+                },
+                onCloseClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(task = null))
+                },
+                onSaveClick = {
+                    boardViewModel.onEvent(BoardEvent.SaveTaskDateTimeChanges)
+                }
+            )
+//            TaskDateTimeFullDialog(
+//                taskId = boardViewModel.selectedTaskId ?: 0,
+//                onCloseDialog = {
+//                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(taskId = null))
+//                },
+//                onSuccessSave = { boardViewModel.onEvent(BoardEvent.RefreshBoard) }
+//            )
+        }
     }
 }
 
@@ -221,7 +259,7 @@ private fun BoardScreen(
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
     onPriorityClick: (TaskWithSubtasks) -> Unit = {},
-    onDateTimeClick: (route: String) -> Unit = {},
+    onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
@@ -251,10 +289,7 @@ private fun BoardScreen(
                 TaskItem(
                     task = it.task,
                     onPriorityClick = { onPriorityClick(it) }
-                ) {
-                    val route = "${Screen.TaskDateTime.prefix}/${it.task.taskId}"
-                    onDateTimeClick(route)
-                }
+                ) { onDateTimeClick(it) }
             }
             if (completedTasks.isNotEmpty()) {
                 item {

@@ -23,7 +23,9 @@ import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,7 +53,16 @@ class BoardViewModel @Inject constructor(
     var dialogType by mutableStateOf<BoardEvent.DialogType?>(null)
         private set
 
+    var selectedTask by mutableStateOf<TaskWithSubtasks?>(null)
+        private set
+
     var selectedPriority by mutableStateOf<Priority?>(null)
+        private set
+
+    var selectedDate by mutableStateOf<LocalDate?>(null)
+        private set
+
+    var selectedTime by mutableStateOf<LocalTime?>(null)
         private set
 
     private val _eventFlow = MutableSharedFlow<Event>()
@@ -74,23 +85,30 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
-            BoardEvent.EditBoard -> onEditBoard()
-            is BoardEvent.EditTaskDateTime -> onEditTaskDateTime(event.taskId)
             BoardEvent.RefreshBoard -> {
                 fetchBoard()
                 fetchBoardState()
             }
+            is BoardEvent.ShowTaskDateTimeFullDialog -> onShowTaskDateTimeFullDialog(event.task)
+            is BoardEvent.ChangeTaskDate -> selectedDate = event.date
+            is BoardEvent.ChangeTaskTime -> selectedTime = event.time
+            is BoardEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
         }
     }
 
-    private fun onEditTaskDateTime(taskId: Int) = viewModelScope.launch {
-        val route = "${Screen.TaskDateTime.prefix}/${taskId}"
-        _eventFlow.emit(Event.Navigate(route = route))
+    private fun onShowTaskDateTimeFullDialog(task: TaskWithSubtasks?) {
+        selectedTask = task
+        selectedDate = task?.task?.date
+        selectedTime = task?.task?.time
     }
 
-    private fun onEditBoard() = viewModelScope.launch {
-        val route = "${Screen.EditBoard.prefix}/${board!!.board.boardId}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${boardState.name}"
-        _eventFlow.emit(Event.Navigate(route = route))
+    private fun onSaveTaskDateTimeChanges() = viewModelScope.launch {
+        if (selectedTask == null) return@launch
+        with(selectedTask!!) {
+            taskUseCases.updateTask(
+                copy(task = task.copy(time = selectedTime, date = selectedDate))
+            ).also { fetchBoard() }
+        }
     }
 
     private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
@@ -163,7 +181,6 @@ class BoardViewModel @Inject constructor(
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
                     ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.Navigate(route = Screen.Home.route))
                     _eventFlow.emit(Event.ShowSnackbar(
                         message = R.string.board_archived,
                         board = this,
@@ -189,7 +206,5 @@ class BoardViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowSnackbar(@StringRes val message: Int, val board: DetailedBoard) : Event()
-
-        data class Navigate(val route: String) : Event()
     }
 }

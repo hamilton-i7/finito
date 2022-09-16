@@ -34,10 +34,7 @@ sealed class Screen(
             }
         )
     ) {
-        val childRoutes = listOf(
-            TaskDateTime.route,
-            EditBoard.route
-        )
+        val childRoutes = listOf(EditBoard.route)
         val parentRoutes = listOf(
             Home.route,
             Archive.route,
@@ -68,6 +65,8 @@ sealed class Screen(
         val childRoutes = listOf(Board.route)
     }
 
+    object CreateLabel : Screen(route = "create_label")
+
     object Archive : Screen(route = "archive") {
         val childRoutes = listOf(Board.route)
     }
@@ -76,16 +75,9 @@ sealed class Screen(
         val childRoutes = listOf(Board.route)
     }
 
-    object TaskDateTime : Screen(
-        route = "task_date_time/{$TASK_ROUTE_ARGUMENT}",
-        prefix = "task_date_time",
-        arguments = listOf(navArgument(TASK_ROUTE_ARGUMENT) { type = NavType.IntType })
-    )
-
     companion object {
         const val BOARD_ROUTE_ID_ARGUMENT = "boardId"
         const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
-        const val TASK_ROUTE_ARGUMENT = "taskId"
     }
 }

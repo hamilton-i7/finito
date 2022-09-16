@@ -17,11 +17,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
-import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
@@ -40,10 +38,11 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun HomeScreen(
-    navController: NavHostController,
     drawerState: DrawerState,
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToCreateBoard: () -> Unit = {},
+    onNavigateToBoard: (boardId: Int) -> Unit = {},
     finishActivity: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
@@ -68,16 +67,12 @@ fun HomeScreen(
         homeViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is HomeViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message, R.string.undo) {
+                    onShowSnackbar(event.message, R.string.undo) {
                         homeViewModel.onEvent(HomeEvent.RestoreBoard)
                     }
                 }
             }
         }
-    }
-
-    LaunchedEffect(navController.currentDestination?.route) {
-        homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
     }
 
     Scaffold(
@@ -126,9 +121,7 @@ fun HomeScreen(
                 onSearchClick = {
                     homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = true))
                 },
-                onFabClick = {
-                    navController.navigate(route = Screen.CreateBoard.route)
-                }
+                onFabClick = onNavigateToCreateBoard
             )
         },
         modifier = Modifier
@@ -151,10 +144,7 @@ fun HomeScreen(
                 homeViewModel.onEvent(HomeEvent.RemoveFilters)
             },
             boards = homeViewModel.boards,
-            onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}"
-                navController.navigate(route)
-            },
+            onBoardClick = onNavigateToBoard,
             selectedSortingOption = homeViewModel.boardsOrder,
             onSortOptionClick = {
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))

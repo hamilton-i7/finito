@@ -1,8 +1,5 @@
-package com.example.finito.features.boards.presentation
+package com.example.finito.core.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -14,18 +11,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SharedBoardViewModel @Inject constructor(
+class AppViewModel @Inject constructor(
     private val boardUseCases: BoardUseCases
 ) : ViewModel() {
 
-    var event by mutableStateOf<Event?>(null)
-        private set
-
-    fun onEvent(event: SharedBoardEvent) {
+    fun onEvent(event: AppEvent) {
         when (event) {
-            is SharedBoardEvent.UndoBoardChange -> onUndoBoardChange(event.board)
-            SharedBoardEvent.RefreshBoard -> this.event = Event.RefreshBoard
-            SharedBoardEvent.ClearEvent -> this.event = null
+            is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
         }
     }
 
@@ -39,9 +31,5 @@ class SharedBoardViewModel @Inject constructor(
                 )
             )
         }
-    }
-
-    sealed class Event {
-        object RefreshBoard : Event()
     }
 }

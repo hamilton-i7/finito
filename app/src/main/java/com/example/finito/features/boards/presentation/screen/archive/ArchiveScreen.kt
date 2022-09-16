@@ -3,7 +3,9 @@ package com.example.finito.features.boards.presentation.screen.archive
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,16 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
-import com.example.finito.core.presentation.util.menu.ArchivedBoardCardMenuOption
-import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
-import com.example.finito.features.boards.domain.entity.BoardState
+import com.example.finito.core.presentation.util.menu.ArchivedBoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -35,11 +34,11 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun ArchiveScreen(
-    navController: NavHostController,
     drawerState: DrawerState,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onNavigateToBoardFlow: (boardId: Int) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val simpleTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -61,16 +60,12 @@ fun ArchiveScreen(
         archiveViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is ArchiveViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message, R.string.undo) {
+                    onShowSnackbar(event.message, R.string.undo) {
                         archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
                     }
                 }
             }
         }
-    }
-
-    LaunchedEffect(navController.currentDestination?.route) {
-        archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
     }
 
     Scaffold(
@@ -140,10 +135,7 @@ fun ArchiveScreen(
                 archiveViewModel.onEvent(ArchiveEvent.RemoveFilters)
             },
             boards = archiveViewModel.boards,
-            onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.ARCHIVED.name}"
-                navController.navigate(route)
-            },
+            onBoardClick = onNavigateToBoardFlow,
             selectedSortingOption = archiveViewModel.boardsOrder,
             onSortOptionClick = {
                 archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))

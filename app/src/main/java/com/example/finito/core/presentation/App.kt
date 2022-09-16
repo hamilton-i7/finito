@@ -1,6 +1,7 @@
 package com.example.finito.core.presentation
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -8,10 +9,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.finito.core.presentation.components.Drawer
 import com.example.finito.core.presentation.components.bars.BottomBarHeight
-import com.example.finito.core.presentation.util.rememberSnackbarState
-import com.example.finito.features.boards.presentation.SharedBoardViewModel
+import com.example.finito.core.presentation.graph.boardGraph
+import com.example.finito.core.presentation.util.*
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenExitTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopExitTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenEnterTransition
+import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenExitTransition
+import com.example.finito.features.boards.domain.entity.BoardState
+import com.example.finito.features.boards.presentation.screen.addeditboard.AddEditBoardScreen
+import com.example.finito.features.boards.presentation.screen.archive.ArchiveScreen
+import com.example.finito.features.boards.presentation.screen.home.HomeScreen
+import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
+import com.example.finito.features.labels.presentation.screen.label.LabelScreen
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.launch
 
 private val staticDrawerRoutes = listOf(
@@ -30,15 +47,26 @@ private val dynamicDrawerRoutes = listOf(
 private val drawerRoutes = staticDrawerRoutes + dynamicDrawerRoutes
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun App(finishActivity: () -> Unit) {
+fun App(
+    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
+    appViewModel: AppViewModel = hiltViewModel(),
+    drawerViewModel: DrawerViewModel  = hiltViewModel(),
+    snackbarState: SnackbarState = rememberSnackbarState(),
+    navController: NavHostController = rememberAnimatedNavController(),
+    finishActivity: () -> Unit,
+) {
     val context = LocalContext.current
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val drawerViewModel = hiltViewModel<DrawerViewModel>()
-    val sharedBoardViewModel = hiltViewModel<SharedBoardViewModel>()
-    val snackbarState = rememberSnackbarState()
-    val (snackbarHostState, scope, navController) = snackbarState
+    val (snackbarHostState, scope) = snackbarState
+    val onShowSnackbar: (Int, Int?, () -> Unit) -> Unit = { message, actionLabel, onActionClick ->
+        snackbarState.showSnackbar(
+            context = context,
+            message = message,
+            actionLabel = actionLabel,
+            onActionClick = onActionClick
+        )
+    }
 
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
@@ -112,20 +140,188 @@ fun App(finishActivity: () -> Unit) {
             },
         ) {
             Surface {
-                FinitoNavHost(
+                AnimatedNavHost(
                     navController = navController,
-                    drawerState = drawerState,
-                    sharedBoardViewModel = sharedBoardViewModel,
-                    finishActivity = finishActivity,
-                    showSnackbar = { message, actionLabel, onActionClick ->
-                        snackbarState.showSnackbar(
-                            context = context,
-                            message = message,
-                            actionLabel = actionLabel,
-                            onActionClick = onActionClick
+                    startDestination = Screen.Home.route
+                ) {
+                    composable(
+                        route = Screen.Home.route,
+                        enterTransition = {
+                            when {
+                                Screen.Home.childRoutes.contains(initialState.destination.route) -> {
+                                    childScreenPopEnterTransition()
+                                }
+                                else -> peerScreenEnterTransition()
+                            }
+                        },
+                        exitTransition = {
+                            when {
+                                Screen.Home.childRoutes.contains(targetState.destination.route) -> {
+                                    childScreenExitTransition()
+                                }
+                                else -> peerScreenExitTransition()
+                            }
+                        },
+                    ) {
+                        HomeScreen(
+                            drawerState = drawerState,
+                            finishActivity = finishActivity,
+                            onShowSnackbar = onShowSnackbar,
+                            onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
+                            onNavigateToBoard = { navController.navigateToBoardFlow(it) }
                         )
                     }
-                )
+
+                    composable(
+                        route = Screen.Archive.route,
+                        enterTransition = peerScreenEnterTransition,
+                        exitTransition = {
+                            when {
+                                Screen.Archive.childRoutes.contains(targetState.destination.route) -> {
+                                    childScreenExitTransition()
+                                }
+                                else -> peerScreenExitTransition()
+                            }
+                        },
+                        popEnterTransition = {
+                            when {
+                                Screen.Archive.childRoutes.contains(initialState.destination.route) -> {
+                                    childScreenPopEnterTransition()
+                                }
+                                else -> peerScreenEnterTransition()
+                            }
+                        }
+                    ) {
+                        ArchiveScreen(
+                            drawerState = drawerState,
+                            finishActivity = finishActivity,
+                            onShowSnackbar = onShowSnackbar,
+                            onNavigateToBoardFlow = {
+                                navController.navigateToBoardFlow(it, BoardState.ARCHIVED)
+                            }
+                        )
+                    }
+
+                    composable(
+                        route = Screen.Trash.route,
+                        enterTransition = peerScreenEnterTransition,
+                        exitTransition = {
+                            when {
+                                Screen.Trash.childRoutes.contains(targetState.destination.route) -> {
+                                    childScreenExitTransition()
+                                }
+                                else -> peerScreenExitTransition()
+                            }
+                        },
+                        popEnterTransition = {
+                            when {
+                                Screen.Trash.childRoutes.contains(initialState.destination.route) -> {
+                                    childScreenPopEnterTransition()
+                                }
+                                else -> peerScreenEnterTransition()
+                            }
+                        }
+                    ) {
+                        TrashScreen(
+                            drawerState = drawerState,
+                            finishActivity = finishActivity,
+                            onShowSnackbar = onShowSnackbar,
+                            onNavigateToBoardFlow = {
+                                navController.navigateToBoardFlow(it, BoardState.DELETED)
+                            }
+                        )
+                    }
+
+                    boardGraph(
+                        navController = navController,
+                        drawerState = drawerState,
+                        appViewModel = appViewModel,
+                        onShowSnackbar = onShowSnackbar
+                    )
+
+                    composable(
+                        route = Screen.CreateBoard.route,
+                        enterTransition = childScreenEnterTransition,
+                        exitTransition = childScreenExitTransition,
+                        popExitTransition = childScreenPopExitTransition
+                    ) {
+                        AddEditBoardScreen(
+                            onShowSnackbar = onShowSnackbar,
+                            appViewModel = appViewModel,
+                            createMode = true,
+                            onNavigateBack = { navController.navigateUp() },
+                            onNavigateToHome = { navController.navigateToHome() },
+                            onNavigateToArchive = { navController.navigateToArchive() },
+                            onNavigateToTrash = { navController.navigateToTrash() },
+                            onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
+                        )
+                    }
+
+//                    composable(
+//                        route = Screen.TaskDateTime.route,
+//                        arguments = Screen.TaskDateTime.arguments,
+//                        enterTransition = childScreenEnterTransition,
+//                        exitTransition = childScreenExitTransition,
+//                        popExitTransition = childScreenPopExitTransition
+//                    ) {
+//                        TaskDateTimeFullDialog(
+//                            onNavigateBack = onNavigateBoard@{
+//                                val previousRoute = navController
+//                                    .previousBackStackEntry
+//                                    ?.destination
+//                                    ?.route
+//                                if (previousRoute != Screen.Board.route) {
+//                                    navController.navigateUp()
+//                                    return@onNavigateBoard
+//                                }
+//
+//                                // Get the board ID and state to update Board Screen
+//                                // with updated values
+//                                val boardId = navController
+//                                    .previousBackStackEntry
+//                                    ?.arguments
+//                                    ?.getInt(Screen.BOARD_ROUTE_ID_ARGUMENT)!!
+//                                val boardState = navController
+//                                    .previousBackStackEntry
+//                                    ?.arguments
+//                                    ?.getString(Screen.BOARD_ROUTE_STATE_ARGUMENT)!!.let { name ->
+//                                        BoardState.values().first { it.name == name }
+//                                    }
+//                                navController.navigateToBoard(boardId, boardState)
+//                            }
+//                        )
+//                    }
+
+                    composable(
+                        route = Screen.Label.route,
+                        arguments = Screen.Label.arguments,
+                        enterTransition = peerScreenEnterTransition,
+                        exitTransition = {
+                            when {
+                                Screen.Label.childRoutes.contains(targetState.destination.route) -> {
+                                    childScreenExitTransition()
+                                }
+                                else -> peerScreenExitTransition()
+                            }
+                        },
+                        popEnterTransition = {
+                            when {
+                                Screen.Label.childRoutes.contains(initialState.destination.route) -> {
+                                    childScreenPopEnterTransition()
+                                }
+                                else -> peerScreenEnterTransition()
+                            }
+                        }
+                    ) {
+                        LabelScreen(
+                            drawerState = drawerState,
+                            onShowSnackbar = onShowSnackbar,
+                            onNavigateToHome = { navController.navigateToHome() },
+                            onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
+                            onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
+                        )
+                    }
+                }
             }
         }
     }

@@ -18,11 +18,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
-import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
@@ -39,10 +37,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LabelScreen(
-    navController: NavController,
     drawerState: DrawerState,
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     labelViewModel: LabelViewModel = hiltViewModel(),
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToCreateBoard: () -> Unit = {},
+    onNavigateToBoardFlow: (Int) -> Unit = {},
 ) {
     val label = labelViewModel.label
 
@@ -61,25 +61,19 @@ fun LabelScreen(
             labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = false))
             return@BackHandler
         }
-        navController.navigate(route = Screen.Home.route) {
-            popUpTo(route = Screen.Home.route) { inclusive = true }
-        }
+        onNavigateToHome()
     }
 
     LaunchedEffect(Unit) {
         labelViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is LabelViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message, R.string.undo) {
+                    onShowSnackbar(event.message, R.string.undo) {
                         labelViewModel.onEvent(LabelEvent.RestoreBoard)
                     }
                 }
             }
         }
-    }
-
-    LaunchedEffect(navController.currentDestination?.route) {
-        labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = false))
     }
 
     Scaffold(
@@ -145,9 +139,7 @@ fun LabelScreen(
                 onSearchClick = {
                     labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = true))
                 },
-                onFabClick = {
-                    navController.navigate(route = Screen.CreateBoard.route)
-                }
+                onFabClick = onNavigateToCreateBoard
             )
         },
         modifier = Modifier
@@ -159,18 +151,13 @@ fun LabelScreen(
             )
             .noRippleClickable { focusManager.clearFocus() },
     ) { innerPadding ->
-        if (labelViewModel.dialogType != null) {
-            LabelDialogs(labelViewModel, navController)
-        }
+        LabelDialogs(labelViewModel, onNavigateToHome)
 
         LabelScreen(
             paddingValues = innerPadding,
             gridLayout = labelViewModel.gridLayout,
             boards = labelViewModel.boards,
-            onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}"
-                navController.navigate(route)
-            },
+            onBoardClick = onNavigateToBoardFlow,
             selectedSortingOption = labelViewModel.boardsOrder,
             onSortOptionClick = {
                 labelViewModel.onEvent(LabelEvent.SortBoards(it))

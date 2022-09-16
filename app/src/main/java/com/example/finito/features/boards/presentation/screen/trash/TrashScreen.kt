@@ -13,12 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.presentation.util.menu.DeletedBoardCardMenuOption
 import com.example.finito.core.presentation.util.menu.TrashScreenMenuOption
-import com.example.finito.core.presentation.Screen
-import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.screen.trash.components.TrashDialogs
@@ -30,11 +27,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrashScreen(
-    navController: NavHostController,
     drawerState: DrawerState,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     trashViewModel: TrashViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onNavigateToBoardFlow: (boardId: Int) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -51,7 +48,7 @@ fun TrashScreen(
         trashViewModel.eventFlow.collectLatest { event ->
             when (event) {
                 is TrashViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message, R.string.undo) {
+                    onShowSnackbar(event.message, R.string.undo) {
                         trashViewModel.onEvent(TrashEvent.UndoRestore)
                     }
                 }
@@ -87,18 +84,13 @@ fun TrashScreen(
         },
         modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        if (trashViewModel.showDialog) {
-            TrashDialogs(trashViewModel)
-        }
+        TrashDialogs(trashViewModel)
 
         TrashScreen(
             paddingValues = innerPadding,
             gridLayout = trashViewModel.gridLayout,
             boards = trashViewModel.boards,
-            onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.DELETED.name}"
-                navController.navigate(route)
-            },
+            onBoardClick = onNavigateToBoardFlow,
             onCardOptionsClick = {
                 trashViewModel.onEvent(TrashEvent.ShowCardMenu(boardId = it, show = true))
             },

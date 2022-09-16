@@ -11,6 +11,7 @@ import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -48,7 +49,7 @@ class ArchiveViewModel @Inject constructor(
     var showSearchBar by mutableStateOf(false)
         private set
 
-    var searchQuery by mutableStateOf("")
+    var searchQueryState by mutableStateOf(TextFieldState())
         private set
 
     private var searchJob: Job? = null
@@ -116,7 +117,7 @@ class ArchiveViewModel @Inject constructor(
             is ArchiveEvent.UnarchiveBoard -> moveBoard(event.board, EditMode.UNARCHIVE)
             is ArchiveEvent.MoveBoardToTrash -> moveBoard(event.board, EditMode.DELETE)
             is ArchiveEvent.SearchBoards -> {
-                searchQuery = event.query
+                searchQueryState = searchQueryState.copy(value = event.query)
 
                 searchJob?.cancel()
                 searchJob = viewModelScope.launch {
@@ -144,7 +145,7 @@ class ArchiveViewModel @Inject constructor(
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findArchivedBoards(
             boardOrder = boardsOrder,
-            searchQuery = searchQuery,
+            searchQuery = searchQueryState.value,
             labelIds = labelFilters.toIntArray()
         ).onEach { boards ->
             this@ArchiveViewModel.boards = boards
@@ -196,7 +197,7 @@ class ArchiveViewModel @Inject constructor(
     private fun showSearchBar(show: Boolean) {
         if (show == showSearchBar) return
         if (!show) {
-            searchQuery = ""
+            searchQueryState = searchQueryState.copy(value = "")
             fetchBoards()
         }
         showSearchBar = show

@@ -20,12 +20,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.domain.util.menu.ActiveBoardCardMenuOption
+import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
-import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.screen.home.components.HomeTopBar
@@ -94,10 +94,11 @@ fun HomeScreen(
             ) { showSearchBar ->
                 if (showSearchBar) {
                     SearchTopBar(
-                        query = homeViewModel.searchQuery,
-                        onQueryChange = {
-                            homeViewModel.onEvent(HomeEvent.SearchBoards(it))
-                        },
+                        queryState = homeViewModel.searchQueryState.copy(
+                            onValueChange = {
+                                homeViewModel.onEvent(HomeEvent.SearchBoards(it))
+                            }
+                        ),
                         onBackClick = {
                             homeViewModel.onEvent(HomeEvent.ShowSearchBar(show = false))
                         },
@@ -151,7 +152,7 @@ fun HomeScreen(
             },
             boards = homeViewModel.boards,
             onBoardClick = {
-                val route = "${Screen.Board.prefix}/${it}?${Screen.BOARD_ROUTE_STATE_ARGUMENT}=${BoardState.ACTIVE.name}"
+                val route = "${Screen.Board.prefix}/${it}"
                 navController.navigate(route)
             },
             selectedSortingOption = homeViewModel.boardsOrder,
@@ -205,13 +206,6 @@ private fun HomeScreen(
         option: ActiveBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
-    val sortingOptions = listOf(
-        SortingOption.Common.Newest,
-        SortingOption.Common.Oldest,
-        SortingOption.Common.NameAZ,
-        SortingOption.Common.NameZA,
-    )
-
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
@@ -222,7 +216,7 @@ private fun HomeScreen(
             onLabelClick = onLabelClick,
             onRemoveFiltersClick = onRemoveFiltersClick,
             boards = boards,
-            sortingOptions = sortingOptions,
+            sortingOptions = commonSortingOptions,
             selectedSortingOption = selectedSortingOption,
             onSortOptionClick = onSortOptionClick,
             onBoardClick = onBoardClick,

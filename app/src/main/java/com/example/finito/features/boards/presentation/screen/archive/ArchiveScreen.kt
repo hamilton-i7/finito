@@ -15,7 +15,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.domain.util.menu.ArchivedBoardCardMenuOption
+import com.example.finito.core.domain.util.commonSortingOptions
+import com.example.finito.core.presentation.util.menu.ArchivedBoardCardMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
@@ -86,10 +87,11 @@ fun ArchiveScreen(
             ) { showSearchBar ->
                 if (showSearchBar) {
                     SearchTopBar(
-                        query = archiveViewModel.searchQuery,
-                        onQueryChange = {
-                            archiveViewModel.onEvent(ArchiveEvent.SearchBoards(it))
-                        },
+                        queryState = archiveViewModel.searchQueryState.copy(
+                            onValueChange = {
+                                archiveViewModel.onEvent(ArchiveEvent.SearchBoards(it))
+                            }
+                        ),
                         onBackClick = {
                             archiveViewModel.onEvent(ArchiveEvent.ShowSearchBar(show = false))
                         },
@@ -193,13 +195,6 @@ private fun ArchiveScreen(
         option: ArchivedBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
-    val sortingOptions = listOf(
-        SortingOption.Common.Newest,
-        SortingOption.Common.Oldest,
-        SortingOption.Common.NameAZ,
-        SortingOption.Common.NameZA,
-    )
-
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
@@ -211,7 +206,7 @@ private fun ArchiveScreen(
             onRemoveFiltersClick = onRemoveFiltersClick,
             boards = boards,
             selectedSortingOption = selectedSortingOption,
-            sortingOptions = sortingOptions,
+            sortingOptions = commonSortingOptions,
             onSortOptionClick = onSortOptionClick,
             onBoardClick = onBoardClick,
             showCardMenu = showCardMenu,

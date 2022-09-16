@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LabelChips(
+fun LabelFilters(
     labels: List<SimpleLabel>,
     modifier: Modifier = Modifier,
     selectedLabels: List<Int> = emptyList(),

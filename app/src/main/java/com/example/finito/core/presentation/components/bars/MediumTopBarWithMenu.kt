@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.MenuOption
+import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.core.presentation.components.menu.FinitoMenu
 
 @OptIn(ExperimentalMaterial3Api::class)

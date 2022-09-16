@@ -15,8 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.DeletedBoardCardMenuOption
-import com.example.finito.core.domain.util.menu.TrashScreenMenuOption
+import com.example.finito.core.presentation.util.menu.DeletedBoardCardMenuOption
+import com.example.finito.core.presentation.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks

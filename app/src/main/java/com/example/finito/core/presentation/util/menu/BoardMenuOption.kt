@@ -1,4 +1,4 @@
-package com.example.finito.core.domain.util.menu
+package com.example.finito.core.presentation.util.menu
 
 import com.example.finito.R
 

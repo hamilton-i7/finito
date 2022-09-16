@@ -12,7 +12,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.BoardCardMenuOption
+import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.presentation.components.PercentageIndicator
 import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks

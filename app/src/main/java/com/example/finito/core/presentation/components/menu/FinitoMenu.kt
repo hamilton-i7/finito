@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.example.finito.core.domain.util.menu.MenuOption
+import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.ui.theme.finitoColors
 

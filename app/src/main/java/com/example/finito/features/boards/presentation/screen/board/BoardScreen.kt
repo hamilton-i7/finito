@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.ActiveBoardScreenOption
-import com.example.finito.core.domain.util.menu.ArchivedBoardScreenMenuOption
-import com.example.finito.core.domain.util.menu.DeletedBoardScreenMenuOption
+import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
+import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
+import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
@@ -72,6 +72,10 @@ fun BoardScreen(
             navController.navigateUp()
             return@BackHandler
         }
+        if (previousRoute == Screen.Label.route) {
+            navController.navigateUp()
+            return@BackHandler
+        }
         navController.navigate(route = Screen.Home.route) {
             popUpTo(route = Screen.Home.route) { inclusive = true }
         }
@@ -79,7 +83,6 @@ fun BoardScreen(
 
     LaunchedEffect(Unit) {
         boardViewModel.eventFlow.collectLatest { event ->
-            println("Running working launched")
             when (event) {
                 is BoardViewModel.Event.ShowSnackbar -> {
                     showSnackbar(event.message, R.string.undo) {

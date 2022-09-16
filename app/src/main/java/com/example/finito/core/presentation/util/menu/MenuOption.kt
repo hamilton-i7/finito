@@ -1,4 +1,4 @@
-package com.example.finito.core.domain.util.menu
+package com.example.finito.core.presentation.util.menu
 
 import androidx.annotation.StringRes
 
@@ -9,3 +9,5 @@ sealed class BoardScreenMenuOption(label: Int) : MenuOption(label)
 sealed class EditBoardScreenMenuOption(label: Int) : MenuOption(label)
 
 sealed class BoardCardMenuOption(label: Int) : MenuOption(label)
+
+sealed class LabelScreenMenuOption(label: Int) : MenuOption(label)

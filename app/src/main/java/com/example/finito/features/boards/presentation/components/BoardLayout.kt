@@ -3,7 +3,7 @@ package com.example.finito.features.boards.presentation.components
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import com.example.finito.core.domain.util.menu.BoardCardMenuOption
+import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel

@@ -19,6 +19,7 @@ import com.example.finito.features.boards.presentation.screen.archive.ArchiveScr
 import com.example.finito.features.boards.presentation.screen.board.BoardScreen
 import com.example.finito.features.boards.presentation.screen.home.HomeScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
+import com.example.finito.features.labels.presentation.screen.label.LabelScreen
 import com.example.finito.features.tasks.presentation.screen.datetime.TaskDateTimeScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -187,6 +188,34 @@ fun FinitoNavHost(
            popExitTransition = childScreenPopExitTransition
        ) {
            TaskDateTimeScreen(navController = navController)
+       }
+
+       composable(
+           route = Screen.Label.route,
+           arguments = Screen.Label.arguments,
+           enterTransition = peerScreenEnterTransition,
+           exitTransition = {
+               when {
+                   Screen.Label.childRoutes.contains(targetState.destination.route) -> {
+                       childScreenExitTransition()
+                   }
+                   else -> peerScreenExitTransition()
+               }
+           },
+           popEnterTransition = {
+               when {
+                   Screen.Label.childRoutes.contains(initialState.destination.route) -> {
+                       childScreenPopEnterTransition()
+                   }
+                   else -> peerScreenEnterTransition()
+               }
+           }
+       ) {
+           LabelScreen(
+               navController = navController,
+               drawerState = drawerState,
+               showSnackbar = showSnackbar,
+           )
        }
    }
 }

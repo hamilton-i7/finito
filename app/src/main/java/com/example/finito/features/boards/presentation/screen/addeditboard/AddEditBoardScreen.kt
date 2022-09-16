@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.domain.util.menu.DeletedEditBoardScreenMenuOption
+import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -248,7 +248,6 @@ private fun AddEditBoardScreen(
                     onValueChange = nameState.onValueChange,
                     enabled = !isDeleted,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    error = nameState.error,
                     errorFeedback = R.string.empty_name_error,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
@@ -316,7 +315,7 @@ private fun AddEditBoardScreenPreview() {
     FinitoTheme {
         Surface {
             AddEditBoardScreen(
-                nameState = TextFieldState(error = true),
+                nameState = TextFieldState(),
                 labels = SimpleLabel.dummyLabels.take(6),
                 selectedLabels = selectedLabels
             )

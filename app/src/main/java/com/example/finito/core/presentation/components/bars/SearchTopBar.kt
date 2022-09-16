@@ -13,13 +13,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TextFieldState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchTopBar(
     onBackClick: () -> Unit = {},
-    query: String,
-    onQueryChange: (String) -> Unit,
+    queryState: TextFieldState,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
@@ -29,8 +29,8 @@ fun SearchTopBar(
 
     TopAppBar(title = {
         OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
+            value = queryState.value,
+            onValueChange = queryState.onValueChange,
             placeholder = {
                 Text(text = stringResource(id = R.string.search_boards))
             },

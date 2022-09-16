@@ -3,6 +3,7 @@ package com.example.finito.core.presentation
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.finito.features.boards.domain.entity.BoardState
 
 sealed class Screen(
     val route: String,
@@ -29,7 +30,7 @@ sealed class Screen(
             navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
             navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
                 type = NavType.StringType
-                nullable = true
+                defaultValue = BoardState.ACTIVE.name
             }
         )
     ) {
@@ -40,7 +41,8 @@ sealed class Screen(
         val parentRoutes = listOf(
             Home.route,
             Archive.route,
-            Trash.route
+            Trash.route,
+            Label.route
         )
     }
 
@@ -62,7 +64,9 @@ sealed class Screen(
         route = "label/{$LABEL_ROUTE_ARGUMENT}",
         prefix = "label",
         arguments = listOf(navArgument(LABEL_ROUTE_ARGUMENT) { type = NavType.IntType })
-    )
+    ) {
+        val childRoutes = listOf(Board.route)
+    }
 
     object Archive : Screen(route = "archive") {
         val childRoutes = listOf(Board.route)

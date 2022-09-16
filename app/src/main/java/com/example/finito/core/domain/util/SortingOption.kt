@@ -3,6 +3,13 @@ package com.example.finito.core.domain.util
 import androidx.annotation.StringRes
 import com.example.finito.R
 
+val commonSortingOptions = listOf(
+    SortingOption.Common.Newest,
+    SortingOption.Common.Oldest,
+    SortingOption.Common.NameAZ,
+    SortingOption.Common.NameZA,
+)
+
 sealed class SortingOption(@StringRes val label: Int) {
     sealed class Common(label: Int, val name: String) : SortingOption(label) {
         object NameAZ : Common(R.string.a_z, name = "A_Z")

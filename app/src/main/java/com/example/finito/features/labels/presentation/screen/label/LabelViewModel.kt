@@ -13,6 +13,7 @@ import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -44,12 +45,21 @@ class LabelViewModel @Inject constructor(
     var boards by mutableStateOf<List<BoardWithLabelsAndTasks>>(emptyList())
         private set
 
+    var dialogType by mutableStateOf<LabelEvent.DialogType?>(null)
+        private set
+
+    var labelNameState by mutableStateOf(TextFieldState())
+        private set
+
     private var fetchBoardsJob: Job? = null
 
     var showSearchBar by mutableStateOf(false)
         private set
 
-    var searchQuery by mutableStateOf("")
+    var showScreenMenu by mutableStateOf(false)
+        private set
+
+    var searchQueryState by mutableStateOf(TextFieldState())
         private set
 
     private var searchJob: Job? = null
@@ -89,8 +99,6 @@ class LabelViewModel @Inject constructor(
 
     fun onEvent(event: LabelEvent) {
         when (event) {
-            LabelEvent.RenameLabel -> TODO()
-            LabelEvent.DeleteLabel -> TODO()
             is LabelEvent.ArchiveBoard -> onDeactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is LabelEvent.MoveBoardToTrash -> onDeactivateBoard(event.board, DeactivateMode.DELETE)
             LabelEvent.RestoreBoard -> onRestoreBoard()
@@ -99,6 +107,32 @@ class LabelViewModel @Inject constructor(
             is LabelEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is LabelEvent.SortBoards -> onSortBoards(event.sortingOption)
             LabelEvent.ToggleLayout -> onToggleLayout()
+            is LabelEvent.ShowScreenMenu -> showScreenMenu = event.show
+            is LabelEvent.ChangeName -> labelNameState = labelNameState.copy(value = event.name)
+            is LabelEvent.ShowDialog -> onShowDialog(event.type)
+            LabelEvent.DeleteLabel -> onDeleteLabel()
+            LabelEvent.EditLabel -> onEditLabel()
+        }
+    }
+
+    private fun onShowDialog(type: LabelEvent.DialogType?) {
+        dialogType = type
+        if (dialogType == null) {
+            labelNameState = labelNameState.copy(value = "")
+        }
+    }
+
+    private fun onDeleteLabel() = viewModelScope.launch {
+        if (label == null) return@launch
+        with(label!!) {
+            labelUseCases.deleteLabel(this)
+        }
+    }
+
+    private fun onEditLabel() = viewModelScope.launch {
+        if (label == null) return@launch
+        with(label!!) {
+            labelUseCases.updateLabel(copy(name = labelNameState.value)).also { fetchLabel() }
         }
     }
 
@@ -110,7 +144,7 @@ class LabelViewModel @Inject constructor(
             putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption.name)
             apply()
         }
-        fetchBoards()
+        label?.let { fetchBoards(it.labelId) }
     }
 
     private fun onRestoreBoard() = viewModelScope.launch {
@@ -153,18 +187,18 @@ class LabelViewModel @Inject constructor(
     }
 
     private fun onSearchBoards(query: String) {
-        searchQuery = query
+        searchQueryState = searchQueryState.copy(value = query)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(SEARCH_DELAY_MILLIS)
-            fetchBoards()
+            label?.let { fetchBoards(it.labelId) }
         }
     }
 
     private fun onShowSearchBar(show: Boolean) {
         if (!show) {
-            searchQuery = ""
-            fetchBoards()
+            searchQueryState = searchQueryState.copy(value = "")
+            label?.let { fetchBoards(it.labelId) }
         }
         showSearchBar = show
     }
@@ -180,17 +214,17 @@ class LabelViewModel @Inject constructor(
     private fun fetchLabel() {
         savedStateHandle.get<Int>(Screen.LABEL_ROUTE_ARGUMENT)?.let { labelId ->
             viewModelScope.launch {
-                labelUseCases.findLabel(labelId).let { label = it }.also { fetchBoards() }
+                labelUseCases.findLabel(labelId).also { fetchBoards(it.labelId) }.let { label = it }
             }
         }
     }
 
-    private fun fetchBoards() = viewModelScope.launch {
+    private fun fetchBoards(labelId: Int) = viewModelScope.launch {
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
             boardOrder = boardsOrder,
-            searchQuery = searchQuery,
-            label!!.labelId
+            searchQuery = searchQueryState.value,
+            labelId
         ).onEach { boards ->
             this@LabelViewModel.boards = boards
             boardsOrder = boardsOrder

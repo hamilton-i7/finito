@@ -1,22 +1,271 @@
 package com.example.finito.features.labels.presentation.screen.label
 
+import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finito.R
+import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.domain.util.commonSortingOptions
+import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.components.bars.BottomBar
+import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
+import com.example.finito.core.presentation.util.menu.LabelMenuOption
+import com.example.finito.core.presentation.util.noRippleClickable
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
+import com.example.finito.features.boards.presentation.components.BoardLayout
+import com.example.finito.features.labels.presentation.screen.label.components.LabelDialogs
+import com.example.finito.features.labels.presentation.screen.label.components.LabelTopBar
+import com.example.finito.ui.theme.FinitoTheme
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LabelScreen(
     navController: NavController,
     drawerState: DrawerState,
     showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     labelViewModel: LabelViewModel = hiltViewModel(),
-) {}
+) {
+    val label = labelViewModel.label
+
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+    val scope = rememberCoroutineScope()
+    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    BackHandler {
+        if (drawerState.isOpen) {
+            scope.launch { drawerState.close() }
+            return@BackHandler
+        }
+        if (labelViewModel.showSearchBar) {
+            labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = false))
+            return@BackHandler
+        }
+        navController.navigate(route = Screen.Home.route) {
+            popUpTo(route = Screen.Home.route) { inclusive = true }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        labelViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is LabelViewModel.Event.ShowSnackbar -> {
+                    showSnackbar(event.message, R.string.undo) {
+                        labelViewModel.onEvent(LabelEvent.RestoreBoard)
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(navController.currentDestination?.route) {
+        labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = false))
+    }
+
+    Scaffold(
+        topBar = {
+            AnimatedContent(
+                targetState = labelViewModel.showSearchBar,
+            ) { showSearchBar ->
+                if (showSearchBar) {
+                    SearchTopBar(
+                        queryState = labelViewModel.searchQueryState.copy(
+                            onValueChange = {
+                                labelViewModel.onEvent(LabelEvent.SearchBoards(it))
+                            }
+                        ),
+                        onBackClick = {
+                            labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = false))
+                        },
+                        scrollBehavior = searchTopBarScrollBehavior,
+                        focusRequester = focusRequester
+                    )
+                } else {
+                    LabelTopBar(
+                        labelName = label?.name ?: "",
+                        onNavigationClick = {
+                            scope.launch { drawerState.open() }
+                        },
+                        showMenu = labelViewModel.showScreenMenu,
+                        onMoreOptionsClick = {
+                            labelViewModel.onEvent(LabelEvent.ShowScreenMenu(show = true))
+                        },
+                        onDismissMenu = {
+                            labelViewModel.onEvent(LabelEvent.ShowScreenMenu(show = false))
+                        },
+                        onOptionClick = { option ->
+                            labelViewModel.onEvent(LabelEvent.ShowScreenMenu(show = false))
+
+                            when (option) {
+                                LabelMenuOption.DeleteLabel -> {
+                                    labelViewModel.onEvent(LabelEvent.ShowDialog(
+                                        type = LabelEvent.DialogType.Delete
+                                    ))
+                                }
+                                LabelMenuOption.RenameLabel -> {
+                                    labelViewModel.onEvent(LabelEvent.ShowDialog(
+                                        type = LabelEvent.DialogType.Rename
+                                    ))
+                                }
+                            }
+                        },
+                        scrollBehavior = topBarScrollBehavior
+                    )       
+                }
+            }
+        },
+        bottomBar = {
+            BottomBar(
+                fabDescription = R.string.add_board,
+                searchDescription = R.string.search_boards,
+                onChangeLayoutClick = {
+                    labelViewModel.onEvent(LabelEvent.ToggleLayout)
+                },
+                gridLayout = labelViewModel.gridLayout,
+                onSearchClick = {
+                    labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = true))
+                },
+                onFabClick = {
+                    navController.navigate(route = Screen.CreateBoard.route)
+                }
+            )
+        },
+        modifier = Modifier
+            .nestedScroll(
+                if (labelViewModel.showSearchBar)
+                    searchTopBarScrollBehavior.nestedScrollConnection
+                else
+                    topBarScrollBehavior.nestedScrollConnection
+            )
+            .noRippleClickable { focusManager.clearFocus() },
+    ) { innerPadding ->
+        if (labelViewModel.dialogType != null) {
+            LabelDialogs(labelViewModel, navController)
+        }
+
+        LabelScreen(
+            paddingValues = innerPadding,
+            gridLayout = labelViewModel.gridLayout,
+            boards = labelViewModel.boards,
+            onBoardClick = {
+                val route = "${Screen.Board.prefix}/${it}"
+                navController.navigate(route)
+            },
+            selectedSortingOption = labelViewModel.boardsOrder,
+            onSortOptionClick = {
+                labelViewModel.onEvent(LabelEvent.SortBoards(it))
+            },
+            onCardOptionsClick = {
+                labelViewModel.onEvent(LabelEvent.ShowCardMenu(boardId = it, show = true))
+            },
+            showCardMenu = { labelViewModel.selectedBoardId == it },
+            onDismissMenu = {
+                labelViewModel.onEvent(LabelEvent.ShowCardMenu(show = false))
+            },
+            options = listOf(
+                ActiveBoardCardMenuOption.Archive,
+                ActiveBoardCardMenuOption.Delete,
+            ),
+            onMenuItemClick = { board, option ->
+                labelViewModel.onEvent(LabelEvent.ShowCardMenu(show = false))
+                when (option) {
+                    ActiveBoardCardMenuOption.Archive -> {
+                        labelViewModel.onEvent(LabelEvent.ArchiveBoard(board))
+                    }
+                    ActiveBoardCardMenuOption.Delete -> {
+                        labelViewModel.onEvent(LabelEvent.MoveBoardToTrash(board))
+                    }
+                }
+            }
+        )
+    }
+}
 
 @Composable
 private fun LabelScreen(
-    paddingValues: PaddingValues = PaddingValues()
-) {}
+    paddingValues: PaddingValues = PaddingValues(),
+    gridLayout: Boolean = true,
+    boards: List<BoardWithLabelsAndTasks> = emptyList(),
+    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
+    onBoardClick: (boardId: Int) -> Unit = {},
+    showCardMenu: (boardId: Int) -> Boolean = { false },
+    onDismissMenu: (boardId: Int) -> Unit = {},
+    options: List<ActiveBoardCardMenuOption> = emptyList(),
+    onCardOptionsClick: (boardId: Int) -> Unit = {},
+    onMenuItemClick: (
+        board: BoardWithLabelsAndTasks,
+        option: ActiveBoardCardMenuOption,
+    ) -> Unit = { _, _ ->}
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        BoardLayout(
+            gridLayout = gridLayout,
+            boards = boards,
+            sortingOptions = commonSortingOptions,
+            selectedSortingOption = selectedSortingOption,
+            onSortOptionClick = onSortOptionClick,
+            onBoardClick = onBoardClick,
+            showCardMenu = showCardMenu,
+            onDismissMenu = onDismissMenu,
+            options = options,
+            onCardOptionsClick = onCardOptionsClick,
+            onMenuItemClick = { boardId, option ->
+                onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
+            },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LabelScreenPreview() {
+    FinitoTheme {
+        Surface {
+            LabelScreen(
+                boards = BoardWithLabelsAndTasks.dummyBoards,
+                selectedSortingOption = SortingOption.Common.Newest
+            )
+        }
+    }
+}
+
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun LabelScreenPreviewDark() {
+    FinitoTheme {
+        Surface {
+            LabelScreen(
+                boards = BoardWithLabelsAndTasks.dummyBoards,
+                selectedSortingOption = SortingOption.Common.Newest
+            )
+        }
+    }
+}

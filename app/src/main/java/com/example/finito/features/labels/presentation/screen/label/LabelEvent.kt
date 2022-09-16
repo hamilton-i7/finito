@@ -4,7 +4,9 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 
 sealed class LabelEvent {
-    object RenameLabel : LabelEvent()
+    data class ChangeName(val name: String) : LabelEvent()
+
+    object EditLabel : LabelEvent()
 
     object DeleteLabel : LabelEvent()
 
@@ -22,5 +24,15 @@ sealed class LabelEvent {
 
     data class ShowSearchBar(val show: Boolean) : LabelEvent()
 
+    data class ShowScreenMenu(val show: Boolean) : LabelEvent()
+
     data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : LabelEvent()
+
+    data class ShowDialog(val type: DialogType? = null) : LabelEvent()
+
+    sealed class DialogType {
+        object Rename : DialogType()
+
+        object Delete : DialogType()
+    }
 }

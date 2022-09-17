@@ -1,14 +1,15 @@
 package com.example.finito.features.labels.presentation.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import com.example.finito.ui.theme.DisabledAlpha
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,7 @@ fun LabelItem(
             Checkbox(
                 checked = selected,
                 enabled = enabled,
-                onCheckedChange = { onLabelClick() },
+                onCheckedChange = null,
                 colors = CheckboxDefaults.colors(
                     checkedColor = finitoColors.tertiary
                 )
@@ -49,6 +50,10 @@ fun LabelItem(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onLabelClick, enabled = enabled)
+            .toggleable(
+                value = selected,
+                role = Role.Checkbox,
+                onValueChange = { onLabelClick() }
+            )
     )
 }

@@ -190,7 +190,11 @@ private fun DrawerContent(
                     )
                 }
             }
-            item { DrawerItemButton(text = R.string.create_new_label) {} }
+            item {
+                DrawerItemButton(text = R.string.create_new_label) {
+                    onItemSelected(Screen.CreateLabel.route)
+                }
+            }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
             items(otherScreens, key = { it.screen.route }) { item ->

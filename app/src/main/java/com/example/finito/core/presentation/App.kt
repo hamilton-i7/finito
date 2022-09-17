@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.dialog
 import com.example.finito.core.presentation.components.Drawer
 import com.example.finito.core.presentation.components.bars.BottomBarHeight
 import com.example.finito.core.presentation.graph.boardGraph
@@ -25,6 +26,7 @@ import com.example.finito.features.boards.presentation.screen.addeditboard.AddEd
 import com.example.finito.features.boards.presentation.screen.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.screen.home.HomeScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
+import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -283,6 +285,13 @@ fun App(
                         onNavigateToHome = { navController.navigateToHome() },
                         onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
                         onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
+                    )
+                }
+
+                dialog(Screen.CreateLabel.route) {
+                    CreateLabelContent(
+                        onNavigateBack = { navController.navigateUp() },
+                        onShowSnackbar = onShowSnackbar
                     )
                 }
             }

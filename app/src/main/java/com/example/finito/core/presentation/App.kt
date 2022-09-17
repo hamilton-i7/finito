@@ -139,188 +139,151 @@ fun App(
                 )
             },
         ) {
-            Surface {
-                AnimatedNavHost(
-                    navController = navController,
-                    startDestination = Screen.Home.route
+            AnimatedNavHost(
+                navController = navController,
+                startDestination = Screen.Home.route
+            ) {
+                composable(
+                    route = Screen.Home.route,
+                    enterTransition = {
+                        when {
+                            Screen.Home.childRoutes.contains(initialState.destination.route) -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
+                    },
+                    exitTransition = {
+                        when {
+                            Screen.Home.childRoutes.contains(targetState.destination.route) -> {
+                                childScreenExitTransition()
+                            }
+                            else -> peerScreenExitTransition()
+                        }
+                    },
                 ) {
-                    composable(
-                        route = Screen.Home.route,
-                        enterTransition = {
-                            when {
-                                Screen.Home.childRoutes.contains(initialState.destination.route) -> {
-                                    childScreenPopEnterTransition()
-                                }
-                                else -> peerScreenEnterTransition()
-                            }
-                        },
-                        exitTransition = {
-                            when {
-                                Screen.Home.childRoutes.contains(targetState.destination.route) -> {
-                                    childScreenExitTransition()
-                                }
-                                else -> peerScreenExitTransition()
-                            }
-                        },
-                    ) {
-                        HomeScreen(
-                            drawerState = drawerState,
-                            finishActivity = finishActivity,
-                            onShowSnackbar = onShowSnackbar,
-                            onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
-                            onNavigateToBoard = { navController.navigateToBoardFlow(it) }
-                        )
-                    }
-
-                    composable(
-                        route = Screen.Archive.route,
-                        enterTransition = peerScreenEnterTransition,
-                        exitTransition = {
-                            when {
-                                Screen.Archive.childRoutes.contains(targetState.destination.route) -> {
-                                    childScreenExitTransition()
-                                }
-                                else -> peerScreenExitTransition()
-                            }
-                        },
-                        popEnterTransition = {
-                            when {
-                                Screen.Archive.childRoutes.contains(initialState.destination.route) -> {
-                                    childScreenPopEnterTransition()
-                                }
-                                else -> peerScreenEnterTransition()
-                            }
-                        }
-                    ) {
-                        ArchiveScreen(
-                            drawerState = drawerState,
-                            finishActivity = finishActivity,
-                            onShowSnackbar = onShowSnackbar,
-                            onNavigateToBoardFlow = {
-                                navController.navigateToBoardFlow(it, BoardState.ARCHIVED)
-                            }
-                        )
-                    }
-
-                    composable(
-                        route = Screen.Trash.route,
-                        enterTransition = peerScreenEnterTransition,
-                        exitTransition = {
-                            when {
-                                Screen.Trash.childRoutes.contains(targetState.destination.route) -> {
-                                    childScreenExitTransition()
-                                }
-                                else -> peerScreenExitTransition()
-                            }
-                        },
-                        popEnterTransition = {
-                            when {
-                                Screen.Trash.childRoutes.contains(initialState.destination.route) -> {
-                                    childScreenPopEnterTransition()
-                                }
-                                else -> peerScreenEnterTransition()
-                            }
-                        }
-                    ) {
-                        TrashScreen(
-                            drawerState = drawerState,
-                            finishActivity = finishActivity,
-                            onShowSnackbar = onShowSnackbar,
-                            onNavigateToBoardFlow = {
-                                navController.navigateToBoardFlow(it, BoardState.DELETED)
-                            }
-                        )
-                    }
-
-                    boardGraph(
-                        navController = navController,
+                    HomeScreen(
                         drawerState = drawerState,
-                        appViewModel = appViewModel,
-                        onShowSnackbar = onShowSnackbar
+                        finishActivity = finishActivity,
+                        onShowSnackbar = onShowSnackbar,
+                        onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
+                        onNavigateToBoard = { navController.navigateToBoardFlow(it) }
                     )
+                }
 
-                    composable(
-                        route = Screen.CreateBoard.route,
-                        enterTransition = childScreenEnterTransition,
-                        exitTransition = childScreenExitTransition,
-                        popExitTransition = childScreenPopExitTransition
-                    ) {
-                        AddEditBoardScreen(
-                            onShowSnackbar = onShowSnackbar,
-                            appViewModel = appViewModel,
-                            createMode = true,
-                            onNavigateBack = { navController.navigateUp() },
-                            onNavigateToHome = { navController.navigateToHome() },
-                            onNavigateToArchive = { navController.navigateToArchive() },
-                            onNavigateToTrash = { navController.navigateToTrash() },
-                            onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
-                        )
-                    }
-
-//                    composable(
-//                        route = Screen.TaskDateTime.route,
-//                        arguments = Screen.TaskDateTime.arguments,
-//                        enterTransition = childScreenEnterTransition,
-//                        exitTransition = childScreenExitTransition,
-//                        popExitTransition = childScreenPopExitTransition
-//                    ) {
-//                        TaskDateTimeFullDialog(
-//                            onNavigateBack = onNavigateBoard@{
-//                                val previousRoute = navController
-//                                    .previousBackStackEntry
-//                                    ?.destination
-//                                    ?.route
-//                                if (previousRoute != Screen.Board.route) {
-//                                    navController.navigateUp()
-//                                    return@onNavigateBoard
-//                                }
-//
-//                                // Get the board ID and state to update Board Screen
-//                                // with updated values
-//                                val boardId = navController
-//                                    .previousBackStackEntry
-//                                    ?.arguments
-//                                    ?.getInt(Screen.BOARD_ROUTE_ID_ARGUMENT)!!
-//                                val boardState = navController
-//                                    .previousBackStackEntry
-//                                    ?.arguments
-//                                    ?.getString(Screen.BOARD_ROUTE_STATE_ARGUMENT)!!.let { name ->
-//                                        BoardState.values().first { it.name == name }
-//                                    }
-//                                navController.navigateToBoard(boardId, boardState)
-//                            }
-//                        )
-//                    }
-
-                    composable(
-                        route = Screen.Label.route,
-                        arguments = Screen.Label.arguments,
-                        enterTransition = peerScreenEnterTransition,
-                        exitTransition = {
-                            when {
-                                Screen.Label.childRoutes.contains(targetState.destination.route) -> {
-                                    childScreenExitTransition()
-                                }
-                                else -> peerScreenExitTransition()
+                composable(
+                    route = Screen.Archive.route,
+                    enterTransition = peerScreenEnterTransition,
+                    exitTransition = {
+                        when {
+                            Screen.Archive.childRoutes.contains(targetState.destination.route) -> {
+                                childScreenExitTransition()
                             }
-                        },
-                        popEnterTransition = {
-                            when {
-                                Screen.Label.childRoutes.contains(initialState.destination.route) -> {
-                                    childScreenPopEnterTransition()
-                                }
-                                else -> peerScreenEnterTransition()
-                            }
+                            else -> peerScreenExitTransition()
                         }
-                    ) {
-                        LabelScreen(
-                            drawerState = drawerState,
-                            onShowSnackbar = onShowSnackbar,
-                            onNavigateToHome = { navController.navigateToHome() },
-                            onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
-                            onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
-                        )
+                    },
+                    popEnterTransition = {
+                        when {
+                            Screen.Archive.childRoutes.contains(initialState.destination.route) -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
                     }
+                ) {
+                    ArchiveScreen(
+                        drawerState = drawerState,
+                        finishActivity = finishActivity,
+                        onShowSnackbar = onShowSnackbar,
+                        onNavigateToBoardFlow = {
+                            navController.navigateToBoardFlow(it, BoardState.ARCHIVED)
+                        }
+                    )
+                }
+
+                composable(
+                    route = Screen.Trash.route,
+                    enterTransition = peerScreenEnterTransition,
+                    exitTransition = {
+                        when {
+                            Screen.Trash.childRoutes.contains(targetState.destination.route) -> {
+                                childScreenExitTransition()
+                            }
+                            else -> peerScreenExitTransition()
+                        }
+                    },
+                    popEnterTransition = {
+                        when {
+                            Screen.Trash.childRoutes.contains(initialState.destination.route) -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
+                    }
+                ) {
+                    TrashScreen(
+                        drawerState = drawerState,
+                        finishActivity = finishActivity,
+                        onShowSnackbar = onShowSnackbar,
+                        onNavigateToBoardFlow = {
+                            navController.navigateToBoardFlow(it, BoardState.DELETED)
+                        }
+                    )
+                }
+
+                boardGraph(
+                    navController = navController,
+                    drawerState = drawerState,
+                    appViewModel = appViewModel,
+                    onShowSnackbar = onShowSnackbar
+                )
+
+                composable(
+                    route = Screen.CreateBoard.route,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition,
+                    popExitTransition = childScreenPopExitTransition
+                ) {
+                    AddEditBoardScreen(
+                        onShowSnackbar = onShowSnackbar,
+                        appViewModel = appViewModel,
+                        createMode = true,
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToHome = { navController.navigateToHome() },
+                        onNavigateToArchive = { navController.navigateToArchive() },
+                        onNavigateToTrash = { navController.navigateToTrash() },
+                        onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
+                    )
+                }
+
+                composable(
+                    route = Screen.Label.route,
+                    arguments = Screen.Label.arguments,
+                    enterTransition = peerScreenEnterTransition,
+                    exitTransition = {
+                        when {
+                            Screen.Label.childRoutes.contains(targetState.destination.route) -> {
+                                childScreenExitTransition()
+                            }
+                            else -> peerScreenExitTransition()
+                        }
+                    },
+                    popEnterTransition = {
+                        when {
+                            Screen.Label.childRoutes.contains(initialState.destination.route) -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
+                    }
+                ) {
+                    LabelScreen(
+                        drawerState = drawerState,
+                        onShowSnackbar = onShowSnackbar,
+                        onNavigateToHome = { navController.navigateToHome() },
+                        onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
+                        onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
+                    )
                 }
             }
         }

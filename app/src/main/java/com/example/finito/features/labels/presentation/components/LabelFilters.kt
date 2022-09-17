@@ -15,9 +15,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import kotlinx.coroutines.launch
 
@@ -35,7 +37,7 @@ fun LabelFilters(
     val listState = rememberLazyListState()
 
     Column(
-        modifier = modifier,
+        modifier = modifier.testTag(TestTags.LABEL_FILTERS),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
@@ -59,7 +61,9 @@ fun LabelFilters(
                             )
                         },
                         label = { Text(text = stringResource(id = R.string.remove_filters)) },
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .testTag(TestTags.REMOVE_FILTERS_CHIP)
                     )
                 }
             }
@@ -91,7 +95,7 @@ fun LabelFilters(
                     modifier = Modifier.padding(
                         start = if (index == 0) 0.dp else 4.dp,
                         end = if (index == labels.lastIndex) 0.dp else 4.dp
-                    )
+                    ).testTag(TestTags.LABEL_FILTER_ITEM)
                 )
             }
         }

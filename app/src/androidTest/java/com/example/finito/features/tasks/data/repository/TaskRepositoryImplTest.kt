@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.toTaskUpdate
 import com.google.common.truth.Truth.assertThat
@@ -50,8 +51,9 @@ class TaskRepositoryImplTest {
             db.boardDao.create(
                 Board(
                     name = "Board $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0
+                    state = if (index % 3 == 0) BoardState.ARCHIVED
+                    else if (index % 2 == 0) BoardState.DELETED
+                    else BoardState.ACTIVE
                 )
             )
         }

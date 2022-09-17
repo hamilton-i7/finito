@@ -21,7 +21,7 @@ android {
             }
         }
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.example.finito.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary true
         }
@@ -56,7 +56,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.compose.material3:material3:1.0.0-beta02'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation 'androidx.activity:activity-compose:1.5.1'
@@ -72,13 +72,14 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+    androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
     // Compose dependencies
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.runtime:runtime:$compose_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-alpha01"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-alpha02"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.navigation:navigation-compose:2.5.1"
+    implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
     implementation "androidx.compose.ui:ui-text-google-fonts:$compose_version"
@@ -100,10 +101,14 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
 
     // Dagger - Hilt
-    implementation "com.google.dagger:hilt-android:2.38.1"
-    kapt "com.google.dagger:hilt-compiler:2.38.1"
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
     kapt "androidx.hilt:hilt-compiler:1.0.0"
+    testImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kaptTest "com.google.dagger:hilt-android-compiler:$hilt_version"
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // Test helpers
     testImplementation "androidx.room:room-testing:$room_version"

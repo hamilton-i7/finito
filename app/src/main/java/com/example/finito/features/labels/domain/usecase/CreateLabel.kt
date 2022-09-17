@@ -13,6 +13,6 @@ class CreateLabel(
         if (label.name.isBlank()) {
             throw ResourceException.EmptyException
         }
-        return repository.create(label)
+        return repository.create(label.copy(name = label.name.trim()))
     }
 }

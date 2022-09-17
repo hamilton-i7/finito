@@ -57,7 +57,7 @@ fun App(
     drawerViewModel: DrawerViewModel  = hiltViewModel(),
     snackbarState: SnackbarState = rememberSnackbarState(),
     navController: NavHostController = rememberAnimatedNavController(),
-    finishActivity: () -> Unit,
+    finishActivity: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val (snackbarHostState, scope) = snackbarState

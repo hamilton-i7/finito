@@ -1,6 +1,5 @@
 package com.example.finito.features.labels.presentation.screen.label
 
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -16,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
@@ -26,6 +24,7 @@ import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.menu.LabelMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.presentation.screen.label.components.LabelDialogs
@@ -228,25 +227,9 @@ private fun LabelScreen(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 private fun LabelScreenPreview() {
-    FinitoTheme {
-        Surface {
-            LabelScreen(
-                boards = BoardWithLabelsAndTasks.dummyBoards,
-                selectedSortingOption = SortingOption.Common.Newest
-            )
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun LabelScreenPreviewDark() {
     FinitoTheme {
         Surface {
             LabelScreen(

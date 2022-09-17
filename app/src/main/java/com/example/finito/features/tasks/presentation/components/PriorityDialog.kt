@@ -16,13 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.finito.R
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.presentation.components.FinitoDivider
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 
@@ -128,23 +128,9 @@ private fun PriorityItem(
     }
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PriorityDialogPreview() {
-    FinitoTheme {
-        Surface {
-            PriorityDialog(
-                onDismiss = {},
-                selectedPriority = Priority.URGENT,
-                onPrioritySelect = {}
-            )
-        }
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun PriorityDialogPreviewDark() {
     FinitoTheme {
         Surface {
             PriorityDialog(

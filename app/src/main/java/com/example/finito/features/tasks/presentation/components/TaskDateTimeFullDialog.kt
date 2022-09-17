@@ -8,12 +8,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.components.bars.DialogTopBar
 import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.TimeTextField
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.util.formatted
 import com.example.finito.features.tasks.domain.util.isCurrentYear
@@ -108,9 +108,9 @@ fun TaskDateTimeFullDialog(
     }
 }
 
-@Preview
+@ThemePreviews
 @Composable
-private fun TaskDateTimeScreenPreview() {
+private fun TaskDateTimeFullDialogPreview() {
     FinitoTheme {
         TaskDateTimeFullDialog(
             date = LocalDate.now(),

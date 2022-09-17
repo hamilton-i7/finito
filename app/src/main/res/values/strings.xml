@@ -95,4 +95,7 @@
     <string name="delete_label_confirmation">This action cannot be undone. After deleting this label, it’ll be removed from all your boards. Don’t worry, your boards will not be deleted</string>
     <string name="delete_label_question">Delete label?</string>
     <string name="rename">Rename</string>
+    <string name="create_label">Create label</string>
+    <string name="create">Create</string>
+    <string name="label_created">Label created</string>
 </resources>

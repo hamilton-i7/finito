@@ -13,10 +13,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.Priority
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.util.toFormattedChipDate
 import com.example.finito.ui.theme.FinitoTheme
@@ -201,7 +201,7 @@ fun TaskItem(
     }
 }
 
-@Preview(showBackground = true)
+@ThemePreviews
 @Composable
 private fun TaskItemPreview() {
 

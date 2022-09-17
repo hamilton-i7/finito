@@ -13,10 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
@@ -127,7 +127,7 @@ private fun DrawerContent(
             }
             item { DrawerSectionHeader(text = R.string.main) }
 
-            items(mainScreens, key = { it.screen.route }) { item ->
+            items(mainScreens) { item ->
                 NavigationDrawerItem(
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { Text(text = stringResource(id = item.label)) },
@@ -146,7 +146,7 @@ private fun DrawerContent(
                 )
             }
             if (expandBoards) {
-                items(boards, key = { it.boardId }) { board ->
+                items(boards) { board ->
                     val route = "${Screen.Board.prefix}/${board.boardId}"
 
                     NavigationDrawerItem(
@@ -178,7 +178,7 @@ private fun DrawerContent(
                 )
             }
             if (expandLabels) {
-                items(labels, key = { it.labelId }) { label ->
+                items(labels) { label ->
                     val route = "${Screen.Label.prefix}/${label.labelId}"
 
                     NavigationDrawerItem(
@@ -197,7 +197,7 @@ private fun DrawerContent(
             }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
-            items(otherScreens, key = { it.screen.route }) { item ->
+            items(otherScreens) { item ->
                 NavigationDrawerItem(
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { Text(text = stringResource(id = item.label)) },
@@ -276,7 +276,7 @@ private fun DrawerItemButton(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@ThemePreviews
 @Composable
 private fun DrawerPreview() {
     FinitoTheme {
@@ -285,14 +285,14 @@ private fun DrawerPreview() {
             isSelectedScreen = { route -> route == Screen.Home.route },
             boards = listOf(
                 SimpleBoard(boardId = 1, name = "Board 1"),
-                SimpleBoard(boardId = 1, name = "Board 2"),
-                SimpleBoard(boardId = 1, name = "Board 3"),
-                SimpleBoard(boardId = 1, name = "Board 4"),
+                SimpleBoard(boardId = 2, name = "Board 2"),
+                SimpleBoard(boardId = 3, name = "Board 3"),
+                SimpleBoard(boardId = 4, name = "Board 4"),
             ),
             labels = listOf(
                 SimpleLabel(labelId = 1, name = "Label 1"),
-                SimpleLabel(labelId = 1, name = "Label 2"),
-                SimpleLabel(labelId = 1, name = "Label 3"),
+                SimpleLabel(labelId = 2, name = "Label 2"),
+                SimpleLabel(labelId = 3, name = "Label 3"),
             ),
             onItemSelected = {},
         ) {}

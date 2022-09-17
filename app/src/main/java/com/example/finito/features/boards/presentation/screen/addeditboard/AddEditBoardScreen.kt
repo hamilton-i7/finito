@@ -1,6 +1,5 @@
 package com.example.finito.features.boards.presentation.screen.addeditboard
 
-import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
@@ -19,7 +18,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -32,6 +30,7 @@ import com.example.finito.core.presentation.components.textfields.FinitoTextFiel
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
+import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.addeditboard.components.AddEditBoardDialogs
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -325,7 +324,7 @@ private fun AddEditBoardScreen(
     }
 }
 
-@Preview(showBackground = true)
+@CompletePreviews
 @Composable
 private fun AddEditBoardScreenPreview() {
     val labels = SimpleLabel.dummyLabels.take(6)
@@ -335,26 +334,6 @@ private fun AddEditBoardScreenPreview() {
         Surface {
             AddEditBoardScreen(
                 nameState = TextFieldState(),
-                labels = SimpleLabel.dummyLabels.take(6),
-                selectedLabels = selectedLabels
-            )
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun AddEditBoardScreenPreviewDark() {
-    val labels = SimpleLabel.dummyLabels.take(6)
-    val selectedLabels = labels.take(3)
-
-    FinitoTheme {
-        Surface {
-            AddEditBoardScreen(
-                nameState = TextFieldState(value = "Board name"),
                 labels = SimpleLabel.dummyLabels.take(6),
                 selectedLabels = selectedLabels
             )

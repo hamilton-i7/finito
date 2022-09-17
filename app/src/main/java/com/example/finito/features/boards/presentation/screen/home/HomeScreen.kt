@@ -1,6 +1,5 @@
 package com.example.finito.features.boards.presentation.screen.home
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
@@ -24,6 +22,7 @@ import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
+import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.screen.home.components.HomeTopBar
@@ -221,26 +220,9 @@ private fun HomeScreen(
     }
 }
 
-@Preview(showBackground = true)
+@CompletePreviews
 @Composable
 private fun HomeScreenPreview() {
-    FinitoTheme {
-        Surface {
-            HomeScreen(
-                labels = SimpleLabel.dummyLabels,
-                boards = BoardWithLabelsAndTasks.dummyBoards,
-                selectedSortingOption = SortingOption.Common.Newest
-            )
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    uiMode = UI_MODE_NIGHT_YES
-)
-@Composable
-private fun HomeScreenPreviewDark() {
     FinitoTheme {
         Surface {
             HomeScreen(

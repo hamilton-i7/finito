@@ -1,6 +1,5 @@
 package com.example.finito.features.boards.presentation.components
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
@@ -9,12 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.presentation.components.PercentageIndicator
 import com.example.finito.core.presentation.components.menu.FinitoMenu
+import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
@@ -96,20 +95,9 @@ fun BoardCard(
     }
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun BoardCardPreview() {
-    FinitoTheme {
-        BoardCard(
-            onClick = {},
-            board = BoardWithLabelsAndTasks.dummyBoards.random()
-        )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun BoardCardPreviewDark() {
     FinitoTheme {
         BoardCard(
             onClick = {},

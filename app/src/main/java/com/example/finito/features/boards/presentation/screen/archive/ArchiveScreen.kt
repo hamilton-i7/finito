@@ -1,6 +1,5 @@
 package com.example.finito.features.boards.presentation.screen.archive
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
@@ -21,6 +19,7 @@ import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.util.menu.ArchivedBoardCardMenuOption
+import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -212,26 +211,9 @@ private fun ArchiveScreen(
     }
 }
 
-@Preview(showBackground = true)
+@CompletePreviews
 @Composable
 private fun ArchiveScreenPreview() {
-    FinitoTheme {
-        Surface {
-            ArchiveScreen(
-                labels = SimpleLabel.dummyLabels,
-                boards = BoardWithLabelsAndTasks.dummyBoards,
-                selectedSortingOption = SortingOption.Common.Newest
-            )
-        }
-    }
-}
-
-@Preview(
-    showBackground = true,
-    uiMode = UI_MODE_NIGHT_YES
-)
-@Composable
-private fun ArchiveScreenPreviewDark() {
     FinitoTheme {
         Surface {
             ArchiveScreen(

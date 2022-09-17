@@ -4,9 +4,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.ui.theme.FinitoTheme
@@ -46,10 +49,18 @@ fun EditLabelDialog(
             }
         },
         confirmButton = {
-            FilledTonalButton(onClick = onConfirmClick, enabled = name.isNotBlank()) {
+            FilledTonalButton(
+                onClick = onConfirmClick,
+                enabled = name.isNotBlank(),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = finitoColors.primaryContainer,
+                    contentColor = finitoColors.onPrimaryContainer
+                )
+            ) {
                 Text(text = stringResource(id = R.string.rename))
             }
-        }
+        },
+        modifier = Modifier.testTag(TestTags.RENAME_LABEL_DIALOG)
     )
 }
 

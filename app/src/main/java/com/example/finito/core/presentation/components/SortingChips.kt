@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,11 @@ fun SortingChips(
                         }
                     } else null,
                     label = { Text(stringResource(id = option.label)) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = finitoColors.primaryContainer,
+                        selectedLabelColor = finitoColors.onPrimaryContainer,
+                        selectedLeadingIconColor = finitoColors.onPrimaryContainer
+                    ),
                     modifier = Modifier.animateContentSize(
                         animationSpec = tween(durationMillis = 100)
                     )

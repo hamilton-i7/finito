@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
+import com.example.finito.ui.theme.finitoColors
 
 @Composable
 fun DeleteDialog(
@@ -26,10 +27,16 @@ fun DeleteDialog(
         },
         text = { Text(text = stringResource(id = description)) },
         confirmButton = {
-            FilledTonalButton(onClick = {
-                onConfirmClick()
-                onDismiss()
-            }) { Text(text = stringResource(id = confirmButtonText)) }
+            FilledTonalButton(
+                onClick = {
+                    onConfirmClick()
+                    onDismiss()
+                },
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = finitoColors.primaryContainer,
+                    contentColor = finitoColors.onPrimaryContainer
+                )
+            ) { Text(text = stringResource(id = confirmButtonText)) }
         },
         dismissButton = {
             TextButton(onClick = onDismissClick) {

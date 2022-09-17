@@ -88,10 +88,16 @@ fun PriorityDialog(
                     Text(text = stringResource(id = R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                FilledTonalButton(onClick = {
-                    onConfirmClick()
-                    onDismiss()
-                }) { Text(text = stringResource(id = R.string.confirm)) }
+                FilledTonalButton(
+                    onClick = {
+                        onConfirmClick()
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = finitoColors.primaryContainer,
+                        contentColor = finitoColors.onPrimaryContainer
+                    )
+                ) { Text(text = stringResource(id = R.string.confirm)) }
             }
         }
     }

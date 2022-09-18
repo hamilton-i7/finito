@@ -10,19 +10,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateLabelContent(
-    onShowSnackbar: (Int, Int?, () -> Unit) -> Unit,
     createLabelViewModel: CreateLabelViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
+    onShowSnackbar: (Int, Int?, () -> Unit) -> Unit = {_, _, _ ->},
 ) {
     val (name, onNameChange) = createLabelViewModel.nameState.copy(
         onValueChange = {
@@ -44,6 +46,7 @@ fun CreateLabelContent(
     Surface(
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 3.dp,
+        modifier = Modifier.testTag(TestTags.CREATE_LABEL_DIALOG)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -68,7 +71,8 @@ fun CreateLabelContent(
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f)
-                )
+                ),
+                modifier = Modifier.testTag(TestTags.NAME_TEXT_FIELD)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Row(
@@ -83,7 +87,8 @@ fun CreateLabelContent(
                     onClick = {
                         createLabelViewModel.onEvent(CreateLabelEvent.CreateLabel)
                     },
-                    enabled = name.isNotBlank()
+                    enabled = name.isNotBlank(),
+                    modifier = Modifier.testTag(TestTags.DIALOG_CONFIRM_BUTTON)
                 ) { Text(text = stringResource(id = R.string.create)) }
             }
         }

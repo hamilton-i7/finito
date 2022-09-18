@@ -38,7 +38,8 @@ fun DeleteDialog(
                 colors = ButtonDefaults.filledTonalButtonColors(
                     containerColor = finitoColors.primaryContainer,
                     contentColor = finitoColors.onPrimaryContainer
-                )
+                ),
+                modifier = Modifier.testTag(TestTags.DIALOG_CONFIRM_BUTTON)
             ) { Text(text = stringResource(id = confirmButtonText)) }
         },
         dismissButton = {

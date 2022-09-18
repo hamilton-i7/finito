@@ -14,12 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
@@ -37,12 +39,16 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun HomeScreen(
-    drawerState: DrawerState,
-    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel(),
+    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onNavigateToCreateBoard: () -> Unit = {},
     onNavigateToBoard: (boardId: Int) -> Unit = {},
     finishActivity: () -> Unit = {},
+    onShowSnackbar: (
+        message: Int,
+        actionLabel: Int?,
+        onActionClick: () -> Unit
+    ) -> Unit = {_, _, _ -> },
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -129,7 +135,9 @@ fun HomeScreen(
                     searchTopBarScrollBehavior.nestedScrollConnection
                 else
                     homeTopBarScrollBehavior.nestedScrollConnection
-        ).noRippleClickable { focusManager.clearFocus() },
+            )
+            .noRippleClickable { focusManager.clearFocus() }
+            .testTag(TestTags.HOME_SCREEN),
     ) { innerPadding ->
         HomeScreen(
             paddingValues = innerPadding,

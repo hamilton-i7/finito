@@ -12,10 +12,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -186,7 +188,9 @@ private fun DrawerContent(
                         label = { Text(text = label.name) },
                         selected = isSelectedScreen(route),
                         onClick = { onItemSelected(route) },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        modifier = Modifier
+                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                            .testTag(TestTags.DRAWER_LABEL_ITEM)
                     )
                 }
             }

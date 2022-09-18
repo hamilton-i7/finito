@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.dialog
@@ -133,11 +134,12 @@ fun App(
             }
         }
     ) {
+        // TODO: Add semantic descriptions to screen elements (accessibility)
         Scaffold(
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarHostState,
-                    modifier = snackbarModifier
+                    modifier = snackbarModifier.testTag(TestTags.SNACKBAR)
                 )
             },
         ) {

@@ -9,10 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelFilters
@@ -39,7 +41,9 @@ fun BoardsList(
     LazyColumn(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TestTags.BOARDS_LIST)
     ) {
         if (labels.isNotEmpty()) {
             item(contentType = "label filters") {

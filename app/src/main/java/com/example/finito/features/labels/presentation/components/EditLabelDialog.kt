@@ -40,7 +40,8 @@ fun EditLabelDialog(
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f)
-                )
+                ),
+                modifier = Modifier.testTag(TestTags.RENAME_TEXT_FIELD)
             )
         },
         dismissButton = {
@@ -55,7 +56,8 @@ fun EditLabelDialog(
                 colors = ButtonDefaults.filledTonalButtonColors(
                     containerColor = finitoColors.primaryContainer,
                     contentColor = finitoColors.onPrimaryContainer
-                )
+                ),
+                modifier = Modifier.testTag(TestTags.DIALOG_CONFIRM_BUTTON)
             ) {
                 Text(text = stringResource(id = R.string.rename))
             }

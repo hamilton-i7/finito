@@ -11,10 +11,12 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,9 +56,10 @@ fun SortingChips(
                         selectedLabelColor = finitoColors.onPrimaryContainer,
                         selectedLeadingIconColor = finitoColors.onPrimaryContainer
                     ),
-                    modifier = Modifier.animateContentSize(
-                        animationSpec = tween(durationMillis = 100)
-                    )
+                    modifier = Modifier
+                        .animateContentSize(
+                            animationSpec = tween(durationMillis = 100)
+                        ).testTag(TestTags.SORTING_CHIP)
                 )
             }
         }

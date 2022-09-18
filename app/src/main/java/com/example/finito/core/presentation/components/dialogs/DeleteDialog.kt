@@ -5,8 +5,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.ui.theme.finitoColors
 
 @Composable
@@ -42,6 +45,7 @@ fun DeleteDialog(
             TextButton(onClick = onDismissClick) {
                 Text(text = stringResource(id = R.string.cancel))
             }
-        }
+        },
+        modifier = Modifier.testTag(TestTags.DELETE_DIALOG)
     )
 }

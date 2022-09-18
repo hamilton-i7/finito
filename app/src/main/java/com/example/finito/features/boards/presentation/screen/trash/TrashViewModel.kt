@@ -46,9 +46,6 @@ class TrashViewModel @Inject constructor(
     var selectedBoardId by mutableStateOf(0)
         private set
 
-    var showDialog by mutableStateOf(false)
-        private set
-
     var dialogType by mutableStateOf<TrashEvent.DialogType?>(null)
         private set
 
@@ -67,10 +64,7 @@ class TrashViewModel @Inject constructor(
             TrashEvent.UndoRestore -> undoRestore()
             is TrashEvent.ShowMenu -> showMenu = event.show
             is TrashEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
-            is TrashEvent.ShowDialog -> event.type?.let {
-                showDialog = true
-                dialogType = it
-            } ?: run { showDialog = false }
+            is TrashEvent.ShowDialog -> dialogType = event.type
         }
     }
 

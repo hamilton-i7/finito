@@ -6,12 +6,14 @@ import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.components.PercentageIndicator
 import com.example.finito.core.presentation.components.menu.FinitoMenu
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -40,7 +42,7 @@ fun BoardCard(
 
     Card(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier.testTag(TestTags.BOARD_CARD)
     ) {
         Column(modifier = Modifier.padding(vertical = 16.dp)) {
             Row(
@@ -51,7 +53,10 @@ fun BoardCard(
                     progress = completedTasks,
                     modifier = Modifier.padding(start = 16.dp)
                 )
-                IconButton(onClick = onOptionsClick) {
+                IconButton(
+                    onClick = onOptionsClick,
+                    modifier = Modifier.testTag(TestTags.CARD_MENU_BUTTON)
+                ) {
                     Box {
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,

@@ -7,12 +7,15 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
 import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.core.presentation.components.menu.FinitoMenu
+import com.example.finito.core.presentation.util.TestTags
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +43,10 @@ fun <M: MenuOption> MediumTopBarWithMenu(
         title = { Text(title, overflow = TextOverflow.Ellipsis, maxLines = 1) },
         actions = {
             Box {
-                IconButton(onClick = onMoreOptionsClick) {
+                IconButton(
+                    onClick = onMoreOptionsClick,
+                    modifier = Modifier.testTag(TestTags.MENU_BUTTON)
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.MoreVert,
                         contentDescription = stringResource(id = R.string.more_options)

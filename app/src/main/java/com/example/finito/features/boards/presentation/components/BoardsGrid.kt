@@ -11,10 +11,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
+import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.utils.BOARD_COLUMNS
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -44,7 +46,9 @@ fun BoardsGrid(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = contentPadding,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TestTags.BOARDS_GRID)
     ) {
         if (labels.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }, contentType = "label filters") {

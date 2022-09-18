@@ -9,9 +9,11 @@ import androidx.compose.material.icons.outlined.ViewStream
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 
 val BottomBarHeight = 80.dp
 
@@ -33,11 +35,14 @@ fun BottomBar(
                     contentDescription = stringResource(id = searchDescription)
                 )
             }
-            IconButton(onClick = onChangeLayoutClick) {
+            IconButton(
+                onClick = onChangeLayoutClick,
+                modifier = Modifier.testTag(TestTags.TOGGLE_LAYOUT_BUTTON)
+            ) {
                 if (gridLayout) {
                     Icon(
-                            imageVector = Icons.Outlined.ViewStream,
-                    contentDescription = stringResource(id = R.string.list_view)
+                        imageVector = Icons.Outlined.ViewStream,
+                        contentDescription = stringResource(id = R.string.list_view)
                     )
                 } else {
                     Icon(

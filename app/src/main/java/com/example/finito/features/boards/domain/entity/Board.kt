@@ -39,7 +39,11 @@ data class Board(
                 createdAt = LocalDateTime.now().plusMinutes(index.toLong()),
                 removedAt = if (index % 2 == 0) timestamps.random() else null,
             )
-        }.shuffled()
+        }
+
+        val activeBoards = ('A'..'Z').map { c ->
+            Board(name = "Board $c")
+        }
     }
 }
 

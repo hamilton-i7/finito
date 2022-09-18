@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,10 +93,17 @@ fun LabelFilters(
                         }
                     } else null,
                     label = { Text(label.name) },
-                    modifier = Modifier.padding(
-                        start = if (index == 0) 0.dp else 4.dp,
-                        end = if (index == labels.lastIndex) 0.dp else 4.dp
-                    ).testTag(TestTags.LABEL_FILTER_ITEM)
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = finitoColors.primaryContainer,
+                        selectedLabelColor = finitoColors.onPrimaryContainer,
+                        selectedLeadingIconColor = finitoColors.onPrimaryContainer
+                    ),
+                    modifier = Modifier
+                        .padding(
+                            start = if (index == 0) 0.dp else 4.dp,
+                            end = if (index == labels.lastIndex) 0.dp else 4.dp
+                        )
+                        .testTag(TestTags.LABEL_FILTER_ITEM)
                 )
             }
         }

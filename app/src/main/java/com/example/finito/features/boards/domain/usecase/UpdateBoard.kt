@@ -1,5 +1,7 @@
 package com.example.finito.features.boards.domain.usecase
 
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.isValidId
 import com.example.finito.core.domain.util.normalize
@@ -12,40 +14,39 @@ class UpdateBoard(
     private val boardRepository: BoardRepository,
     private val boardLabelRepository: BoardLabelRepository
 ) {
-    @Throws(
-        ResourceException.NegativeIdException::class,
-        ResourceException.EmptyException::class,
-        ResourceException.InvalidStateException::class,
-        ResourceException.NotFoundException::class
-    )
-    suspend operator fun invoke(boardWithLabelsAndTasks: BoardWithLabelsAndTasks) {
+
+    suspend operator fun invoke(
+        boardWithLabelsAndTasks: BoardWithLabelsAndTasks
+    ): Result<Unit, String> {
         val (board, labels) = boardWithLabelsAndTasks
 
         if (!isValidId(board.boardId)) {
-            throw ResourceException.NegativeIdException
+            return Result.Error(message = ErrorMessages.INVALID_ID)
         }
         if (board.name.isBlank()) {
-            throw ResourceException.EmptyException
+            return Result.Error(message = ErrorMessages.EMPTY_NAME)
         }
 
-        boardRepository.findOne(board.boardId).let {
-            if (it == null) throw ResourceException.NotFoundException
-        }
+        boardRepository.findOne(board.boardId) ?: return Result.Error(
+            message = ErrorMessages.NOT_FOUND
+        )
 
-        return boardRepository.update(board.copy(normalizedName = board.name.normalize())).also {
-            with(boardLabelRepository.findAllByBoardId(board.boardId)) {
-                val newRefs = labels.map {
-                    BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
-                }
-                if (this == newRefs) return@with
-                // Delete refs not found in the old refs list
-                deleteRefs(oldRefs= this, newRefs = newRefs)
-                // Create the new refs
-                if (labels.isNotEmpty()) {
-                    createRefs(refs = newRefs)
+        return Result.Success(
+            data = boardRepository.update(board.copy(normalizedName = board.name.normalize())).also {
+                with(boardLabelRepository.findAllByBoardId(board.boardId)) {
+                    val newRefs = labels.map {
+                        BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)
+                    }
+                    if (this == newRefs) return@with
+                    // Delete refs not found in the old refs list
+                    deleteRefs(oldRefs= this, newRefs = newRefs)
+                    // Create the new refs
+                    if (labels.isNotEmpty()) {
+                        createRefs(refs = newRefs)
+                    }
                 }
             }
-        }
+        )
     }
 
     private suspend fun createRefs(refs: List<BoardLabelCrossRef>) {

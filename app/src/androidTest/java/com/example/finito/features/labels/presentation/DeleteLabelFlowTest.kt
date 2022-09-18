@@ -11,6 +11,7 @@ import androidx.navigation.testing.TestNavHostController
 import com.example.finito.AppModule
 import com.example.finito.MainActivity
 import com.example.finito.core.di.PreferencesModuleTest
+import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.App
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.boards.di.BoardModule
@@ -65,7 +66,7 @@ class DeleteLabelFlowTest {
             labelUseCases.createLabel(it)
         }
         val labels = labelUseCases.findSimpleLabels().first()
-        label = labelUseCases.findLabel(labels.random().labelId)
+        label = (labelUseCases.findLabel(labels.random().labelId) as Result.Success).data
     }
 
     @OptIn(ExperimentalMaterial3Api::class)

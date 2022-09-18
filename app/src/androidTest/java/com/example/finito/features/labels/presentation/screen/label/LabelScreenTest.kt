@@ -40,6 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
+import com.example.finito.core.domain.Result
 
 @HiltAndroidTest
 @UninstallModules(
@@ -85,7 +86,7 @@ class LabelScreenTest {
             labelUseCases.createLabel(it)
         }
         val labels = labelUseCases.findSimpleLabels().first()
-        label = labelUseCases.findLabel(labels.random().labelId)
+        label = (labelUseCases.findLabel(labels.random().labelId) as Result.Success).data
 
         Board.activeBoards.forEach {
             boardUseCases.createBoard(

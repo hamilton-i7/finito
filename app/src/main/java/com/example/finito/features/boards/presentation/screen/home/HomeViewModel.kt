@@ -147,7 +147,7 @@ class HomeViewModel @Inject constructor(
             boardOrder = boardsOrder,
             searchQuery = searchQueryState.value,
             labelIds = labelFilters.toIntArray()
-        ).onEach { boards ->
+        ).data.onEach { boards ->
             this@HomeViewModel.boards = boards
             boardsOrder = boardsOrder
         }.launchIn(viewModelScope)

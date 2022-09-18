@@ -8,7 +8,7 @@ import com.example.finito.features.labels.domain.repository.LabelRepository
 
 class DeleteLabel(private val repository: LabelRepository) {
 
-    suspend operator fun invoke(label: Label): Result<Unit> {
+    suspend operator fun invoke(label: Label): Result<Unit, String> {
         if (!isValidId(label.labelId)) {
             return Result.Error(ErrorMessages.INVALID_ID)
         }

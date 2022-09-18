@@ -128,7 +128,9 @@ class LabelViewModel @Inject constructor(
         with(label!!) {
             when (labelUseCases.deleteLabel(this)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(error = R.string.delete_label_error))
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.delete_label_error)
+                    )
                 }
                 is Result.Success -> _eventFlow.emit(Event.NavigateHome)
             }
@@ -138,7 +140,14 @@ class LabelViewModel @Inject constructor(
     private fun onEditLabel() = viewModelScope.launch {
         if (label == null) return@launch
         with(label!!) {
-            labelUseCases.updateLabel(copy(name = labelNameState.value)).also { fetchLabel() }
+            when (labelUseCases.updateLabel(copy(name = labelNameState.value))) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.update_label_error)
+                    )
+                }
+                is Result.Success -> fetchLabel()
+            }
         }
     }
 
@@ -154,11 +163,20 @@ class LabelViewModel @Inject constructor(
     }
 
     private fun onRestoreBoard() = viewModelScope.launch {
-        recentlyDeactivatedBoard?.let {
-            boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(state = BoardState.ACTIVE, removedAt = null))
-            )
-            recentlyDeactivatedBoard = null
+        if (recentlyDeactivatedBoard == null) return@launch
+        with(recentlyDeactivatedBoard!!) {
+            val restoredBoard = copy(board = board.copy(
+                state = BoardState.ACTIVE,
+                removedAt = null
+            ))
+            when (boardUseCases.updateBoard(restoredBoard)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.restore_board_error)
+                    )
+                }
+                is Result.Success -> recentlyDeactivatedBoard = null
+            }
         }
     }
 
@@ -169,21 +187,39 @@ class LabelViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(state = BoardState.ARCHIVED)))
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
+                    val archivedBoard = copy(board = this.board.copy(state = BoardState.ARCHIVED))
+                    when (boardUseCases.updateBoard(archivedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.archive_board_error)
+                            )
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
+                            recentlyDeactivatedBoard = this
+                        }
+                    }
                 }
                 DeactivateMode.DELETE -> {
-                    boardUseCases.updateBoard(
-                        copy(
-                            board = this.board.copy(
-                                state = BoardState.DELETED, removedAt = LocalDateTime.now()
-                            )
+                    val deletedBoard = copy(
+                        board = this.board.copy(
+                            state = BoardState.DELETED,
+                            removedAt = LocalDateTime.now()
                         )
                     )
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                    when (boardUseCases.updateBoard(deletedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.move_to_trash_error)
+                            )
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                            recentlyDeactivatedBoard = this
+                        }
+                    }
                 }
             }
-            recentlyDeactivatedBoard = this
         }
     }
 
@@ -220,7 +256,17 @@ class LabelViewModel @Inject constructor(
     private fun fetchLabel() {
         savedStateHandle.get<Int>(Screen.LABEL_ROUTE_ARGUMENT)?.let { labelId ->
             viewModelScope.launch {
-                labelUseCases.findLabel(labelId).also { fetchBoards(it.labelId) }.let { label = it }
+                when (val result = labelUseCases.findLabel(labelId)) {
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.find_label_error
+                        ))
+                    }
+                    is Result.Success -> {
+                        label = result.data
+                        fetchBoards(result.data.labelId)
+                    }
+                }
             }
         }
     }
@@ -231,7 +277,7 @@ class LabelViewModel @Inject constructor(
             boardOrder = boardsOrder,
             searchQuery = searchQueryState.value,
             labelId
-        ).onEach { boards ->
+        ).data.onEach { boards ->
             this@LabelViewModel.boards = boards
             boardsOrder = boardsOrder
         }.launchIn(viewModelScope)

@@ -77,6 +77,12 @@ fun LabelScreen(
                         labelViewModel.onEvent(LabelEvent.RestoreBoard)
                     }
                 }
+                is LabelViewModel.Event.ShowError -> {
+                    labelViewModel.onEvent(LabelEvent.ShowDialog(
+                        type = LabelEvent.DialogType.Error(message = event.error)
+                    ))
+                }
+                LabelViewModel.Event.NavigateHome -> onNavigateToHome()
             }
         }
     }
@@ -157,7 +163,7 @@ fun LabelScreen(
             .noRippleClickable { focusManager.clearFocus() }
             .testTag(TestTags.LABEL_SCREEN),
     ) { innerPadding ->
-        LabelDialogs(labelViewModel, onNavigateToHome)
+        LabelDialogs(labelViewModel)
 
         LabelScreen(
             paddingValues = innerPadding,

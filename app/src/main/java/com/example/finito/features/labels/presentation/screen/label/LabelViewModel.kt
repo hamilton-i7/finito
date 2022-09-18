@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.Screen
@@ -125,7 +126,12 @@ class LabelViewModel @Inject constructor(
     private fun onDeleteLabel() = viewModelScope.launch {
         if (label == null) return@launch
         with(label!!) {
-            labelUseCases.deleteLabel(this)
+            when (labelUseCases.deleteLabel(this)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(error = R.string.delete_label_error))
+                }
+                is Result.Success -> _eventFlow.emit(Event.NavigateHome)
+            }
         }
     }
 
@@ -233,5 +239,9 @@ class LabelViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowSnackbar(@StringRes val message: Int) : Event()
+
+        data class ShowError(@StringRes val error: Int) : Event()
+
+        object NavigateHome : Event()
     }
 }

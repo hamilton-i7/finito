@@ -98,4 +98,6 @@
     <string name="create_label">Create label</string>
     <string name="create">Create</string>
     <string name="label_created">Label created</string>
+    <string name="delete_label_error">Something went wrong while trying to delete this label</string>
+    <string name="ok">@android:string/ok</string>
 </resources>

@@ -1,19 +1,15 @@
 package com.example.finito.features.labels.presentation.screen.label.components
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 import com.example.finito.R
-import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.dialogs.DeleteDialog
+import com.example.finito.core.presentation.components.dialogs.ErrorDialog
 import com.example.finito.features.labels.presentation.components.EditLabelDialog
 import com.example.finito.features.labels.presentation.screen.label.LabelEvent
 import com.example.finito.features.labels.presentation.screen.label.LabelViewModel
 
 @Composable
-fun LabelDialogs(
-    labelViewModel: LabelViewModel,
-    onNavigateToHome: () -> Unit,
-) {
+fun LabelDialogs(labelViewModel: LabelViewModel) {
     when (labelViewModel.dialogType) {
         LabelEvent.DialogType.Delete -> {
             DeleteDialog(
@@ -27,7 +23,6 @@ fun LabelDialogs(
                 },
                 onConfirmClick = {
                     labelViewModel.onEvent(LabelEvent.DeleteLabel)
-                    onNavigateToHome()
                 }
             )
         }
@@ -46,6 +41,18 @@ fun LabelDialogs(
                 },
                 onConfirmClick = {
                     labelViewModel.onEvent(LabelEvent.EditLabel)
+                    labelViewModel.onEvent(LabelEvent.ShowDialog())
+                }
+            )
+        }
+        is LabelEvent.DialogType.Error -> {
+            val message = (labelViewModel.dialogType as LabelEvent.DialogType.Error).message
+            ErrorDialog(
+                message = message,
+                onDismiss = {
+                    labelViewModel.onEvent(LabelEvent.ShowDialog())
+                },
+                onConfirmButtonClick = {
                     labelViewModel.onEvent(LabelEvent.ShowDialog())
                 }
             )

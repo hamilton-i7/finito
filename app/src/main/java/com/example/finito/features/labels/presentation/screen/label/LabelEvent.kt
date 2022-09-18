@@ -1,5 +1,6 @@
 package com.example.finito.features.labels.presentation.screen.label
 
+import androidx.annotation.StringRes
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 
@@ -34,5 +35,7 @@ sealed class LabelEvent {
         object Rename : DialogType()
 
         object Delete : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
     }
 }

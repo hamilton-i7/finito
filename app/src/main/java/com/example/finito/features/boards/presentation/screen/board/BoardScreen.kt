@@ -2,12 +2,11 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.*
@@ -18,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -50,6 +50,7 @@ import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -71,15 +72,23 @@ fun BoardScreen(
     val focusRequester = remember { FocusRequester() }
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val listState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            boardViewModel.onEvent(BoardEvent.ReorderTasks(from, to))
+        },
+        canDragOver = boardViewModel::canDragTask,
+        onDragEnd = { _, _ ->
+            boardViewModel.onEvent(BoardEvent.SaveTasksOrder)
+        }
+    )
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         skipHalfExpanded = true
     )
     val expandedFab by remember {
-        derivedStateOf { listState.firstVisibleItemIndex == 0 }
+        derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
     }
-    val noCompletedTasks = detailedBoard?.tasks?.none { it.task.completed } ?: true
+    val noCompletedTasks = boardViewModel.tasks.none { it.task.completed }
     val disabledMenuOptions = when (boardViewModel.boardState) {
         BoardState.ACTIVE -> listOf(ActiveBoardScreenOption.DeleteCompletedTasks)
         BoardState.ARCHIVED -> listOf(ArchivedBoardScreenMenuOption.DeleteCompletedTasks)
@@ -277,8 +286,8 @@ fun BoardScreen(
 
                 BoardScreen(
                     paddingValues = innerPadding,
-                    listState = listState,
-                    tasks = boardViewModel.board?.tasks ?: emptyList(),
+                    reorderableState = reorderableState,
+                    tasks = boardViewModel.tasks,
                     showCompletedTasks = boardViewModel.showCompletedTasks,
                     onToggleShowCompletedTasks = {
                         boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
@@ -290,11 +299,10 @@ fun BoardScreen(
                     },
                     onDateTimeClick = {
                         boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
-                    },
-                    onToggleTaskCompleted = {
-                        boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     }
-                )
+                ) {
+                    boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
+                }
             }
 
             AnimatedVisibility(
@@ -339,7 +347,9 @@ fun BoardScreen(
 @Composable
 private fun BoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
-    listState: LazyListState = rememberLazyListState(),
+    reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
+        onMove = { _, _ -> }
+    ),
     tasks: List<TaskWithSubtasks> = emptyList(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
@@ -356,9 +366,13 @@ private fun BoardScreen(
         .padding(paddingValues)) {
         LazyColumn(
             contentPadding = PaddingValues(top = 12.dp, bottom = 72.dp),
-            state = listState,
+            state = reorderableState.listState,
+            modifier = Modifier.reorderable(reorderableState),
         ) {
-            item(contentType = ContentTypes.PROGRESS_BAR) {
+            item(
+                key = LazyListKeys.COMPLETED_TASKS_PROGRESS_BAR,
+                contentType = ContentTypes.PROGRESS_BAR
+            ) {
                 CompletedTasksProgressBar(
                     tasks = tasks.map { CompletedTask(completed = it.task.completed) },
                     modifier = Modifier
@@ -372,12 +386,18 @@ private fun BoardScreen(
                 contentType = { ContentTypes.UNCOMPLETED_TASKS },
                 key = { it.task.taskId }
             ) {
-                TaskItem(
-                    task = it.task,
-                    onPriorityClick = { onPriorityClick(it) },
-                    onCompletedToggle = { onToggleTaskCompleted(it) },
-                    modifier = Modifier.animateItemPlacement()
-                ) { onDateTimeClick(it) }
+                ReorderableItem(reorderableState, key = it.task.taskId) { isDragging ->
+                    val elevation by animateDpAsState(targetValue = if (isDragging) 16.dp else 0.dp)
+                    TaskItem(
+                        task = it.task,
+                        onPriorityClick = { onPriorityClick(it) },
+                        onCompletedToggle = { onToggleTaskCompleted(it) },
+                        modifier = Modifier
+                            .shadow(elevation)
+                            .animateItemPlacement()
+                            .detectReorderAfterLongPress(reorderableState)
+                    ) { onDateTimeClick(it) }
+                }
             }
             if (completedTasks.isNotEmpty()) {
                 item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {

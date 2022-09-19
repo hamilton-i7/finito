@@ -1,12 +1,7 @@
 package com.example.finito.core.domain.util
 
-fun <T> List<T>.moveElement(start: Int, end: Int): List<T> {
-    val result = this.toMutableList()
-
-    val removed = result.removeAt(start)
-    result.add(end, removed)
-
-    return result
+fun <T> List<T>.moveElement(start: Int, end: Int): List<T> = toMutableList().apply {
+    add(end, removeAt(start))
 }
 
 fun <T> List<T>.takeRandom(): List<T> {

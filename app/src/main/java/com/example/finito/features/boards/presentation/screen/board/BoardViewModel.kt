@@ -27,6 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -55,6 +56,9 @@ class BoardViewModel @Inject constructor(
         private set
 
     var dialogType by mutableStateOf<BoardEvent.DialogType?>(null)
+        private set
+
+    var tasks by mutableStateOf<List<TaskWithSubtasks>>(emptyList())
         private set
 
     var selectedTask by mutableStateOf<TaskWithSubtasks?>(null)
@@ -104,7 +108,39 @@ class BoardViewModel @Inject constructor(
                 value = event.name
             )
             BoardEvent.SaveTask -> onSaveTask()
+            is BoardEvent.ReorderTasks -> onReorderTasks(event.from, event.to)
+            BoardEvent.SaveTasksOrder -> onSaveTasksOrder()
         }
+    }
+
+    private fun onSaveTasksOrder() = viewModelScope.launch {
+        if (tasks.isEmpty()) return@launch
+        when (taskUseCases.arrangeBoardTasks(tasks)) {
+            is Result.Error -> {
+                _eventFlow.emit(Event.ShowError(
+                    error = R.string.arrange_tasks_error
+                ))
+            }
+            is Result.Success -> Unit
+        }
+    }
+
+    fun canDragTask(position: ItemPosition): Boolean {
+        if (tasks.isEmpty()) return false
+        return tasks.filter { !it.task.completed }.any { it.task.taskId == position.key }
+    }
+
+    private fun onReorderTasks(from: ItemPosition, to: ItemPosition) {
+        if (tasks.isEmpty()) return
+
+        val uncompletedTasks = tasks.filter { !it.task.completed }.toMutableList().apply {
+            add(
+                index = indexOfFirst { it.task.taskId == to.key },
+                element = removeAt(indexOfFirst { it.task.taskId == from.key })
+            )
+        }
+        val completedTasks = tasks.filter { it.task.completed }
+        tasks = uncompletedTasks + completedTasks
     }
 
     private fun onDeleteCompletedTasks() = viewModelScope.launch {
@@ -211,6 +247,7 @@ class BoardViewModel @Inject constructor(
              viewModelScope.launch {
                 boardUseCases.findOneBoard(boardId).also {
                     board = it
+                    tasks = it.tasks
                 }
             }
         }

@@ -42,10 +42,9 @@ fun TaskItem(
             && task.date == null
             && task.priority == null
 
-    // TODO: Fix alignment on simple task version
     Surface(
         onClick = onTaskClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().then(modifier)
     ) {
         Row(
             verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,

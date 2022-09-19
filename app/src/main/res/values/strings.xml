@@ -111,4 +111,5 @@
     <string name="update_task_error">There was an error while trying to update this task</string>
     <string name="delete_completed_tasks_error">There was an error while trying to delete these tasks</string>
     <string name="delete_completed_tasks_confirmation">All completed tasks will be deleted from this board</string>
+    <string name="arrange_tasks_error">Could not save the new tasks order</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -11,25 +12,24 @@ class ArrangeBoardTasks(
     private val taskRepository: TaskRepository,
     private val subtaskRepository: SubtaskRepository
 ) {
-    @Throws(ResourceException.InvalidStateException::class)
-    suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>) {
+
+    suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>): Result<Unit, String> {
         val tasks = tasksWithSubtasks.map { it.task }
         val subtasks = tasksWithSubtasks.flatMap { it.subtasks }
 
         if (!fromSameBoard(tasks)) {
-            throw ResourceException.InvalidStateException(
-                message = "All tasks must come from the same board"
-            )
+            return Result.Error(message = ErrorMessages.DIFFERENT_TASKS_ORIGIN)
         }
         if (!fromSameTask(subtasks)) {
-            throw ResourceException.InvalidStateException(
-                message = "All subtasks must come from the same task"
-            )
+            return Result.Error(message = ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
-        tasksWithSubtasks.mapIndexed { index, taskWithSubtasks ->
-            taskWithSubtasks.task.copy(boardPosition = index)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
-        arrangeSubtasks(subtasks)
+        return Result.Success(
+            data = tasksWithSubtasks.mapIndexed { index, taskWithSubtasks ->
+                taskWithSubtasks.task.copy(boardPosition = index)
+            }.toTypedArray().let { taskRepository.updateMany(*it) }.also {
+                arrangeSubtasks(subtasks)
+            }
+        )
     }
 
     private fun fromSameBoard(tasks: List<Task>): Boolean {
@@ -47,6 +47,7 @@ class ArrangeBoardTasks(
     }
 
     private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {
+        if (subtasks.isEmpty()) return
         val positionsMap = mutableMapOf<Int, Int>()
         subtasks.map {
             positionsMap[it.taskId] =

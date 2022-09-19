@@ -95,6 +95,9 @@ dependencies {
     // Material Components
     implementation 'com.google.android.material:material:1.6.1'
 
+    // Drag and drop
+    implementation "org.burnoutcrew.composereorderable:reorderable:0.9.2"
+
     // Room
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"

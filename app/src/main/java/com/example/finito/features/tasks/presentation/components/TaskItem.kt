@@ -6,12 +6,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,6 +35,7 @@ import java.time.LocalDate
 fun TaskItem(
     task: Task,
     modifier: Modifier = Modifier,
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
@@ -45,6 +50,11 @@ fun TaskItem(
             && task.date == null
             && task.priority == null
     val tonalElevation by animateDpAsState(targetValue = if (isDragging) 3.dp else 0.dp)
+
+    LaunchedEffect(isDragging) {
+        if (!isDragging) return@LaunchedEffect
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
 
     Surface(
         onClick = onTaskClick,

@@ -18,8 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -68,11 +71,13 @@ fun BoardScreen(
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
+    val hapticFeedback = LocalHapticFeedback.current
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val reorderableState = rememberReorderableLazyListState(
         onMove = { from, to ->
             boardViewModel.onEvent(BoardEvent.ReorderTasks(from, to))
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
         canDragOver = boardViewModel::canDragTask,
         onDragEnd = { _, _ ->
@@ -96,6 +101,10 @@ fun BoardScreen(
     BackHandler {
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
+            return@BackHandler
+        }
+        if (bottomSheetState.isVisible) {
+            scope.launch { bottomSheetState.hide() }
             return@BackHandler
         }
         when (previousRoute) {
@@ -284,6 +293,7 @@ fun BoardScreen(
 
                 BoardScreen(
                     paddingValues = innerPadding,
+                    hapticFeedback = hapticFeedback,
                     reorderableState = reorderableState,
                     tasks = boardViewModel.tasks,
                     showCompletedTasks = boardViewModel.showCompletedTasks,
@@ -345,6 +355,7 @@ fun BoardScreen(
 @Composable
 private fun BoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
@@ -387,6 +398,7 @@ private fun BoardScreen(
                 ReorderableItem(reorderableState, key = it.task.taskId) { isDragging ->
                     TaskItem(
                         task = it.task,
+                        hapticFeedback = hapticFeedback,
                         onPriorityClick = { onPriorityClick(it) },
                         onCompletedToggle = { onToggleTaskCompleted(it) },
                         isDragging = isDragging,

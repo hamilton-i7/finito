@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
+import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.utils.BOARD_COLUMNS
@@ -51,7 +52,7 @@ fun BoardsGrid(
             .testTag(TestTags.BOARDS_GRID)
     ) {
         if (labels.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = "label filters") {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentTypes.LABEL_FILTERS) {
                 LabelFilters(
                     labels,
                     selectedLabels = labelFilters,
@@ -62,7 +63,7 @@ fun BoardsGrid(
             }
         }
         if (sortingOptions.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }, contentType = "sorting options") {
+            item(span = { GridItemSpan(maxLineSpan) }, contentType = ContentTypes.SORTING_OPTIONS) {
                 SortingChips(
                     options = sortingOptions,
                     selectedOption = selectedSortingOption,
@@ -73,7 +74,7 @@ fun BoardsGrid(
                 )
             }
         }
-        items(boards, contentType = { "boards" }, key = { it.board.boardId }) {
+        items(boards, contentType = { ContentTypes.BOARDS }, key = { it.board.boardId }) {
             BoardCard(
                 onClick = { onBoardClick(it.board.boardId) },
                 board = it,

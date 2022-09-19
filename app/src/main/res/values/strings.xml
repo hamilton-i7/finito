@@ -108,4 +108,5 @@
     <string name="view_more_options">View more options</string>
     <string name="create_task_error">There was an error while trying to create this task</string>
     <string name="new_task">New task</string>
+    <string name="update_task_error">There was an error while trying to update this task</string>
 </resources>

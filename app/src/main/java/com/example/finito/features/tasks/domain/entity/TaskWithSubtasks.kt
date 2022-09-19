@@ -2,6 +2,7 @@ package com.example.finito.features.tasks.domain.entity
 
 import androidx.room.Embedded
 import androidx.room.Relation
+import com.example.finito.core.domain.util.takeRandom
 import com.example.finito.features.subtasks.domain.entity.Subtask
 
 data class TaskWithSubtasks(
@@ -15,8 +16,8 @@ data class TaskWithSubtasks(
     companion object {
         val dummyTasks = ('A'..'Z').mapIndexed { index, _ ->
             TaskWithSubtasks(
-                task = Task.dummyTasks.random(),
-                subtasks = Subtask.dummySubtasks.take(index)
+                task = Task.dummyTasks[index],
+                subtasks = Subtask.dummySubtasks.takeRandom()
             )
         }
     }

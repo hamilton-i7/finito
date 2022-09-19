@@ -28,6 +28,7 @@ import java.time.LocalDate
 @Composable
 fun TaskItem(
     task: Task,
+    modifier: Modifier = Modifier,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
@@ -44,7 +45,7 @@ fun TaskItem(
     // TODO: Fix alignment on simple task version
     Surface(
         onClick = onTaskClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,

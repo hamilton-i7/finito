@@ -6,4 +6,5 @@ object ErrorMessages {
     const val EMPTY_NAME = "Name cannot be blank"
 
     const val INVALID_TASK_STATE = "Date must not be null if time is set"
+    const val DIFFERENT_SUBTASKS_ORIGIN = "All subtasks must come from the same task"
 }

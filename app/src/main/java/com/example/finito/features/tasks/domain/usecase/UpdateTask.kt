@@ -1,5 +1,7 @@
 package com.example.finito.features.tasks.domain.usecase
 
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.core.domain.util.moveElement
 import com.example.finito.features.subtasks.domain.entity.Subtask
@@ -13,26 +15,18 @@ class UpdateTask(
     private val taskRepository: TaskRepository,
     private val subtaskRepository: SubtaskRepository,
 ) {
-    @Throws(
-        ResourceException.EmptyException::class,
-        ResourceException.InvalidStateException::class,
-        ResourceException.NotFoundException::class
-    )
-    suspend operator fun invoke(tasksWithSubtasks: TaskWithSubtasks) {
+
+    suspend operator fun invoke(tasksWithSubtasks: TaskWithSubtasks): Result<Unit, String> {
         val (task, subtasks) = tasksWithSubtasks
         
         if (task.name.isBlank()) {
-            throw ResourceException.EmptyException
+            return Result.Error(ErrorMessages.EMPTY_NAME)
         }
         if (task.date == null && task.time != null) {
-            throw ResourceException.InvalidStateException(
-                message = "Date must not be null if time is set"
-            )
+            return Result.Error(ErrorMessages.INVALID_TASK_STATE)
         }
         if (!fromSameTask(subtasks)) {
-            throw ResourceException.InvalidStateException(
-                message = "All subtasks must come from the same task"
-            )
+            return Result.Error(ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
 
         taskRepository.findOne(task.taskId)?.let {
@@ -50,23 +44,25 @@ class UpdateTask(
                 )
             }
         } ?: throw ResourceException.NotFoundException
-        return taskRepository.update(task.toTaskUpdate()).also {
-            val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()
-            with(setupSubtaskPositions(subtasks)) {
-                // Delete subtasks not found in the old subtasks list
-                deleteSubtasks(oldSubtasks, newSubtasks = this)
-                // Create the new subtasks
-                createSubtasks(subtasks = this)
+        return Result.Success(
+            data = taskRepository.update(task.toTaskUpdate()).also {
+                val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()
+                with(setupSubtaskPositions(subtasks)) {
+                    // Delete subtasks not found in the old subtasks list
+                    deleteSubtasks(oldSubtasks, newSubtasks = this)
+                    // Create the new subtasks
+                    createSubtasks(subtasks = this)
 
-                filter { it.subtaskId != 0 }.let {
-                    val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
-                    if (it.any { subtask -> ids[subtask.subtaskId] == null }) {
-                        throw ResourceException.NotFoundException
+                    filter { it.subtaskId != 0 }.let {
+                        val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
+                        if (it.any { subtask -> ids[subtask.subtaskId] == null }) {
+                            throw ResourceException.NotFoundException
+                        }
+                        subtaskRepository.updateMany(*it.toTypedArray())
                     }
-                    subtaskRepository.updateMany(*it.toTypedArray())
                 }
             }
-        }
+        )
     }
 
     private fun changedPosition(oldTask: Task, newTask: Task): Boolean {

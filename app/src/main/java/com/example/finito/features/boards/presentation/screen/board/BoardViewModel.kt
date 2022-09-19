@@ -87,7 +87,7 @@ class BoardViewModel @Inject constructor(
             BoardEvent.RestoreBoard -> restoreBoard()
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
-            is BoardEvent.ToggleTaskCompleted -> TODO()
+            is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
             BoardEvent.DeleteCompletedTasks -> TODO()
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
@@ -104,6 +104,29 @@ class BoardViewModel @Inject constructor(
                 value = event.name
             )
             BoardEvent.SaveTask -> onSaveTask()
+        }
+    }
+
+    private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
+            val uncompletedTasks = tasks.filter { !it.task.completed }
+            val completed = !task.task.completed
+            val updatedTask = task.copy(
+                task = task.task.copy(
+                    completed = completed,
+                    completedAt = if (completed) LocalDateTime.now() else null,
+                    boardPosition = if (completed) tasks.lastIndex else uncompletedTasks.size
+                )
+            )
+            when (taskUseCases.updateTask(updatedTask)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.update_task_error
+                    ))
+                }
+                is Result.Success -> fetchBoard()
+            }
         }
     }
 

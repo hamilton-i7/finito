@@ -1,5 +1,6 @@
 package com.example.finito.features.tasks.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -23,7 +25,7 @@ fun CompletedTasksProgressBar(
     modifier: Modifier = Modifier,
 ) {
     val completedTasksAmount = tasks.filter { it.completed }.size
-    val progress = completedTasksAmount / tasks.size.toFloat()
+    val progress by animateFloatAsState(targetValue = completedTasksAmount / tasks.size.toFloat())
 
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -43,7 +45,9 @@ fun CompletedTasksProgressBar(
             progress = progress,
             trackColor = finitoColors.tertiaryContainer,
             color = finitoColors.onTertiaryContainer,
-            modifier = Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(24.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(24.dp))
         )
     }
 }

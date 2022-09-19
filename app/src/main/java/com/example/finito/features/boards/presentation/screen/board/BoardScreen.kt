@@ -2,6 +2,7 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -31,6 +32,8 @@ import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.textfields.BasicTextField
+import com.example.finito.core.presentation.util.ContentTypes
+import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
@@ -274,6 +277,9 @@ fun BoardScreen(
                     },
                     onDateTimeClick = {
                         boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
+                    },
+                    onToggleTaskCompleted = {
+                        boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     }
                 )
             }
@@ -316,6 +322,7 @@ fun BoardScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
@@ -325,6 +332,7 @@ private fun BoardScreen(
     onToggleShowCompletedTasks: () -> Unit = {},
     onPriorityClick: (TaskWithSubtasks) -> Unit = {},
     onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
+    onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
 ) {
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
@@ -337,7 +345,7 @@ private fun BoardScreen(
             contentPadding = PaddingValues(top = 12.dp, bottom = 72.dp),
             state = listState,
         ) {
-            item(contentType = "progress bar") {
+            item(contentType = ContentTypes.PROGRESS_BAR) {
                 CompletedTasksProgressBar(
                     tasks = tasks.map { CompletedTask(completed = it.task.completed) },
                     modifier = Modifier
@@ -348,34 +356,43 @@ private fun BoardScreen(
             }
             items(
                 items = uncompletedTasks,
-                contentType = { "uncompleted tasks" },
+                contentType = { ContentTypes.UNCOMPLETED_TASKS },
                 key = { it.task.taskId }
             ) {
                 TaskItem(
                     task = it.task,
-                    onPriorityClick = { onPriorityClick(it) }
+                    onPriorityClick = { onPriorityClick(it) },
+                    onCompletedToggle = { onToggleTaskCompleted(it) },
+                    modifier = Modifier.animateItemPlacement()
                 ) { onDateTimeClick(it) }
             }
             if (completedTasks.isNotEmpty()) {
-                item {
+                item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
                     RowToggle(
                         showContent = showCompletedTasks,
                         onShowContentToggle = onToggleShowCompletedTasks,
                         label = stringResource(id = R.string.completed, completedTasks.size),
                         showContentDescription = R.string.show_completed_tasks,
-                        hideContentDescription = R.string.hide_completed_tasks
+                        hideContentDescription = R.string.hide_completed_tasks,
+                        modifier = Modifier.animateItemPlacement()
                     )
                 }
                 items(
                     items = completedTasks,
-                    contentType = { "completed tasks" },
+                    contentType = { ContentTypes.COMPLETED_TASKS },
                     key = { it.task.taskId }
                 ) {
                     AnimatedVisibility(
                         visible = showCompletedTasks,
                         enter = fadeIn(),
-                        exit = fadeOut()
-                    ) { TaskItem(task = it.task) }
+                        exit = fadeOut(),
+                        modifier = Modifier.animateItemPlacement()
+                    ) {
+                        TaskItem(
+                            task = it.task,
+                            onCompletedToggle = { onToggleTaskCompleted(it) },
+                        )
+                    }
                 }
             }
         }
@@ -387,7 +404,7 @@ private fun BoardScreen(
 private fun BoardScreenPreview() {
     FinitoTheme {
         Surface {
-            BoardScreen(tasks = TaskWithSubtasks.dummyTasks)
+            BoardScreen(tasks = TaskWithSubtasks.dummyTasks.shuffled())
         }
     }
 }

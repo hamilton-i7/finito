@@ -27,6 +27,8 @@ import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.bars.TopBar
 import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
+import com.example.finito.core.presentation.util.ContentTypes
+import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
@@ -260,7 +262,7 @@ private fun AddEditBoardScreen(
             contentPadding = PaddingValues(vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            item(contentType = { "name text field" }) {
+            item(contentType = { ContentTypes.NAME_TEXT_FIELD }) {
                 FinitoTextField(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
@@ -273,7 +275,7 @@ private fun AddEditBoardScreen(
                 )
                 Spacer(modifier = Modifier.height(32.dp))
             }
-            item(contentType = "labels toggle") {
+            item(contentType = ContentTypes.LABELS_TOGGLE) {
                 RowToggle(
                     showContent = showLabels,
                     onShowContentToggle = onShowLabelsChange,
@@ -282,7 +284,7 @@ private fun AddEditBoardScreen(
                     hideContentDescription = R.string.hide_labels
                 )
             }
-            items(labels, key = { it.labelId }, contentType = { "labels" }) {
+            items(labels, key = { it.labelId }, contentType = { ContentTypes.LABELS }) {
                 AnimatedVisibility(
                     visible = showLabels,
                     enter = fadeIn(),
@@ -296,7 +298,7 @@ private fun AddEditBoardScreen(
                     )
                 }
             }
-            item {
+            item(key = LazyListKeys.PRIMARY_BUTTON) {
                 Spacer(modifier = Modifier.height(40.dp))
                 AnimatedContent(
                     targetState = nameState.value.isNotBlank(),

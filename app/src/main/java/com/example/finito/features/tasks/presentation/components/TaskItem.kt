@@ -46,11 +46,14 @@ fun TaskItem(
         onClick = onTaskClick,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Row(
+            verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
             if (task.completed) {
                 IconButton(
                     onClick = onCompletedToggle,
-                    modifier = Modifier.offset(y = (-12).dp)
+                    modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
@@ -62,10 +65,10 @@ fun TaskItem(
                 RadioButton(
                     selected = false,
                     onClick = onCompletedToggle,
-                    modifier = Modifier.offset(y = (-12).dp)
+                    modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                 )
             }
-            Column(modifier = if (isSimpleTask) Modifier.align(Alignment.CenterVertically) else Modifier) {
+            Column(modifier = Modifier.fillMaxHeight()) {
                 Text(
                     text = task.name,
                     overflow = TextOverflow.Ellipsis,

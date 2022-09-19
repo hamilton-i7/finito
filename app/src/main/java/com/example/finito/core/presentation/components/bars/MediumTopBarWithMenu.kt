@@ -30,6 +30,7 @@ fun <M: MenuOption> MediumTopBarWithMenu(
     onDismissMenu: () -> Unit = {},
     options: List<M> = emptyList(),
     onOptionClick: (M) -> Unit = {},
+    disabledOptions: List<M> = emptyList(),
 ) {
     MediumTopAppBar(
         navigationIcon = {
@@ -56,7 +57,8 @@ fun <M: MenuOption> MediumTopBarWithMenu(
                     show = showMenu,
                     onDismiss = onDismissMenu,
                     options = options,
-                    onOptionClick = onOptionClick
+                    onOptionClick = onOptionClick,
+                    disabledOptions = disabledOptions,
                 )
             }
         },

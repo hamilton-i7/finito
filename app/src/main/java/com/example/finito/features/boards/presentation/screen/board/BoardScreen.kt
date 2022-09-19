@@ -79,6 +79,12 @@ fun BoardScreen(
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
+    val noCompletedTasks = detailedBoard?.tasks?.none { it.task.completed } ?: true
+    val disabledMenuOptions = when (boardViewModel.boardState) {
+        BoardState.ACTIVE -> listOf(ActiveBoardScreenOption.DeleteCompletedTasks)
+        BoardState.ARCHIVED -> listOf(ArchivedBoardScreenMenuOption.DeleteCompletedTasks)
+        BoardState.DELETED -> listOf(DeletedBoardScreenMenuOption.DeleteCompletedTasks)
+    }
 
     BackHandler {
         if (drawerState.isOpen) {
@@ -176,6 +182,7 @@ fun BoardScreen(
                         onDismissMenu = {
                             boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
                         },
+                        disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
                         onOptionClick = {
                             boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
 
@@ -187,7 +194,9 @@ fun BoardScreen(
                                             onNavigateBack()
                                         }
                                         ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                            boardViewModel.onEvent(BoardEvent.ShowDialog(
+                                                type = BoardEvent.DialogType.DeleteCompletedTasks
+                                            ))
                                         }
                                         ArchivedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
@@ -204,7 +213,9 @@ fun BoardScreen(
                                 BoardState.DELETED -> {
                                     when (it as DeletedBoardScreenMenuOption) {
                                         DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                            boardViewModel.onEvent(BoardEvent.ShowDialog(
+                                                type = BoardEvent.DialogType.DeleteCompletedTasks
+                                            ))
                                         }
                                         DeletedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
@@ -229,7 +240,9 @@ fun BoardScreen(
                                             onNavigateToHome()
                                         }
                                         ActiveBoardScreenOption.DeleteCompletedTasks -> {
-                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                            boardViewModel.onEvent(BoardEvent.ShowDialog(
+                                                type = BoardEvent.DialogType.DeleteCompletedTasks
+                                            ))
                                         }
                                         ActiveBoardScreenOption.EditBoard -> {
                                             onNavigateToEditBoard(

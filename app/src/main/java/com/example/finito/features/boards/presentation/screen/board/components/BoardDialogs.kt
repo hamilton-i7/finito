@@ -2,10 +2,7 @@ package com.example.finito.features.boards.presentation.screen.board.components
 
 import androidx.compose.runtime.Composable
 import com.example.finito.R
-import com.example.finito.core.presentation.components.dialogs.DatePickerDialog
-import com.example.finito.core.presentation.components.dialogs.ErrorDialog
-import com.example.finito.core.presentation.components.dialogs.SimpleDialog
-import com.example.finito.core.presentation.components.dialogs.TimePickerDialog
+import com.example.finito.core.presentation.components.dialogs.*
 import com.example.finito.features.boards.presentation.screen.board.BoardEvent
 import com.example.finito.features.boards.presentation.screen.board.BoardViewModel
 import com.example.finito.features.tasks.presentation.components.PriorityDialog
@@ -15,7 +12,20 @@ fun BoardDialogs(
     boardViewModel: BoardViewModel,
 ) {
     when (boardViewModel.dialogType) {
-        BoardEvent.DialogType.DeleteCompletedTasks -> TODO()
+        BoardEvent.DialogType.DeleteCompletedTasks -> {
+            DeleteDialog(
+                onDismiss = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog())
+                },
+                description = R.string.delete_completed_tasks_confirmation,
+                onDismissClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog())
+                },
+                onConfirmClick = {
+                    boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                }
+            )
+        }
         is BoardEvent.DialogType.Priority -> {
             PriorityDialog(
                 onDismiss = { boardViewModel.onEvent(BoardEvent.ShowDialog()) },

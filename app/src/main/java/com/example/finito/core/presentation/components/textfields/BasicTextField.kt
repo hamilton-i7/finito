@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.ui.theme.DisabledAlpha
@@ -39,7 +40,10 @@ fun BasicTextField(
             Text(text = stringResource(id = placeholder))
         },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Done
+        ),
         modifier = modifier.fillMaxWidth()
     )
 }

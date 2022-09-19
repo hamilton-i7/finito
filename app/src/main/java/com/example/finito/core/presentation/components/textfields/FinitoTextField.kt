@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.example.finito.ui.theme.finitoColors
@@ -53,7 +54,8 @@ fun FinitoTextField(
             shape = FinitoTextFieldDefaults.Shape,
             colors = colors,
             keyboardOptions = KeyboardOptions.Default.copy(
-                capitalization = KeyboardCapitalization.Sentences
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done
             ),
             modifier = textFieldModifier
                 .fillMaxWidth()

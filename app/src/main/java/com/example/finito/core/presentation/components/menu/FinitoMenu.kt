@@ -23,6 +23,7 @@ fun <M: MenuOption> FinitoMenu(
     onDismiss: () -> Unit,
     options: List<M>,
     onOptionClick: (M) -> Unit,
+    disabledOptions: List<M> = emptyList(),
 ) {
     DropdownMenu(
         expanded = show,
@@ -35,6 +36,7 @@ fun <M: MenuOption> FinitoMenu(
             val interactionSource = remember { MutableInteractionSource() }
             DropdownMenuItem(
                 text = { Text(stringResource(id = option.label)) },
+                enabled = !disabledOptions.contains(option),
                 onClick = { onOptionClick(option) },
                 interactionSource = interactionSource,
                 modifier = Modifier.indication(

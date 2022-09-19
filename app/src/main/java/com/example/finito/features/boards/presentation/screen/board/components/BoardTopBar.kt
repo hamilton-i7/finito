@@ -44,7 +44,9 @@ fun BoardTopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
-    onOptionClick: (BoardScreenMenuOption) -> Unit = {}
+    onOptionClick: (BoardScreenMenuOption) -> Unit = {},
+    disabledOptions: List<BoardScreenMenuOption> = emptyList(),
+
 ) {
    MediumTopBarWithMenu(
        title = boardName,
@@ -66,6 +68,7 @@ fun BoardTopBar(
            BoardState.DELETED -> deletedBoardOptions
            else -> activeBoardOptions
        },
-       onOptionClick = onOptionClick
+       onOptionClick = onOptionClick,
+       disabledOptions = disabledOptions,
    )
 }

@@ -82,13 +82,11 @@ fun BoardScreen(
             scope.launch { drawerState.close() }
             return@BackHandler
         }
-        if (previousRoute == Screen.Archive.route
-            || previousRoute == Screen.Trash.route
-            || previousRoute == Screen.Label.route) {
-            onNavigateBack()
-            return@BackHandler
+        when (previousRoute) {
+            Screen.Archive.route, Screen.Trash.route,
+            Screen.Label.route, Screen.Home.route -> onNavigateBack()
+            else -> onNavigateToHome()
         }
-        onNavigateToHome()
     }
 
     LaunchedEffect(Unit) {

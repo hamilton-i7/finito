@@ -16,13 +16,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,7 +34,6 @@ import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
-import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
@@ -51,8 +48,7 @@ import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun BoardScreen(
     drawerState: DrawerState,
@@ -80,7 +76,6 @@ fun BoardScreen(
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     BackHandler {
         if (drawerState.isOpen) {

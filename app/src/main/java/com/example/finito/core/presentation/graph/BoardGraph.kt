@@ -35,10 +35,10 @@ fun NavGraphBuilder.boardGraph(
             route = Screen.Board.route,
             arguments = Screen.Board.arguments,
             enterTransition = {
-                when {
-                    Screen.Board.parentRoutes.contains(initialState.destination.route) -> {
-                        childScreenEnterTransition()
-                    }
+                when (initialState.destination.route) {
+                    Screen.Home.route, Screen.Archive.route,
+                    Screen.Trash.route, Screen.Label.route -> childScreenEnterTransition()
+                    Screen.EditBoard.route -> childScreenPopEnterTransition()
                     else -> peerScreenEnterTransition()
                 }
             },
@@ -50,7 +50,14 @@ fun NavGraphBuilder.boardGraph(
                     else -> peerScreenEnterTransition()
                 }
             },
-            exitTransition = peerScreenExitTransition,
+            exitTransition = {
+                when {
+                    Screen.Board.childRoutes.contains(targetState.destination.route) -> {
+                        childScreenExitTransition()
+                    }
+                    else -> peerScreenExitTransition()
+                }
+            },
             popExitTransition = childScreenPopExitTransition
         ) {
             BoardScreen(

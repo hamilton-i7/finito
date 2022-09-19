@@ -2,7 +2,6 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -387,13 +385,12 @@ private fun BoardScreen(
                 key = { it.task.taskId }
             ) {
                 ReorderableItem(reorderableState, key = it.task.taskId) { isDragging ->
-                    val elevation by animateDpAsState(targetValue = if (isDragging) 16.dp else 0.dp)
                     TaskItem(
                         task = it.task,
                         onPriorityClick = { onPriorityClick(it) },
                         onCompletedToggle = { onToggleTaskCompleted(it) },
+                        isDragging = isDragging,
                         modifier = Modifier
-                            .shadow(elevation)
                             .animateItemPlacement()
                             .detectReorderAfterLongPress(reorderableState)
                     ) { onDateTimeClick(it) }

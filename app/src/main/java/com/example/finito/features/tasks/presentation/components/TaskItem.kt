@@ -1,10 +1,12 @@
 package com.example.finito.features.tasks.presentation.components
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +31,7 @@ import java.time.LocalDate
 fun TaskItem(
     task: Task,
     modifier: Modifier = Modifier,
+    isDragging: Boolean = false,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
@@ -41,10 +44,14 @@ fun TaskItem(
     val isSimpleTask = task.description == null
             && task.date == null
             && task.priority == null
+    val tonalElevation by animateDpAsState(targetValue = if (isDragging) 3.dp else 0.dp)
 
     Surface(
         onClick = onTaskClick,
-        modifier = Modifier.fillMaxWidth().then(modifier)
+        tonalElevation = tonalElevation,
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier)
     ) {
         Row(
             verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,

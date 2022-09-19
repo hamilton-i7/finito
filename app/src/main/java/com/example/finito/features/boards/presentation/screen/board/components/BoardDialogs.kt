@@ -3,6 +3,7 @@ package com.example.finito.features.boards.presentation.screen.board.components
 import androidx.compose.runtime.Composable
 import com.example.finito.R
 import com.example.finito.core.presentation.components.dialogs.DatePickerDialog
+import com.example.finito.core.presentation.components.dialogs.ErrorDialog
 import com.example.finito.core.presentation.components.dialogs.SimpleDialog
 import com.example.finito.core.presentation.components.dialogs.TimePickerDialog
 import com.example.finito.features.boards.presentation.screen.board.BoardEvent
@@ -64,6 +65,18 @@ fun BoardDialogs(
                 },
                 onConfirmClick = {
                     boardViewModel.onEvent(BoardEvent.ChangeTaskTime(time = it))
+                }
+            )
+        }
+        is BoardEvent.DialogType.Error -> {
+            val message = (boardViewModel.dialogType as BoardEvent.DialogType.Error).message
+            ErrorDialog(
+                message = message,
+                onDismiss = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog())
+                },
+                onConfirmButtonClick = {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog())
                 }
             )
         }

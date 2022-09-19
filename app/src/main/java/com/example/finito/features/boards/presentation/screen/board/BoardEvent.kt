@@ -1,5 +1,6 @@
 package com.example.finito.features.boards.presentation.screen.board
 
+import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import java.time.LocalDate
@@ -26,6 +27,10 @@ sealed class BoardEvent {
 
     data class ChangeTaskPriorityConfirm(val task: TaskWithSubtasks) : BoardEvent()
 
+    data class ChangeNewTaskName(val name: String) : BoardEvent()
+
+    object SaveTask : BoardEvent()
+
     data class ChangeTaskPriority(val priority: Priority?) : BoardEvent()
 
     data class ChangeTaskDate(val date: LocalDate? = null) : BoardEvent()
@@ -40,6 +45,8 @@ sealed class BoardEvent {
         object DeleteCompletedTasks : DialogType()
 
         data class Priority(val taskWithSubtasks: TaskWithSubtasks) : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
 
         object TaskDate : DialogType()
 

@@ -11,18 +11,22 @@ import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Priority
+import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.tasks.domain.entity.CompletedTask
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -54,6 +58,9 @@ class BoardViewModel @Inject constructor(
         private set
 
     var selectedTask by mutableStateOf<TaskWithSubtasks?>(null)
+        private set
+
+    var newTaskNameState by mutableStateOf(TextFieldState())
         private set
 
     var selectedPriority by mutableStateOf<Priority?>(null)
@@ -93,6 +100,31 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ChangeTaskDate -> selectedDate = event.date
             is BoardEvent.ChangeTaskTime -> selectedTime = event.time
             is BoardEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
+            is BoardEvent.ChangeNewTaskName -> newTaskNameState = newTaskNameState.copy(
+                value = event.name
+            )
+            BoardEvent.SaveTask -> onSaveTask()
+        }
+    }
+
+    private fun onSaveTask() = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
+            TaskWithSubtasks(
+                task = Task(
+                    boardId = board.boardId,
+                    name = newTaskNameState.value
+                )
+            ).let {
+                when (taskUseCases.createTask(it)) {
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.create_task_error
+                        ))
+                    }
+                    is Result.Success -> fetchBoard()
+                }
+            }
         }
     }
 
@@ -206,5 +238,7 @@ class BoardViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowSnackbar(@StringRes val message: Int, val board: DetailedBoard) : Event()
+
+        data class ShowError(@StringRes val error: Int) : Event()
     }
 }

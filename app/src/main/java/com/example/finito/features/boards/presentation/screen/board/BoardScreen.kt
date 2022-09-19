@@ -7,10 +7,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material3.*
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,9 +32,11 @@ import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
+import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
@@ -33,10 +47,12 @@ import com.example.finito.features.tasks.presentation.components.CompletedTasksP
 import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.components.TaskItem
 import com.example.finito.ui.theme.FinitoTheme
+import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalComposeUiApi::class)
 @Composable
 fun BoardScreen(
     drawerState: DrawerState,
@@ -46,17 +62,25 @@ fun BoardScreen(
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
+    onNavigateToCreateTask: () -> Unit = {},
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
 ) {
     val detailedBoard = boardViewModel.board
 
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
+
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val listState = rememberLazyListState()
-
+    val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
+    )
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     BackHandler {
         if (drawerState.isOpen) {
@@ -82,170 +106,219 @@ fun BoardScreen(
                         ))
                     }
                 }
+                is BoardViewModel.Event.ShowError -> {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.Error(message = event.error)
+                    ))
+                }
             }
         }
     }
 
-    Box {
-        Scaffold(
-            topBar = {
-                BoardTopBar(
-                    onNavigationClick = onNavigationClick@{
-                        if (detailedBoard?.board?.state != BoardState.ACTIVE) {
-                            onNavigateBack()
-                            return@onNavigationClick
-                        }
-                        scope.launch { drawerState.open() }
-                    },
-                    boardName = detailedBoard?.board?.name ?: "",
-                    boardState = boardViewModel.boardState,
-                    showMenu = boardViewModel.showScreenMenu,
-                    onMoreOptionsClick = {
-                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
-                    },
-                    onDismissMenu = {
-                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
-                    },
-                    onOptionClick = {
-                        boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (bottomSheetState.isVisible) return@LaunchedEffect
+        focusManager.clearFocus()
+        boardViewModel.onEvent(BoardEvent.ChangeNewTaskName(name = ""))
+    }
 
-                        when (boardViewModel.boardState) {
-                            BoardState.ARCHIVED -> {
-                                when (it as ArchivedBoardScreenMenuOption) {
-                                    ArchivedBoardScreenMenuOption.DeleteBoard -> {
-                                        boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                        onNavigateBack()
-                                    }
-                                    ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                    }
-                                    ArchivedBoardScreenMenuOption.EditBoard -> {
-                                        onNavigateToEditBoard(
-                                            detailedBoard!!.board.boardId,
-                                            BoardState.ARCHIVED
-                                        )
-                                    }
-                                    ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
-                                        boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                        onNavigateBack()
-                                    }
-                                }
-                            }
-                            BoardState.DELETED -> {
-                                when (it as DeletedBoardScreenMenuOption) {
-                                    DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
-                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                    }
-                                    DeletedBoardScreenMenuOption.EditBoard -> {
-                                        onNavigateToEditBoard(
-                                            detailedBoard!!.board.boardId,
-                                            BoardState.DELETED
-                                        )
-                                    }
-                                    DeletedBoardScreenMenuOption.RestoreBoard -> {
-                                        boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                        onNavigateBack()
-                                    }
-                                }
-                            }
-                            BoardState.ACTIVE -> {
-                                when (it as ActiveBoardScreenOption) {
-                                    ActiveBoardScreenOption.ArchiveBoard -> {
-                                        boardViewModel.onEvent(BoardEvent.ArchiveBoard)
-                                        onNavigateToHome()
-                                    }
-                                    ActiveBoardScreenOption.DeleteBoard -> {
-                                        boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                        onNavigateToHome()
-                                    }
-                                    ActiveBoardScreenOption.DeleteCompletedTasks -> {
-                                        boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
-                                    }
-                                    ActiveBoardScreenOption.EditBoard -> {
-                                        onNavigateToEditBoard(
-                                            detailedBoard!!.board.boardId,
-                                            BoardState.ACTIVE
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    scrollBehavior = topBarScrollBehavior
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        sheetBackgroundColor = finitoColors.surface,
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .imePadding()
+                    .padding(vertical = 12.dp, horizontal = 16.dp)
+            ) {
+                BasicTextField(
+                    textFieldState = boardViewModel.newTaskNameState.copy(
+                        onValueChange = {
+                            boardViewModel.onEvent(BoardEvent.ChangeNewTaskName(it))
+                        }),
+                    placeholder = R.string.new_task,
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
-            },
-            floatingActionButton = fab@{
-                if (boardViewModel.boardState == BoardState.DELETED) return@fab
-                CreateFab(
-                    text = R.string.create_task,
-                    onClick = { /*TODO*/ },
-                    expanded = expandedFab
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButton(onClick = onNavigateToCreateTask) {
+                        Text(text = stringResource(id = R.string.view_more_options))
+                    }
+
+                    TextButton(
+                        onClick = {
+                            boardViewModel.onEvent(BoardEvent.SaveTask)
+                            scope.launch { bottomSheetState.hide() }
+                        },
+                        enabled = boardViewModel.newTaskNameState.value.isNotBlank()
+                    ) { Text(text = stringResource(id = R.string.save)) }
+                }
+            }
+        },
+    ) {
+        Box {
+            Scaffold(
+                topBar = {
+                    BoardTopBar(
+                        onNavigationClick = onNavigationClick@{
+                            if (detailedBoard?.board?.state != BoardState.ACTIVE) {
+                                onNavigateBack()
+                                return@onNavigationClick
+                            }
+                            scope.launch { drawerState.open() }
+                        },
+                        boardName = detailedBoard?.board?.name ?: "",
+                        boardState = boardViewModel.boardState,
+                        showMenu = boardViewModel.showScreenMenu,
+                        onMoreOptionsClick = {
+                            boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = true))
+                        },
+                        onDismissMenu = {
+                            boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+                        },
+                        onOptionClick = {
+                            boardViewModel.onEvent(BoardEvent.ShowScreenMenu(show = false))
+
+                            when (boardViewModel.boardState) {
+                                BoardState.ARCHIVED -> {
+                                    when (it as ArchivedBoardScreenMenuOption) {
+                                        ArchivedBoardScreenMenuOption.DeleteBoard -> {
+                                            boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                            onNavigateBack()
+                                        }
+                                        ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                        }
+                                        ArchivedBoardScreenMenuOption.EditBoard -> {
+                                            onNavigateToEditBoard(
+                                                detailedBoard!!.board.boardId,
+                                                BoardState.ARCHIVED
+                                            )
+                                        }
+                                        ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
+                                            boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                            onNavigateBack()
+                                        }
+                                    }
+                                }
+                                BoardState.DELETED -> {
+                                    when (it as DeletedBoardScreenMenuOption) {
+                                        DeletedBoardScreenMenuOption.DeleteCompletedTasks -> {
+                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                        }
+                                        DeletedBoardScreenMenuOption.EditBoard -> {
+                                            onNavigateToEditBoard(
+                                                detailedBoard!!.board.boardId,
+                                                BoardState.DELETED
+                                            )
+                                        }
+                                        DeletedBoardScreenMenuOption.RestoreBoard -> {
+                                            boardViewModel.onEvent(BoardEvent.RestoreBoard)
+                                            onNavigateBack()
+                                        }
+                                    }
+                                }
+                                BoardState.ACTIVE -> {
+                                    when (it as ActiveBoardScreenOption) {
+                                        ActiveBoardScreenOption.ArchiveBoard -> {
+                                            boardViewModel.onEvent(BoardEvent.ArchiveBoard)
+                                            onNavigateToHome()
+                                        }
+                                        ActiveBoardScreenOption.DeleteBoard -> {
+                                            boardViewModel.onEvent(BoardEvent.DeleteBoard)
+                                            onNavigateToHome()
+                                        }
+                                        ActiveBoardScreenOption.DeleteCompletedTasks -> {
+                                            boardViewModel.onEvent(BoardEvent.DeleteCompletedTasks)
+                                        }
+                                        ActiveBoardScreenOption.EditBoard -> {
+                                            onNavigateToEditBoard(
+                                                detailedBoard!!.board.boardId,
+                                                BoardState.ACTIVE
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scrollBehavior = topBarScrollBehavior
+                    )
+                },
+                floatingActionButton = fab@{
+                    if (boardViewModel.boardState == BoardState.DELETED) return@fab
+                    CreateFab(
+                        text = R.string.create_task,
+                        onClick = {
+                            scope.launch {
+                                focusRequester.requestFocus()
+                                bottomSheetState.show()
+                            }
+                        },
+                        expanded = expandedFab
+                    )
+                },
+                floatingActionButtonPosition = FabPosition.Center,
+                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+            ) { innerPadding ->
+                BoardDialogs(boardViewModel)
+
+                BoardScreen(
+                    paddingValues = innerPadding,
+                    listState = listState,
+                    tasks = boardViewModel.board?.tasks ?: emptyList(),
+                    showCompletedTasks = boardViewModel.showCompletedTasks,
+                    onToggleShowCompletedTasks = {
+                        boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
+                    },
+                    onPriorityClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowDialog(
+                            type = BoardEvent.DialogType.Priority(it)
+                        ))
+                    },
+                    onDateTimeClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
+                    }
                 )
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-            modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-        ) { innerPadding ->
-            BoardDialogs(boardViewModel)
+            }
 
-            BoardScreen(
-                paddingValues = innerPadding,
-                listState = listState,
-                tasks = boardViewModel.board?.tasks ?: emptyList(),
-                showCompletedTasks = boardViewModel.showCompletedTasks,
-                onToggleShowCompletedTasks = {
-                    boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
-                },
-                onPriorityClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowDialog(
-                        type = BoardEvent.DialogType.Priority(it)
-                    ))
-                },
-                onDateTimeClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
-                }
-            )
-        }
-
-        AnimatedVisibility(
-            visible = boardViewModel.selectedTask != null,
-            enter = slideInVertically { it / 2 },
-            exit = slideOutVertically { it }
-        ) {
-            TaskDateTimeFullDialog(
-                task = boardViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
-                date = boardViewModel.selectedDate,
-                onDateFieldClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowDialog(
-                        type = BoardEvent.DialogType.TaskDate
-                    ))
-                },
-                onDateRemove = { /*TODO*/ },
-                time = boardViewModel.selectedTime,
-                onTimeFieldClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowDialog(
-                        type = BoardEvent.DialogType.TaskTime
-                    ))
-                },
-                onTimeRemove = { /*TODO*/ },
-                onAlertChangesMade = {
-                    boardViewModel.onEvent(BoardEvent.ShowDialog(
-                        type = BoardEvent.DialogType.DiscardChanges
-                    ))
-                },
-                onCloseClick = {
-                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(task = null))
-                },
-                onSaveClick = {
-                    boardViewModel.onEvent(BoardEvent.SaveTaskDateTimeChanges)
-                }
-            )
-//            TaskDateTimeFullDialog(
-//                taskId = boardViewModel.selectedTaskId ?: 0,
-//                onCloseDialog = {
-//                    boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(taskId = null))
-//                },
-//                onSuccessSave = { boardViewModel.onEvent(BoardEvent.RefreshBoard) }
-//            )
+            AnimatedVisibility(
+                visible = boardViewModel.selectedTask != null,
+                enter = slideInVertically { it / 2 },
+                exit = slideOutVertically { it }
+            ) {
+                TaskDateTimeFullDialog(
+                    task = boardViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
+                    date = boardViewModel.selectedDate,
+                    onDateFieldClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowDialog(
+                            type = BoardEvent.DialogType.TaskDate
+                        ))
+                    },
+                    onDateRemove = { /*TODO*/ },
+                    time = boardViewModel.selectedTime,
+                    onTimeFieldClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowDialog(
+                            type = BoardEvent.DialogType.TaskTime
+                        ))
+                    },
+                    onTimeRemove = { /*TODO*/ },
+                    onAlertChangesMade = {
+                        boardViewModel.onEvent(BoardEvent.ShowDialog(
+                            type = BoardEvent.DialogType.DiscardChanges
+                        ))
+                    },
+                    onCloseClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(task = null))
+                    },
+                    onSaveClick = {
+                        boardViewModel.onEvent(BoardEvent.SaveTaskDateTimeChanges)
+                    }
+                )
+            }
         }
     }
 }

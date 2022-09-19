@@ -56,14 +56,14 @@ class FindActiveBoardsTest {
 
     @Test
     fun `Should return active boards only`() = runTest {
-        val boards = findActiveBoards().first()
+        val boards = findActiveBoards().data.first()
         assertThat(boards).isNotEmpty()
         assertThat(boards.all { it.board.state == BoardState.ACTIVE }).isTrue()
     }
 
     @Test
     fun `Should return boards sorted by name ascending when asked for A_Z sorting`() = runTest {
-        val sortedBoards = findActiveBoards(SortingOption.Common.NameAZ).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.NameAZ).data.first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -74,7 +74,7 @@ class FindActiveBoardsTest {
 
     @Test
     fun `Should return boards sorted by name descending when asked for Z_A`() = runTest {
-        val sortedBoards = findActiveBoards(SortingOption.Common.NameZA).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.NameZA).data.first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -85,7 +85,7 @@ class FindActiveBoardsTest {
 
     @Test
     fun `Should return boards sorted by date ascending when asked for OLDEST`() = runTest {
-        val sortedBoards = findActiveBoards(SortingOption.Common.Oldest).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.Oldest).data.first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -95,7 +95,7 @@ class FindActiveBoardsTest {
 
     @Test
     fun `Should return boards sorted by date descending when asked for NEWEST`() = runTest {
-        val sortedBoards = findActiveBoards(SortingOption.Common.Newest).first()
+        val sortedBoards = findActiveBoards(SortingOption.Common.Newest).data.first()
         assertThat(sortedBoards).isNotEmpty()
 
         for (i in 0..sortedBoards.size - 2) {
@@ -108,8 +108,8 @@ class FindActiveBoardsTest {
         val labelIds = fakeLabelRepository.findSimpleLabels().first().map {
             it.labelId
         }.toIntArray()
-        val boards = findActiveBoards().first()
-        val filteredBoards = findActiveBoards(labelIds = labelIds).first()
+        val boards = findActiveBoards().data.first()
+        val filteredBoards = findActiveBoards(labelIds = labelIds).data.first()
 
         assertThat(boards).isNotEmpty()
         assertThat(filteredBoards).isNotEmpty()
@@ -118,7 +118,7 @@ class FindActiveBoardsTest {
             it.board.state == BoardState.ARCHIVED || it.board.state == BoardState.DELETED
         }).isFalse()
 
-        val filteredBoards2 = findActiveBoards(labelIds = labelIds.take(1).toIntArray()).first()
+        val filteredBoards2 = findActiveBoards(labelIds = labelIds.take(1).toIntArray()).data.first()
         assertThat(filteredBoards2).isNotEmpty()
         assertThat(boards.size).isGreaterThan(filteredBoards2.size)
         assertThat(filteredBoards.size).isGreaterThan(filteredBoards2.size)

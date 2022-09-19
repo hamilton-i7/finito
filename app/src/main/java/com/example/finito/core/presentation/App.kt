@@ -74,7 +74,7 @@ fun App(
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
     val snackbarModifier = when(currentRoute) {
-        Screen.Home.route, Screen.Archive.route -> Modifier
+        Screen.Home.route, Screen.Archive.route, Screen.Label.route -> Modifier
             .navigationBarsPadding()
             .padding(bottom = BottomBarHeight)
         Screen.Board.route -> {

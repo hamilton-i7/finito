@@ -8,29 +8,31 @@ import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.di.BoardModule
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.di.LabelModule
 import com.example.finito.features.labels.domain.entity.Label
+import com.github.ivanshafran.sharedpreferencesmock.SPMockBuilder
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 
-@RunWith(MockitoJUnitRunner::class)
 class LabelViewModelTest {
 
     private lateinit var labelViewModel: LabelViewModel
 
-    @Mock
-    lateinit var sharedPreferences: SharedPreferences
+    private lateinit var boardUseCases: BoardUseCases
+
+    private lateinit var sharedPreferences: SharedPreferences
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val testDispatcher = StandardTestDispatcher()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Before
@@ -55,9 +57,12 @@ class LabelViewModelTest {
             )
         }.let { boardLabelRepository.create(*it.toTypedArray()) }
 
-        Dispatchers.setMain(Dispatchers.Unconfined)
+        boardUseCases = BoardModule.provideBoardUseCases(boardRepository, boardLabelRepository)
+        sharedPreferences = SPMockBuilder().createSharedPreferences()
+
+        Dispatchers.setMain(testDispatcher)
         labelViewModel = LabelViewModel(
-            boardUseCases = BoardModule.provideBoardUseCases(boardRepository, boardLabelRepository),
+            boardUseCases = boardUseCases,
             labelUseCases = LabelModule.provideLabelUseCases(labelRepository),
             preferences = sharedPreferences,
             savedStateHandle = savedStateHandle
@@ -68,11 +73,76 @@ class LabelViewModelTest {
     @After
     fun teardown() {
         Dispatchers.resetMain()
+        testDispatcher.cancel()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should fetch label & boards when initialized`() = runTest {
+        advanceUntilIdle()
+        assertThat(labelViewModel.label).isNotNull()
+        assertThat(labelViewModel.boards).isNotEmpty()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should emit ShowSnackbar event when board archived`() = runTest {
+        val board = boardUseCases.findActiveBoards().data.first().random()
+        labelViewModel.onEvent(LabelEvent.ArchiveBoard(board))
+        val event = labelViewModel.eventFlow.first()
+        assertThat(event).isInstanceOf(LabelViewModel.Event.ShowSnackbar::class.java)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should emit ShowSnackbar event when board deleted`() = runTest {
+        val board = boardUseCases.findActiveBoards().data.first().random()
+        labelViewModel.onEvent(LabelEvent.MoveBoardToTrash(board))
+        val event = labelViewModel.eventFlow.first()
+        assertThat(event).isInstanceOf(LabelViewModel.Event.ShowSnackbar::class.java)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should emit NavigateHome event when label deleted`() = runTest {
+        labelViewModel.onEvent(LabelEvent.DeleteLabel)
+        val event = labelViewModel.eventFlow.first()
+        assertThat(event).isEqualTo(LabelViewModel.Event.NavigateHome)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should set showCardMenu to true`() = runTest {
+        val boardId = boardUseCases.findActiveBoards().data.first().random().board.boardId
+        labelViewModel.onEvent(LabelEvent.ShowCardMenu(boardId, show = true))
+
+        assertThat(labelViewModel.showCardMenu).isTrue()
     }
 
     @Test
-    fun `should fetch label & boards when initialized`() {
-        assertThat(labelViewModel.label).isNotNull()
-        assertThat(labelViewModel.boards).isNotEmpty()
+    fun `should set showDialog to requested dialog type`() {
+        labelViewModel.onEvent(LabelEvent.ShowDialog(type = LabelEvent.DialogType.Rename))
+        assertThat(labelViewModel.dialogType).isEqualTo(LabelEvent.DialogType.Rename)
+    }
+
+    @Test
+    fun `should set showSearchBar to true`() {
+        labelViewModel.onEvent(LabelEvent.ShowSearchBar(show = true))
+        assertThat(labelViewModel.showSearchBar).isTrue()
+    }
+
+    @Test
+    fun `should set showScreenMenu to true`() {
+        labelViewModel.onEvent(LabelEvent.ShowScreenMenu(show = true))
+        assertThat(labelViewModel.showScreenMenu).isTrue()
+    }
+
+    @Test
+    fun `should toggle gridLayout`() {
+        labelViewModel.onEvent(LabelEvent.ToggleLayout)
+        assertThat(labelViewModel.gridLayout).isFalse()
+
+        labelViewModel.onEvent(LabelEvent.ToggleLayout)
+        assertThat(labelViewModel.gridLayout).isTrue()
     }
 }

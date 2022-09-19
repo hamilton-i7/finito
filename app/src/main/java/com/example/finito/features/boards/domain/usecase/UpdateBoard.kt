@@ -32,7 +32,10 @@ class UpdateBoard(
         )
 
         return Result.Success(
-            data = boardRepository.update(board.copy(normalizedName = board.name.normalize())).also {
+            data = boardRepository.update(board.copy(
+                name = board.name.trim(),
+                normalizedName = board.name.trim().normalize())
+            ).also {
                 with(boardLabelRepository.findAllByBoardId(board.boardId)) {
                     val newRefs = labels.map {
                         BoardLabelCrossRef(boardId = board.boardId, labelId = it.labelId)

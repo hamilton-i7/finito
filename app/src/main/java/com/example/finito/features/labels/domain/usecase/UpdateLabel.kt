@@ -21,7 +21,10 @@ class UpdateLabel(
         repository.findOne(label.labelId) ?: return Result.Error(ErrorMessages.NOT_FOUND)
 
         return Result.Success(
-            data = repository.update(label.copy(normalizedName = label.name.normalize()))
+            data = repository.update(label.copy(
+                name = label.name.trim(),
+                normalizedName = label.name.trim().normalize())
+            )
         )
     }
 }

@@ -20,9 +20,6 @@ class ArrangeBoardTasks(
         if (!fromSameBoard(tasks)) {
             return Result.Error(message = ErrorMessages.DIFFERENT_TASKS_ORIGIN)
         }
-        if (!fromSameTask(subtasks)) {
-            return Result.Error(message = ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
-        }
         return Result.Success(
             data = tasksWithSubtasks.mapIndexed { index, taskWithSubtasks ->
                 taskWithSubtasks.task.copy(boardPosition = index)
@@ -37,13 +34,6 @@ class ArrangeBoardTasks(
 
         val boardId = tasks[0].boardId
         return tasks.all { it.boardId == boardId }
-    }
-
-    private fun fromSameTask(subtasks: List<Subtask>): Boolean {
-        if (subtasks.isEmpty()) return true
-
-        val taskId = subtasks[0].taskId
-        return subtasks.all { it.taskId == taskId }
     }
 
     private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {

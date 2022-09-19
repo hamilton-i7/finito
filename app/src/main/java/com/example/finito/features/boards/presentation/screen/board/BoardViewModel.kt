@@ -115,11 +115,11 @@ class BoardViewModel @Inject constructor(
 
     private fun onSaveTasksOrder() = viewModelScope.launch {
         if (tasks.isEmpty()) return@launch
-        when (taskUseCases.arrangeBoardTasks(tasks)) {
+        when (val result = taskUseCases.arrangeBoardTasks(tasks)) {
             is Result.Error -> {
                 _eventFlow.emit(Event.ShowError(
                     error = R.string.arrange_tasks_error
-                ))
+                )).also { println(result.message) }
             }
             is Result.Success -> Unit
         }

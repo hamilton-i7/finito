@@ -63,7 +63,7 @@ fun BoardScreen(
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    onNavigateToCreateTask: (Int) -> Unit = {},
+    onNavigateToCreateTask: (boardId: Int, name: String) -> Unit = {_, _ -> },
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
 ) {
     val detailedBoard = boardViewModel.board
@@ -164,7 +164,11 @@ fun BoardScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TextButton(onClick = {
-                        onNavigateToCreateTask(detailedBoard!!.board.boardId)
+                        onNavigateToCreateTask(
+                            detailedBoard!!.board.boardId,
+                            boardViewModel.newTaskNameState.value
+                        )
+                        scope.launch { bottomSheetState.hide() }
                     }) {
                         Text(text = stringResource(id = R.string.view_more_options))
                     }

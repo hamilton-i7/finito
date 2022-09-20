@@ -68,12 +68,18 @@ sealed class Screen(
     }
 
     object CreateTask : Screen(
-        route = "create_task?$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}",
+        route = "create_task?" +
+                "$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}" +
+                "&$TASK_NAME_ARGUMENT={$TASK_NAME_ARGUMENT}",
         prefix = "create_task",
         arguments = listOf(
             navArgument(BOARD_ROUTE_ID_ARGUMENT) {
                 type = NavType.IntType
                 defaultValue = -1
+            },
+            navArgument(TASK_NAME_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = ""
             }
         )
     )
@@ -91,5 +97,6 @@ sealed class Screen(
         const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
         const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
+        const val TASK_NAME_ARGUMENT = "taskName"
     }
 }

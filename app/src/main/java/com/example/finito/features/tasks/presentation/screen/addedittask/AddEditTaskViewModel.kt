@@ -80,6 +80,7 @@ class AddEditTaskViewModel @Inject constructor(
     init {
         fetchTask()
         fetchBoards()
+        fetchNameState()
     }
 
     fun onEvent(event: AddEditTaskEvent) {
@@ -263,6 +264,12 @@ class AddEditTaskViewModel @Inject constructor(
                 relatedBoardId = it.boardId
             }
         }.launchIn(viewModelScope)
+    }
+
+    private fun fetchNameState() {
+        savedStateHandle.get<String>(Screen.TASK_NAME_ARGUMENT)?.let { name ->
+            nameState = nameState.copy(value = name)
+        }
     }
     
     private suspend fun setupData(taskWithSubtasks: TaskWithSubtasks) {

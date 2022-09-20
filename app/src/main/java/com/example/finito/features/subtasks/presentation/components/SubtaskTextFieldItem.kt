@@ -1,5 +1,6 @@
 package com.example.finito.features.subtasks.presentation.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -9,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -27,6 +29,7 @@ fun SubtaskTextFieldItem(
     state: TextFieldState,
     reorderableState: ReorderableLazyListState,
     modifier: Modifier = Modifier,
+    textFieldModifier: Modifier = Modifier,
     onRemoveSubtask: () -> Unit = {},
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
@@ -41,26 +44,33 @@ fun SubtaskTextFieldItem(
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    BasicTextField(
-        state = state,
-        placeholder = R.string.enter_subtask_name,
-        leadingIcon = {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        IconButton(
+            onClick = {},
+            modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+        ) {
             Icon(
                 imageVector = Icons.Outlined.DragIndicator,
-                contentDescription = null,
-                modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                contentDescription = null
             )
-        },
-        trailingIcon = {
-            IconButton(onClick = onRemoveSubtask) {
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = stringResource(id = R.string.remove_subtask)
-                )
-            }
-        },
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        modifier = modifier
-    )
+        }
+        BasicTextField(
+            state = state,
+            placeholder = R.string.enter_subtask_name,
+            trailingIcon = {
+                IconButton(onClick = onRemoveSubtask) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = stringResource(id = R.string.remove_subtask)
+                    )
+                }
+            },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            modifier = textFieldModifier
+        )
+    }
 }

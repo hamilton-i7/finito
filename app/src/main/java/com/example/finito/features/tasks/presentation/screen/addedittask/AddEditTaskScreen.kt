@@ -56,6 +56,7 @@ import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.menu.TaskReminderOption
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 import com.example.finito.features.subtasks.presentation.components.SubtaskTextFieldItem
@@ -65,6 +66,7 @@ import com.example.finito.features.tasks.presentation.screen.addedittask.compone
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
@@ -211,7 +213,9 @@ fun AddEditTaskScreen(
                     scrollBehavior = topBarScrollBehavior
                 )
             },
-            modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+            modifier = Modifier
+                .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                .noRippleClickable { focusManager.clearFocus() }
         ) { innerPadding ->
             AddEditTaskDialogs(addEditTaskViewModel)
 
@@ -390,8 +394,9 @@ private fun AddEditTaskScreen(
                     boardName = selectedBoardName,
                     expanded = showBoardsMenu,
                     onIndicatorClick = onBoardIndicatorClick,
+                    modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp).animateItemPlacement())
             }
             item(
                 key = LazyListKeys.NAME_TEXT_FIELD,
@@ -401,13 +406,13 @@ private fun AddEditTaskScreen(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
                     ),
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
             item(
                 key = LazyListKeys.DESCRIPTION_TEXT_FIELD,
@@ -418,9 +423,9 @@ private fun AddEditTaskScreen(
                     onValueChange = descriptionState.onValueChange,
                     singleLine = false,
                     label = { Text(text = stringResource(id = R.string.description)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_DATE_TEXT_FIELD,
@@ -430,9 +435,9 @@ private fun AddEditTaskScreen(
                     date = date,
                     onClick = onDateClick,
                     onDateRemove = onDateRemove,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_TIME_TEXT_FIELD,
@@ -443,9 +448,9 @@ private fun AddEditTaskScreen(
                     onClick = onTimeClick,
                     onTimeRemove = onTimeRemove,
                     enabled = date != null,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
             item(
                 key = LazyListKeys.REMINDER_TEXT_FIELD,
@@ -457,9 +462,10 @@ private fun AddEditTaskScreen(
                     onReminderClick = onReminderTextFieldClick,
                     showDropdown = showReminderDropdown,
                     onDismissDropdown = onDismissReminderDropdown,
-                    onOptionClick = onReminderOptionClick
+                    onOptionClick = onReminderOptionClick,
+                    modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
 
             item(
@@ -468,9 +474,10 @@ private fun AddEditTaskScreen(
             ) {
                 PriorityChips(
                     selectedPriority = priority,
-                    onPriorityClick = onPriorityClick
+                    onPriorityClick = onPriorityClick,
+                    modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
             }
 
             item(
@@ -479,7 +486,8 @@ private fun AddEditTaskScreen(
             ) {
                 Text(
                     text = stringResource(id = R.string.subtasks),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.animateItemPlacement()
                 )
             }
 
@@ -488,35 +496,41 @@ private fun AddEditTaskScreen(
                 key = { _, state -> state.id },
                 contentType = { _, _ -> ContentTypes.SUBTASK_TEXT_FIELDS }
             ) { index, textFieldState ->
-                SubtaskTextFieldItem(
-                    state = textFieldState,
-                    reorderableState = reorderableState,
-                    hapticFeedback = hapticFeedback,
-                    onRemoveSubtask = { onRemoveSubtask(textFieldState) },
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { onNextSubtask(index) }
-                    ),
-                    modifier = Modifier
-                        .animateItemPlacement()
-                        .onKeyEvent { event ->
-                            if (event.key != Key.Backspace) return@onKeyEvent false
-                            if (textFieldState.value.isNotEmpty()) return@onKeyEvent false
+                ReorderableItem(reorderableState, key = textFieldState.id) { isDragging ->
+                    SubtaskTextFieldItem(
+                        state = textFieldState,
+                        reorderableState = reorderableState,
+                        hapticFeedback = hapticFeedback,
+                        isDragging = isDragging,
+                        onRemoveSubtask = { onRemoveSubtask(textFieldState) },
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { onNextSubtask(index) }
+                        ),
+                        modifier = Modifier.animateItemPlacement(),
+                        textFieldModifier = Modifier
+                            .onKeyEvent { event ->
+                                if (event.key != Key.Backspace) return@onKeyEvent false
+                                if (textFieldState.value.isNotEmpty()) return@onKeyEvent false
 
-                            onRemoveSubtaskByKeyPress(index, textFieldState)
-                            true
-                        }
-                )
+                                onRemoveSubtaskByKeyPress(index, textFieldState)
+                                true
+                            }
+                    )
+                }
             }
 
             item(
                 key = LazyListKeys.CREATE_SUBTASK_BUTTON,
                 contentType = ContentTypes.SECONDARY_BUTTON
             ) {
-                TextButton(onClick = onCreateSubtask) {
+                TextButton(
+                    onClick = onCreateSubtask,
+                    modifier = Modifier.animateItemPlacement()
+                ) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(id = R.string.create_subtask))
@@ -524,10 +538,15 @@ private fun AddEditTaskScreen(
             }
 
             item(key = LazyListKeys.PRIMARY_BUTTON) {
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .animateItemPlacement()
+                )
                 AnimatedContent(
                     targetState = nameState.value.isNotBlank(),
-                    transitionSpec = { fadeIn() with fadeOut() }
+                    transitionSpec = { fadeIn() with fadeOut() },
+                    modifier = Modifier.animateItemPlacement()
                 ) { validName ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Button(

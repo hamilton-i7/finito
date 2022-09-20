@@ -22,6 +22,7 @@ private val menuOptions = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderDropdownTextField(
+    modifier: Modifier = Modifier,
     selectedReminder: Reminder? = null,
     onReminderClick: () -> Unit = {},
     enabled: Boolean = true,
@@ -31,7 +32,8 @@ fun ReminderDropdownTextField(
 ) {
     ExposedDropdownMenuBox(
         expanded = showDropdown,
-        onExpandedChange = {}
+        onExpandedChange = {},
+        modifier = modifier
     ) {
         ClickableTextField(
             onClick = onReminderClick,

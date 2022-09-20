@@ -418,9 +418,7 @@ private fun AddEditTaskScreen(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItemPlacement(),
+                    modifier = Modifier.animateItemPlacement(),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
@@ -439,9 +437,7 @@ private fun AddEditTaskScreen(
                     onValueChange = descriptionState.onValueChange,
                     singleLine = false,
                     label = { Text(text = stringResource(id = R.string.description)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItemPlacement(),
+                    modifier = Modifier.animateItemPlacement(),
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -455,9 +451,7 @@ private fun AddEditTaskScreen(
                     date = date,
                     onClick = onDateClick,
                     onDateRemove = onDateRemove,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItemPlacement()
+                    modifier = Modifier.animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -472,9 +466,7 @@ private fun AddEditTaskScreen(
                     onClick = onTimeClick,
                     onTimeRemove = onTimeRemove,
                     enabled = date != null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateItemPlacement()
+                    modifier = Modifier.animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)

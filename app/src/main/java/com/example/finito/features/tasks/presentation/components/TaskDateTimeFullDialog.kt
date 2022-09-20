@@ -77,13 +77,15 @@ fun TaskDateTimeFullDialog(
                 DateTextField(
                     date = date,
                     onDateRemove = onDateRemove,
-                    onClick = onDateFieldClick
+                    onClick = onDateFieldClick,
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 TimeTextField(
                     time = time,
                     onTimeRemove = onTimeRemove,
                     onClick = onTimeFieldClick,
-                    enabled = date != null
+                    enabled = date != null,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

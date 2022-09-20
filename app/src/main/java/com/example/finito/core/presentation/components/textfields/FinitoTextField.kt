@@ -1,6 +1,7 @@
 package com.example.finito.core.presentation.components.textfields
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,12 +53,14 @@ fun FinitoTextField(
         colors = colors,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = finitoColors.outline,
-                shape = FinitoTextFieldDefaults.Shape
-            ).then(modifier),
+        modifier = modifier
+            .then(Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = finitoColors.outline,
+                    shape = FinitoTextFieldDefaults.Shape
+                )),
     )
 }
 

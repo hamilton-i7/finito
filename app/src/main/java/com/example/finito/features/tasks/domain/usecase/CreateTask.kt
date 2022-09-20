@@ -24,7 +24,11 @@ class CreateTask(
         }
         val taskWithPosition = setupTaskPosition(task)
         return Result.Success(
-            data = taskRepository.create(taskWithPosition).toInt().also {
+            data = taskRepository.create(taskWithPosition.copy(
+                name = taskWithPosition.name.trim(),
+                description = taskWithPosition.description?.trim()
+            )
+            ).toInt().also {
                 if (subtasks.isEmpty()) return@also
                 subtaskRepository.createMany(*setupSubtaskPositions(it, subtasks))
             }
@@ -39,7 +43,12 @@ class CreateTask(
 
     private fun setupSubtaskPositions(taskId: Int, subtasks: List<Subtask>): Array<Subtask> {
         return subtasks.mapIndexed { index, subtask ->
-            subtask.copy(position = index, taskId = taskId)
+            subtask.copy(
+                position = index,
+                taskId = taskId,
+                name = subtask.name.trim(),
+                description = subtask.description?.trim()
+            )
         }.toTypedArray()
     }
 }

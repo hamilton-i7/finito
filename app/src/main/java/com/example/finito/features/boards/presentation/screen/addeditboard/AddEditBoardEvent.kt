@@ -1,5 +1,6 @@
 package com.example.finito.features.boards.presentation.screen.addeditboard
 
+import androidx.annotation.StringRes
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 
 sealed class AddEditBoardEvent {
@@ -29,5 +30,7 @@ sealed class AddEditBoardEvent {
 
     sealed class DialogType {
         object DeleteForever : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
     }
 }

@@ -112,4 +112,9 @@
     <string name="delete_completed_tasks_error">There was an error while trying to delete these tasks</string>
     <string name="delete_completed_tasks_confirmation">All completed tasks will be deleted from this board</string>
     <string name="arrange_tasks_error">Could not save the new tasks order</string>
+    <string name="find_board_error">There was an error while looking for this board</string>
+    <string name="update_board_error">There was an error while trying to update this board</string>
+    <string name="delete_task_error">There was an error while trying to delete this task</string>
+    <string name="task_marked_as_completed">Task marked as completed</string>
+    <string name="task_marked_as_uncompleted">Task marked as uncompleted</string>
 </resources>

@@ -100,6 +100,11 @@ fun AddEditBoardScreen(
                 is AddEditBoardViewModel.Event.NavigateToUpdatedBoard -> {
                     onNavigateToBoard(event.id, addEditBoardViewModel.boardState)
                 }
+                is AddEditBoardViewModel.Event.ShowError -> {
+                    addEditBoardViewModel.onEvent(AddEditBoardEvent.ShowDialog(
+                        type = AddEditBoardEvent.DialogType.Error(message = event.error)
+                    ))
+                }
             }
         }
     }

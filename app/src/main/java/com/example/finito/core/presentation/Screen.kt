@@ -35,12 +35,6 @@ sealed class Screen(
         )
     ) {
         val childRoutes = listOf(EditBoard.route)
-        val parentRoutes = listOf(
-            Home.route,
-            Archive.route,
-            Trash.route,
-            Label.route
-        )
     }
 
     object CreateBoard : Screen(route = "create_board")
@@ -79,5 +73,6 @@ sealed class Screen(
         const val BOARD_ROUTE_ID_ARGUMENT = "boardId"
         const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
+        const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
     }
 }

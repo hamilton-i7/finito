@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
+import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
@@ -177,8 +178,16 @@ class AddEditBoardViewModel @Inject constructor(
                 labels = selectedLabels,
                 tasks = tasks.map { CompletedTask(completed = it.task.completed) }
             ).let {
-                boardUseCases.updateBoard(it)
-                _eventFlow.emit(Event.NavigateToUpdatedBoard(it.board.boardId))
+                when (boardUseCases.updateBoard(it)) {
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.update_board_error
+                        ))
+                    }
+                    is Result.Success -> {
+                        _eventFlow.emit(Event.NavigateToUpdatedBoard(it.board.boardId))
+                    }
+                }
             }
         }
     }
@@ -186,10 +195,17 @@ class AddEditBoardViewModel @Inject constructor(
     private fun fetchBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
             viewModelScope.launch {
-                boardUseCases.findOneBoard(boardId).also {
-                    board = it
-                    nameState = TextFieldState(value = it.board.name)
-                    selectedLabels = it.labels
+                when (val result = boardUseCases.findOneBoard(boardId)) {
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.find_board_error
+                        ))
+                    }
+                    is Result.Success -> {
+                        board = result.data
+                        nameState = TextFieldState(value = result.data.board.name)
+                        selectedLabels = result.data.labels
+                    }
                 }
             }
         }
@@ -221,6 +237,8 @@ class AddEditBoardViewModel @Inject constructor(
         data class NavigateToCreatedBoard(val id: Int) : Event()
 
         data class NavigateToUpdatedBoard(val id: Int) : Event()
+
+        data class ShowError(@StringRes val error: Int) : Event()
 
         sealed class Snackbar(
             @StringRes val message: Int,

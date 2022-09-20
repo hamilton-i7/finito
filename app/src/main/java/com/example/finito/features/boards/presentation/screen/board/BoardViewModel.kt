@@ -245,10 +245,17 @@ class BoardViewModel @Inject constructor(
     private fun fetchBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
              viewModelScope.launch {
-                boardUseCases.findOneBoard(boardId).also {
-                    board = it
-                    tasks = it.tasks
-                }
+                 when (val result = boardUseCases.findOneBoard(boardId)) {
+                     is Result.Error -> {
+                         _eventFlow.emit(Event.ShowError(
+                             error = R.string.find_board_error
+                         ))
+                     }
+                     is Result.Success -> {
+                         board = result.data
+                         tasks = result.data.tasks
+                     }
+                 }
             }
         }
     }

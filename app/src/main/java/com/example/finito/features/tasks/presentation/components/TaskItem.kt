@@ -56,6 +56,7 @@ fun TaskItem(
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
+    // TODO: Add Drag handle icon
     Surface(
         onClick = onTaskClick,
         tonalElevation = tonalElevation,

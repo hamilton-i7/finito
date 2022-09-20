@@ -168,6 +168,7 @@ fun AddEditTaskScreen(
                             .fillMaxWidth()
                             .clickable {
                                 addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeBoard(board))
+                                scope.launch { bottomSheetState.hide() }
                             }
                     )
                 }

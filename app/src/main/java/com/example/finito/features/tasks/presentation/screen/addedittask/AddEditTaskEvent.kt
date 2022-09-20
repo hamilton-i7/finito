@@ -23,6 +23,8 @@ sealed class AddEditTaskEvent {
 
     data class ChangePriority(val priority: Priority? = null) : AddEditTaskEvent()
 
+    data class ChangeSubtaskName(val id: Int, val name: String) : AddEditTaskEvent()
+
     object CreateSubtask : AddEditTaskEvent()
 
     data class RemoveSubtask(val state: TextFieldState) : AddEditTaskEvent()

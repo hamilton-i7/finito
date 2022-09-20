@@ -101,6 +101,16 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ShowDialog -> dialogType = event.type
             AddEditTaskEvent.ToggleCompleted -> onToggleCompleted()
             is AddEditTaskEvent.ShowReminders -> showReminders = event.show
+            is AddEditTaskEvent.ChangeSubtaskName -> onChangeSubtaskName(event.id, event.name)
+        }
+    }
+
+    private fun onChangeSubtaskName(stateId: Int, name: String) {
+        subtaskNameStates = subtaskNameStates.toMutableList().apply {
+            add(
+                index = indexOfFirst { it.id == stateId },
+                element = removeAt(indexOfFirst { it.id == stateId }).copy(value = name)
+            )
         }
     }
 

@@ -1,6 +1,8 @@
 package com.example.finito.core.presentation
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -88,6 +90,20 @@ fun App(
             }
         }
         else -> Modifier.navigationBarsPadding()
+    }
+
+    // Change WindowSoftInputMode depending on route
+    when (currentRoute) {
+        Screen.Board.route -> {
+            (context as Activity).window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+            )
+        }
+        else -> {
+            (context as Activity).window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+            )
+        }
     }
 
     navController.addOnDestinationChangedListener(

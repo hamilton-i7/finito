@@ -9,7 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -22,15 +24,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -111,6 +118,14 @@ fun AddEditTaskScreen(
     val bottomSheetCorners by animateDpAsState(
         targetValue = calculateDp(bottomSheetState)
     )
+
+    val focusManager: FocusManager = LocalFocusManager.current
+    var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
+
+    LaunchedEffect(addEditTaskViewModel.subtaskNameStates) {
+        focusDirectionToMove?.let(focusManager::moveFocus)
+        focusDirectionToMove = null
+    }
 
     BackHandler {
         if (bottomSheetState.isVisible) {
@@ -270,12 +285,41 @@ fun AddEditTaskScreen(
                     }
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangePriority(it))
                 },
-                subtaskTextFields = addEditTaskViewModel.subtaskNameStates,
+                subtaskTextFields = addEditTaskViewModel.subtaskNameStates.map { state ->
+                    state.copy(
+                        onValueChange = {
+                            addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeSubtaskName(
+                                id = state.id,
+                                name = it
+                            ))
+                        }
+                    )
+                },
                 onCreateSubtask = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.CreateSubtask)
                 },
                 onRemoveSubtask = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.RemoveSubtask(it))
+                },
+                onRemoveSubtaskByKeyPress = onRemoveSubtaskByKeyPress@{ position, state ->
+                    // If it is the first item, just remove the field
+                    // Otherwise, remove the field and move focus to previous field
+                    if (position == 0) {
+                        addEditTaskViewModel.onEvent(AddEditTaskEvent.RemoveSubtask(state))
+                        return@onRemoveSubtaskByKeyPress
+                    }
+                    focusManager.moveFocus(FocusDirection.Up)
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.RemoveSubtask(state))
+                },
+                onNextSubtask = onNextSubtask@{ position ->
+                    // If it is the last item, add a new subtask field
+                    // Otherwise, simply move focus
+                    if (position != addEditTaskViewModel.subtaskNameStates.lastIndex) {
+                        focusManager.moveFocus(FocusDirection.Down)
+                        return@onNextSubtask
+                    }
+                    focusDirectionToMove = FocusDirection.Down
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.CreateSubtask)
                 },
                 onAddEditButtonClick = onAddEditButtonClick@{
                     if (createMode) {
@@ -292,7 +336,7 @@ fun AddEditTaskScreen(
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalAnimationApi::class,
-    ExperimentalAnimationApi::class
+    ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class
 )
 @Composable
 private fun AddEditTaskScreen(
@@ -323,6 +367,8 @@ private fun AddEditTaskScreen(
     subtaskTextFields: List<TextFieldState> = emptyList(),
     onCreateSubtask: () -> Unit = {},
     onRemoveSubtask: (TextFieldState) -> Unit = {},
+    onRemoveSubtaskByKeyPress: (position: Int, TextFieldState) -> Unit = {_, _ -> },
+    onNextSubtask: (position: Int) -> Unit = {},
     onAddEditButtonClick: () -> Unit = {},
 ) {
     Surface(modifier = Modifier
@@ -437,17 +483,32 @@ private fun AddEditTaskScreen(
                 )
             }
 
-            items(
+            itemsIndexed(
                 items = subtaskTextFields,
-                key = { it.id },
-                contentType = { ContentTypes.SUBTASK_TEXT_FIELDS }
-            ) { textFieldState ->
+                key = { _, state -> state.id },
+                contentType = { _, _ -> ContentTypes.SUBTASK_TEXT_FIELDS }
+            ) { index, textFieldState ->
                 SubtaskTextFieldItem(
                     state = textFieldState,
                     reorderableState = reorderableState,
                     hapticFeedback = hapticFeedback,
                     onRemoveSubtask = { onRemoveSubtask(textFieldState) },
-                    modifier = Modifier.animateItemPlacement()
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { onNextSubtask(index) }
+                    ),
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .onKeyEvent { event ->
+                            if (event.key != Key.Backspace) return@onKeyEvent false
+                            if (textFieldState.value.isNotEmpty()) return@onKeyEvent false
+
+                            onRemoveSubtaskByKeyPress(index, textFieldState)
+                            true
+                        }
                 )
             }
 

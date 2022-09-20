@@ -2,6 +2,7 @@ package com.example.finito.core.presentation.components.textfields
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -25,6 +26,11 @@ fun BasicTextField(
     @StringRes placeholder: Int? = null,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.Sentences,
+        imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
     val (_, value, onValueChange) = state
 
@@ -42,10 +48,8 @@ fun BasicTextField(
             Text(text = stringResource(id = placeholder))
         },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Sentences,
-            imeAction = ImeAction.Done
-        ),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         modifier = Modifier.fillMaxWidth().then(modifier)

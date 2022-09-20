@@ -1,5 +1,7 @@
 package com.example.finito.features.subtasks.presentation.components
 
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
@@ -12,6 +14,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.example.finito.R
 import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.TextFieldState
@@ -26,6 +30,11 @@ fun SubtaskTextFieldItem(
     onRemoveSubtask: () -> Unit = {},
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.Sentences,
+        imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
     LaunchedEffect(isDragging) {
         if (!isDragging) return@LaunchedEffect
@@ -50,6 +59,8 @@ fun SubtaskTextFieldItem(
                 )
             }
         },
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         modifier = modifier
     )
 }

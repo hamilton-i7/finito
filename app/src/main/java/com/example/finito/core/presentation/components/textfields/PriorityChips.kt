@@ -24,6 +24,17 @@ fun PriorityChips(
     selectedPriority: Priority?,
     onPriorityClick: (Priority) -> Unit = {}
 ) {
+    val containerColor = when (selectedPriority) {
+        Priority.LOW -> finitoColors.lowPriorityContainer
+        Priority.MEDIUM -> finitoColors.mediumPriorityContainer
+        else -> finitoColors.urgentPriorityContainer
+    }
+    val onContainerColor = when (selectedPriority) {
+        Priority.LOW -> finitoColors.onLowPriorityContainer
+        Priority.MEDIUM -> finitoColors.onMediumPriorityContainer
+        else -> finitoColors.onUrgentPriorityContainer
+    }
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -48,9 +59,9 @@ fun PriorityChips(
                     },
                     label = { Text(stringResource(id = priority.label)) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = finitoColors.primaryContainer,
-                        selectedLabelColor = finitoColors.onPrimaryContainer,
-                        selectedLeadingIconColor = finitoColors.onPrimaryContainer
+                        selectedContainerColor = containerColor,
+                        selectedLabelColor = onContainerColor,
+                        selectedLeadingIconColor = onContainerColor
                     ),
                     modifier = Modifier
                         .animateContentSize(

@@ -263,7 +263,11 @@ fun AddEditTaskScreen(
                     )
                 },
                 priority = addEditTaskViewModel.selectedPriority,
-                onPriorityClick = {
+                onPriorityClick = onPriorityClick@{
+                    if (addEditTaskViewModel.selectedPriority == it) {
+                        addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangePriority(priority = null))
+                        return@onPriorityClick
+                    }
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangePriority(it))
                 },
                 subtaskTextFields = addEditTaskViewModel.subtaskNameStates,

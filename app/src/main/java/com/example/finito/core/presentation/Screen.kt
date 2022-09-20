@@ -33,9 +33,7 @@ sealed class Screen(
                 defaultValue = BoardState.ACTIVE.name
             }
         )
-    ) {
-        val childRoutes = listOf(EditBoard.route)
-    }
+    )
 
     object CreateBoard : Screen(route = "create_board")
 
@@ -68,6 +66,25 @@ sealed class Screen(
     object Trash : Screen(route = "trash") {
         val childRoutes = listOf(Board.route)
     }
+
+    object CreateTask : Screen(
+        route = "create_task?$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}",
+        prefix = "create_task",
+        arguments = listOf(
+            navArgument(BOARD_ROUTE_ID_ARGUMENT) {
+                type = NavType.IntType
+                defaultValue = -1
+            }
+        )
+    )
+
+    object EditTask : Screen(
+        route = "edit_task/{$EDIT_TASK_ROUTE_ID_ARGUMENT}",
+        prefix = "edit_task",
+        arguments = listOf(
+            navArgument(EDIT_TASK_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+        )
+    )
 
     companion object {
         const val BOARD_ROUTE_ID_ARGUMENT = "boardId"

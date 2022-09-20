@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,8 +24,6 @@ import com.example.finito.R
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.RowToggle
-import com.example.finito.core.presentation.components.bars.TopBar
-import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
@@ -35,6 +33,7 @@ import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.addeditboard.components.AddEditBoardDialogs
+import com.example.finito.features.boards.presentation.screen.addeditboard.components.AddEditBoardTopBar
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelItem
 import com.example.finito.ui.theme.FinitoTheme
@@ -111,10 +110,10 @@ fun AddEditBoardScreen(
 
     Scaffold(
         topBar = {
-            TopBar(
-                title = if (createMode) R.string.create_board else R.string.edit_board,
-                navigationIcon = Icons.Outlined.ArrowBack,
-                navigationIconDescription = R.string.go_back,
+            AddEditBoardTopBar(
+                boardState = addEditBoardViewModel.boardState,
+                createMode = createMode,
+                showMenu = addEditBoardViewModel.showScreenMenu,
                 scrollBehavior = topBarScrollBehavior,
                 onNavigationIconClick = onNavigationIconClick@{
                     if (createMode) {
@@ -126,74 +125,42 @@ fun AddEditBoardScreen(
                         addEditBoardViewModel.boardState
                     )
                 },
-                actions = actions@{
-                    if (createMode) return@actions
-                    when (addEditBoardViewModel.boardState) {
-                        BoardState.ACTIVE, BoardState.ARCHIVED -> {
-                            IconButton(onClick = {
-                                addEditBoardViewModel.onEvent(AddEditBoardEvent.MoveBoardToTrash)
-                                if (addEditBoardViewModel.boardState == BoardState.ACTIVE) {
-                                    onNavigateToHome()
-                                } else if (addEditBoardViewModel.boardState == BoardState.ARCHIVED) {
-                                    onNavigateToArchive()
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Delete,
-                                    contentDescription = stringResource(id = R.string.move_to_trash)
+                onMoveToTrashClick = {
+                    addEditBoardViewModel.onEvent(AddEditBoardEvent.MoveBoardToTrash)
+                    if (addEditBoardViewModel.boardState == BoardState.ACTIVE) {
+                        onNavigateToHome()
+                    } else if (addEditBoardViewModel.boardState == BoardState.ARCHIVED) {
+                        onNavigateToArchive()
+                    }
+                },
+                onRestoreBoardClick = {
+                    addEditBoardViewModel.onEvent(
+                        AddEditBoardEvent.RestoreBoard(showSnackbar = true)
+                    )
+                },
+                onMoreOptionsClick = {
+                    addEditBoardViewModel.onEvent(
+                        AddEditBoardEvent.ShowScreenMenu(show = true)
+                    )
+                },
+                onDismissMenu = {
+                    addEditBoardViewModel.onEvent(
+                        AddEditBoardEvent.ShowScreenMenu(show = false)
+                    )
+                },
+                onMenuOptionClick = { option ->
+                    addEditBoardViewModel.onEvent(
+                        AddEditBoardEvent.ShowScreenMenu(show = false)
+                    )
+                    when (option) {
+                        DeletedEditBoardScreenMenuOption.DeleteForever -> {
+                            addEditBoardViewModel.onEvent(
+                                AddEditBoardEvent.ShowDialog(
+                                    type = AddEditBoardEvent
+                                        .DialogType
+                                        .DeleteForever
                                 )
-                            }
-                        }
-                        BoardState.DELETED -> {
-                            IconButton(onClick = {
-                                addEditBoardViewModel.onEvent(
-                                    AddEditBoardEvent.RestoreBoard(showSnackbar = true)
-                                )
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Restore,
-                                    contentDescription = stringResource(id = R.string.restore_board)
-                                )
-                            }
-                            Box {
-                                IconButton(onClick = {
-                                    addEditBoardViewModel.onEvent(
-                                        AddEditBoardEvent.ShowScreenMenu(show = true)
-                                    )
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.MoreVert,
-                                        contentDescription = stringResource(id = R.string.more_options)
-                                    )
-                                }
-                                FinitoMenu(
-                                    show = addEditBoardViewModel.showScreenMenu,
-                                    onDismiss = {
-                                        addEditBoardViewModel.onEvent(
-                                            AddEditBoardEvent.ShowScreenMenu(show = false)
-                                        )
-                                    },
-                                    options = listOf<DeletedEditBoardScreenMenuOption>(
-                                        DeletedEditBoardScreenMenuOption.DeleteForever
-                                    ),
-                                    onOptionClick = { option ->
-                                        addEditBoardViewModel.onEvent(
-                                            AddEditBoardEvent.ShowScreenMenu(show = false)
-                                        )
-                                        when (option) {
-                                            DeletedEditBoardScreenMenuOption.DeleteForever -> {
-                                                addEditBoardViewModel.onEvent(
-                                                    AddEditBoardEvent.ShowDialog(
-                                                        type = AddEditBoardEvent
-                                                            .DialogType
-                                                            .DeleteForever
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                )
-                            }
+                            )
                         }
                     }
                 }
@@ -273,7 +240,6 @@ private fun AddEditBoardScreen(
                     onValueChange = nameState.onValueChange,
                     enabled = !isDeleted,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    errorFeedback = R.string.empty_name_error,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .focusRequester(focusRequester)

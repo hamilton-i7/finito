@@ -117,4 +117,20 @@
     <string name="delete_task_error">There was an error while trying to delete this task</string>
     <string name="task_marked_as_completed">Task marked as completed</string>
     <string name="task_marked_as_uncompleted">Task marked as uncompleted</string>
+    <string name="show_boards_menu">Show boards menu</string>
+    <string name="hide_boards_menu">Hide boards menu</string>
+    <string name="description">Description</string>
+    <string name="reminder">Reminder</string>
+    <string name="priority">Priority</string>
+    <string name="remove_subtask">Remove subtask</string>
+    <string name="enter_subtask_name">Enter subtask name</string>
+    <string name="create_subtask">Create subtask</string>
+    <string name="remove_reminder">Remove reminder</string>
+    <string name="subtasks">Subtasks</string>
+    <string name="choose_board">Choose board</string>
+    <string name="edit_task">Edit task</string>
+    <string name="mark_as_completed">Mark as completed</string>
+    <string name="delete_task">Delete task</string>
+    <string name="hide_reminders">Hide reminders</string>
+    <string name="show_reminders">Show reminders</string>
 </resources>

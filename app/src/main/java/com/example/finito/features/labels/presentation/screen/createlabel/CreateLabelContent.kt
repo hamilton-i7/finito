@@ -26,7 +26,7 @@ fun CreateLabelContent(
     onNavigateBack: () -> Unit = {},
     onShowSnackbar: (Int, Int?, () -> Unit) -> Unit = {_, _, _ ->},
 ) {
-    val (name, onNameChange) = createLabelViewModel.nameState.copy(
+    val (_, name, onNameChange) = createLabelViewModel.nameState.copy(
         onValueChange = {
             createLabelViewModel.onEvent(CreateLabelEvent.ChangeName(it))
         }

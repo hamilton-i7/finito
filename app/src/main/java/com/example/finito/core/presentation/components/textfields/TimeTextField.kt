@@ -7,19 +7,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
+import com.example.finito.features.tasks.domain.util.formatted
+import java.time.LocalTime
 
 @Composable
 fun TimeTextField(
-    time: String,
+    time: LocalTime?,
+    modifier: Modifier = Modifier,
     onTimeRemove: () -> Unit = {},
     onClick: () -> Unit = {},
     enabled: Boolean = true,
 ) {
+    val formattedTime = time?.formatted() ?: ""
+
     ClickableTextField(
         onClick = onClick,
-        value = time,
+        value = formattedTime,
         leadingIcon = {
             Icon(imageVector = Icons.Outlined.Schedule, contentDescription = null)
         },
@@ -32,6 +38,7 @@ fun TimeTextField(
             }
         },
         placeholder = { Text(text = stringResource(id = R.string.time)) },
-        enabled = enabled
+        enabled = enabled,
+        modifier = modifier
     )
 }

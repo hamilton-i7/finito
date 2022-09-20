@@ -20,11 +20,13 @@ import com.example.finito.ui.theme.finitoColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicTextField(
-    textFieldState: TextFieldState,
+    state: TextFieldState,
     modifier: Modifier = Modifier,
     @StringRes placeholder: Int? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
-    val (value, onValueChange) = textFieldState
+    val (_, value, onValueChange) = state
 
     TextField(
         value = value,
@@ -44,6 +46,8 @@ fun BasicTextField(
             capitalization = KeyboardCapitalization.Sentences,
             imeAction = ImeAction.Done
         ),
-        modifier = modifier.fillMaxWidth()
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        modifier = Modifier.fillMaxWidth().then(modifier)
     )
 }

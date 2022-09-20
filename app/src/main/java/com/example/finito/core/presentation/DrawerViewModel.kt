@@ -61,7 +61,7 @@ class DrawerViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
-        boardUseCases.findSimpleBoards().onEach { boards ->
+        boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@DrawerViewModel.boards = boards
         }.launchIn(viewModelScope)
     }

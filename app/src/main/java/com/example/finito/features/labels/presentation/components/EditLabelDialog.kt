@@ -23,7 +23,7 @@ fun EditLabelDialog(
     onDismissClick: () -> Unit,
     onConfirmClick: () -> Unit,
 ) {
-    val (name, onNameChange) = nameState
+    val (_, name, onNameChange) = nameState
 
     AlertDialog(
         onDismissRequest = onDismiss,

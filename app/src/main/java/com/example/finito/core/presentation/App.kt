@@ -29,6 +29,7 @@ import com.example.finito.features.boards.presentation.screen.home.HomeScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
 import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
+import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -143,6 +144,7 @@ fun App(
                 )
             },
         ) {
+            // TODO 20/09/2022: Allow only the main screens to have a collapsable TopBar
             AnimatedNavHost(
                 navController = navController,
                 startDestination = Screen.Home.route
@@ -294,6 +296,18 @@ fun App(
                     CreateLabelContent(
                         onNavigateBack = { navController.navigateUp() },
                         onShowSnackbar = onShowSnackbar
+                    )
+                }
+
+                composable(
+                    route = Screen.CreateTask.route,
+                    arguments = Screen.CreateTask.arguments,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition
+                ) {
+                    AddEditTaskScreen(
+                        createMode = true,
+                        onNavigateBack = { navController.navigateUp() }
                     )
                 }
             }

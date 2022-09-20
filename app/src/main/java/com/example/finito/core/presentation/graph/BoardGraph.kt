@@ -43,16 +43,16 @@ fun NavGraphBuilder.boardGraph(
                 }
             },
             popEnterTransition = {
-                when {
-                    Screen.Board.childRoutes.contains(initialState.destination.route) -> {
+                when (initialState.destination.route) {
+                    Screen.EditBoard.route, Screen.CreateTask.route -> {
                         childScreenPopEnterTransition()
                     }
                     else -> peerScreenEnterTransition()
                 }
             },
             exitTransition = {
-                when {
-                    Screen.Board.childRoutes.contains(targetState.destination.route) -> {
+                when (targetState.destination.route) {
+                    Screen.EditBoard.route, Screen.CreateTask.route -> {
                         childScreenExitTransition()
                     }
                     else -> peerScreenExitTransition()
@@ -69,6 +69,9 @@ fun NavGraphBuilder.boardGraph(
                 onNavigateBack = { navController.navigateUp() },
                 onNavigateToEditBoard = { boardId, boardState ->
                     navController.navigateToEditBoard(boardId, boardState)
+                },
+                onNavigateToCreateTask = {
+                    navController.navigateToCreateTask(it)
                 }
             )
         }

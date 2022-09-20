@@ -12,9 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.core.presentation.MENU_MIN_WIDTH
 import com.example.finito.core.presentation.util.TestTags
+import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.ui.theme.finitoColors
 
 @Composable
@@ -23,6 +23,7 @@ fun <M: MenuOption> FinitoMenu(
     onDismiss: () -> Unit,
     options: List<M>,
     onOptionClick: (M) -> Unit,
+    modifier: Modifier = Modifier,
     disabledOptions: List<M> = emptyList(),
 ) {
     DropdownMenu(
@@ -31,6 +32,7 @@ fun <M: MenuOption> FinitoMenu(
         modifier = Modifier
             .widthIn(min = MENU_MIN_WIDTH)
             .testTag(TestTags.CARD_MENU)
+            .then(modifier)
     ) {
         options.forEach { option ->
             val interactionSource = remember { MutableInteractionSource() }

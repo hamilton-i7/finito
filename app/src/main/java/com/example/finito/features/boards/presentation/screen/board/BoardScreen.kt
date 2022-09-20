@@ -63,7 +63,7 @@ fun BoardScreen(
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    onNavigateToCreateTask: () -> Unit = {},
+    onNavigateToCreateTask: (Int) -> Unit = {},
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
 ) {
     val detailedBoard = boardViewModel.board
@@ -151,7 +151,7 @@ fun BoardScreen(
                     .padding(vertical = 12.dp, horizontal = 16.dp)
             ) {
                 BasicTextField(
-                    textFieldState = boardViewModel.newTaskNameState.copy(
+                    state = boardViewModel.newTaskNameState.copy(
                         onValueChange = {
                             boardViewModel.onEvent(BoardEvent.ChangeNewTaskName(it))
                         }),
@@ -163,7 +163,9 @@ fun BoardScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    TextButton(onClick = onNavigateToCreateTask) {
+                    TextButton(onClick = {
+                        onNavigateToCreateTask(detailedBoard!!.board.boardId)
+                    }) {
                         Text(text = stringResource(id = R.string.view_more_options))
                     }
 

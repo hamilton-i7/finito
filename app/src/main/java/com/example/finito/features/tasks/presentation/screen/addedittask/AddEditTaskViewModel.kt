@@ -68,6 +68,9 @@ class AddEditTaskViewModel @Inject constructor(
     var subtaskNameStates by mutableStateOf<List<TextFieldState>>(emptyList())
         private set
 
+    var showReminders by mutableStateOf(false)
+        private set
+
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -90,14 +93,20 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ChangePriority -> selectedPriority = event.priority
             is AddEditTaskEvent.ChangeReminder -> selectedReminder = event.reminder
             AddEditTaskEvent.CreateSubtask -> onCreateSubtask()
-            is AddEditTaskEvent.RemoveSubtask -> onRemoveTask(event.subtaskId)
+            is AddEditTaskEvent.RemoveSubtask -> onRemoveTask(event.state)
             AddEditTaskEvent.CreateTask -> onCreateTask()
             AddEditTaskEvent.EditTask -> onEditTask()
             AddEditTaskEvent.DeleteTask -> onDeleteTask()
             is AddEditTaskEvent.ReorderSubtasks -> onReorderSubtasks(event.from, event.to)
             is AddEditTaskEvent.ShowDialog -> dialogType = event.type
             AddEditTaskEvent.ToggleCompleted -> onToggleCompleted()
+            is AddEditTaskEvent.ShowReminders -> showReminders = event.show
         }
+    }
+
+    fun canDragTask(position: ItemPosition): Boolean {
+        if (subtaskNameStates.isEmpty()) return false
+        return subtaskNameStates.any { it.id == position.key }
     }
 
     private fun onToggleCompleted() = viewModelScope.launch {
@@ -212,8 +221,8 @@ class AddEditTaskViewModel @Inject constructor(
         subtaskNameStates = subtaskNameStates + listOf(TextFieldState(id = ++subtaskNameStateId))
     }
 
-    private fun onRemoveTask(subtaskId: Int) {
-        subtaskNameStates = subtaskNameStates.filter { it.id != subtaskId }
+    private fun onRemoveTask(state: TextFieldState) {
+        subtaskNameStates = subtaskNameStates.filter { it.id != state.id }
     }
 
     private fun fetchTask() {
@@ -234,11 +243,24 @@ class AddEditTaskViewModel @Inject constructor(
             boards.first { it.boardId == boardId }.let {
                 selectedBoard = it
             }
-        }
+        }.launchIn(viewModelScope)
     }
     
-    private fun setupData(taskWithSubtasks: TaskWithSubtasks) {
+    private suspend fun setupData(taskWithSubtasks: TaskWithSubtasks) {
          this.task = taskWithSubtasks
+        boardUseCases.findOneBoard(taskWithSubtasks.task.boardId).let { result ->
+            when (result) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.find_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    val board = result.data.board
+                    selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
+                }
+            }
+        }
         nameState = nameState.copy(value = taskWithSubtasks.task.name)
         if (taskWithSubtasks.task.description != null) {
             descriptionState = descriptionState.copy(value = taskWithSubtasks.task.description)

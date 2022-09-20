@@ -48,3 +48,10 @@ fun NavController.navigateToEditBoard(boardId: Int, state: BoardState = BoardSta
             "=${state.name}"
     navigate(route)
 }
+
+fun NavController.navigateToCreateTask(boardId: Int? = null) {
+    val route = boardId?.let {
+        "${Screen.CreateTask.prefix}?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$it"
+    } ?: Screen.CreateTask.route
+    navigate(route)
+}

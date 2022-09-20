@@ -2,6 +2,7 @@ package com.example.finito.core.presentation.components.textfields
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextField
@@ -30,6 +31,11 @@ fun FinitoTextField(
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
     colors: TextFieldColors = FinitoTextFieldDefaults.textFieldColors(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.Sentences,
+        imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
     TextField(
         value = value,
@@ -44,12 +50,9 @@ fun FinitoTextField(
         trailingIcon = trailingIcon,
         shape = FinitoTextFieldDefaults.Shape,
         colors = colors,
-        keyboardOptions = KeyboardOptions.Default.copy(
-            capitalization = KeyboardCapitalization.Sentences,
-            imeAction = ImeAction.Done
-        ),
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         modifier = Modifier
-//            .fillMaxWidth()
             .border(
                 width = 1.dp,
                 color = finitoColors.outline,

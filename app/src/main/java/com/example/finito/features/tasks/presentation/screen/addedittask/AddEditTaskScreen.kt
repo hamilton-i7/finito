@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -32,6 +33,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,6 +52,7 @@ import com.example.finito.core.presentation.util.menu.TaskReminderOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 import com.example.finito.features.subtasks.presentation.components.SubtaskTextFieldItem
+import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskDialogs
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskTopBar
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.ReminderDropdownTextField
 import com.example.finito.ui.theme.FinitoTheme
@@ -194,6 +198,8 @@ fun AddEditTaskScreen(
             },
             modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
         ) { innerPadding ->
+            AddEditTaskDialogs(addEditTaskViewModel)
+
             AddEditTaskScreen(
                 paddingValues = innerPadding,
                 createMode = createMode,
@@ -222,6 +228,8 @@ fun AddEditTaskScreen(
                 },
                 onDateRemove = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeDate(date = null))
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeTime(time = null))
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeReminder(reminder = null))
                 },
                 time = addEditTaskViewModel.selectedTime,
                 onTimeClick = {
@@ -231,6 +239,7 @@ fun AddEditTaskScreen(
                 },
                 onTimeRemove = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeTime(time = null))
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeReminder(reminder = null))
                 },
                 reminder = addEditTaskViewModel.selectedReminder,
                 onReminderTextFieldClick = {
@@ -241,6 +250,7 @@ fun AddEditTaskScreen(
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowReminders(show = false))
                 },
                 onReminderOptionClick = {
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowReminders(show = false))
                     addEditTaskViewModel.onEvent(
                         AddEditTaskEvent.ChangeReminder(
                             when (it) {
@@ -342,6 +352,10 @@ private fun AddEditTaskScreen(
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
                     modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    ),
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -359,25 +373,28 @@ private fun AddEditTaskScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
             item(
-                key = LazyListKeys.TASK_DATE_TIME_TEXT_FIELDS,
+                key = LazyListKeys.TASK_DATE_TEXT_FIELD,
                 contentType = ContentTypes.TEXT_FIELDS
             ) {
-                Row {
-                    DateTextField(
-                        date = date,
-                        onClick = onDateClick,
-                        onDateRemove = onDateRemove,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TimeTextField(
-                        time = time,
-                        onClick = onTimeClick,
-                        onTimeRemove = onTimeRemove,
-                        enabled = date != null,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                DateTextField(
+                    date = date,
+                    onClick = onDateClick,
+                    onDateRemove = onDateRemove,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+            item(
+                key = LazyListKeys.TASK_TIME_TEXT_FIELD,
+                contentType = ContentTypes.TEXT_FIELDS
+            ) {
+                TimeTextField(
+                    time = time,
+                    onClick = onTimeClick,
+                    onTimeRemove = onTimeRemove,
+                    enabled = date != null,
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(modifier = Modifier.height(24.dp))
             }
             item(

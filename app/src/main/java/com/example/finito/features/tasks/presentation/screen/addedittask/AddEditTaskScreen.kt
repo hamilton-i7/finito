@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,7 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.NoteAlt
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -25,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -120,21 +122,47 @@ fun AddEditTaskScreen(
         sheetBackgroundColor = finitoColors.surface,
         sheetContent = {
             LazyColumn(
-                contentPadding = PaddingValues(vertical = 32.dp),
                 modifier = Modifier.navigationBarsPadding()
             ) {
                 item {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 22.dp)
+                                .width(32.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(finitoColors.onSurfaceVariant.copy(alpha = 0.4f))
+                        )
+                    }
+                }
+                item {
                     Text(
-                        text = stringResource(id = R.string.choose_board),
-                        style = MaterialTheme.typography.titleMedium,
+                        text = stringResource(id = R.string.move_to),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = finitoColors.outline,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
-                items(addEditTaskViewModel.boards) { board -> 
+                items(addEditTaskViewModel.boards) { board ->
+                    val selected = board.boardId == addEditTaskViewModel.selectedBoard?.boardId
                     ListItem(
-                        headlineText = { Text(text = board.name) },
-                        leadingContent = {
-                            Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null)
+                        headlineText = {
+                            Text(
+                                text = board.name,
+                                color = if (selected) finitoColors.primary else finitoColors.onSurface
+                            )
+                        },
+                        trailingContent = trailingContent@{
+                            if (!selected) return@trailingContent
+                            Icon(
+                                imageVector = Icons.Outlined.Check,
+                                contentDescription = stringResource(id = R.string.selected),
+                                tint = finitoColors.primary
+                            )
                         },
                         modifier = Modifier
                             .fillMaxWidth()

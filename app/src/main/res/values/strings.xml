@@ -133,4 +133,7 @@
     <string name="delete_task">Delete task</string>
     <string name="hide_reminders">Hide reminders</string>
     <string name="show_reminders">Show reminders</string>
+    <string name="close_boards_menu">Close boards menu</string>
+    <string name="move_to">Move to</string>
+    <string name="selected">Selected</string>
 </resources>

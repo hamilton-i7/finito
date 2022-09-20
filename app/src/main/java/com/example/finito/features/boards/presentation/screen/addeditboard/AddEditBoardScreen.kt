@@ -2,6 +2,7 @@ package com.example.finito.features.boards.presentation.screen.addeditboard
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -53,7 +54,7 @@ fun AddEditBoardScreen(
     onNavigateToBoardFlow: (boardId: Int) -> Unit = {},
     onNavigateToBoard: (boardId: Int, BoardState) -> Unit = {_, _ -> },
 ) {
-    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val focusManager = LocalFocusManager.current
 
     BackHandler {
@@ -204,7 +205,7 @@ fun AddEditBoardScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun AddEditBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
@@ -243,8 +244,9 @@ private fun AddEditBoardScreen(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .focusRequester(focusRequester)
+                        .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp).animateItemPlacement())
             }
             item(contentType = ContentTypes.LABELS_TOGGLE) {
                 RowToggle(
@@ -252,14 +254,16 @@ private fun AddEditBoardScreen(
                     onShowContentToggle = onShowLabelsChange,
                     label = stringResource(id = R.string.labels),
                     showContentDescription = R.string.show_labels,
-                    hideContentDescription = R.string.hide_labels
+                    hideContentDescription = R.string.hide_labels,
+                    modifier = Modifier.animateItemPlacement()
                 )
             }
             items(labels, key = { it.labelId }, contentType = { ContentTypes.LABELS }) {
                 AnimatedVisibility(
                     visible = showLabels,
                     enter = fadeIn(),
-                    exit = fadeOut()
+                    exit = fadeOut(),
+                    modifier = Modifier.animateItemPlacement()
                 ) {
                     LabelItem(
                         label = it,
@@ -270,10 +274,11 @@ private fun AddEditBoardScreen(
                 }
             }
             item(key = LazyListKeys.PRIMARY_BUTTON) {
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(40.dp).animateItemPlacement())
                 AnimatedContent(
                     targetState = nameState.value.isNotBlank(),
-                    transitionSpec = { fadeIn() with fadeOut() }
+                    transitionSpec = { fadeIn() with fadeOut() },
+                    modifier = Modifier.animateItemPlacement()
                 ) { validName ->
                     Button(
                         onClick = onButtonClick,

@@ -75,6 +75,7 @@ class AddEditTaskViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     private var subtaskNameStateId = -1
+    private var relatedBoardId = -1
 
     init {
         fetchTask()
@@ -136,7 +137,7 @@ class AddEditTaskViewModel @Inject constructor(
                 is Result.Success -> {
                     _eventFlow.emitAll(
                         flow {
-                            emit(Event.NavigateToBoard(selectedBoard!!.boardId))
+                            emit(Event.NavigateToBoard(relatedBoardId))
                             emit(Event.ShowSnackbar(
                                 message = if (completed)
                                     R.string.task_marked_as_completed
@@ -170,7 +171,7 @@ class AddEditTaskViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateToBoard(id = selectedBoard!!.boardId))
+                    _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
                 }
             }
         }
@@ -205,7 +206,7 @@ class AddEditTaskViewModel @Inject constructor(
                         ))
                     }
                     is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateToBoard(it.task.boardId))
+                        _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
                     }
                 }
             }
@@ -223,8 +224,15 @@ class AddEditTaskViewModel @Inject constructor(
                 reminder = selectedReminder,
                 priority = selectedPriority,
             ),
-            subtasks = subtaskNameStates.map { Subtask(name = it.value) }
-        )
+            subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map { Subtask(name = it.value) }
+        ).let {
+            when (taskUseCases.createTask(it)) {
+                is Result.Error -> TODO()
+                is Result.Success -> {
+                    _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
+                }
+            }
+        }
     }
 
     private fun onCreateSubtask() {
@@ -252,6 +260,7 @@ class AddEditTaskViewModel @Inject constructor(
             val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
             boards.first { it.boardId == boardId }.let {
                 selectedBoard = it
+                relatedBoardId = it.boardId
             }
         }.launchIn(viewModelScope)
     }

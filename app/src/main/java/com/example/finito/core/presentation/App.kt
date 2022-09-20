@@ -323,7 +323,10 @@ fun App(
                 ) {
                     AddEditTaskScreen(
                         createMode = true,
-                        onNavigateBack = { navController.navigateUp() }
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToBoard = { boardId ->
+                            navController.navigateToBoard(boardId)
+                        }
                     )
                 }
             }

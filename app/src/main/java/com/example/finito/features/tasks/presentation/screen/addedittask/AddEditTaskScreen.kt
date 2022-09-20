@@ -129,6 +129,16 @@ fun AddEditTaskScreen(
         focusDirectionToMove = null
     }
 
+    LaunchedEffect(Unit) {
+        addEditTaskViewModel.eventFlow.collect { event ->
+            when (event) {
+                is AddEditTaskViewModel.Event.NavigateToBoard -> onNavigateToBoard(event.id)
+                is AddEditTaskViewModel.Event.ShowError -> TODO()
+                is AddEditTaskViewModel.Event.ShowSnackbar -> TODO()
+            }
+        }
+    }
+
     BackHandler {
         if (bottomSheetState.isVisible) {
             scope.launch { bottomSheetState.hide() }
@@ -396,7 +406,9 @@ private fun AddEditTaskScreen(
                     onIndicatorClick = onBoardIndicatorClick,
                     modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(16.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(16.dp)
+                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.NAME_TEXT_FIELD,
@@ -406,13 +418,17 @@ private fun AddEditTaskScreen(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement(),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
                     ),
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.DESCRIPTION_TEXT_FIELD,
@@ -423,9 +439,13 @@ private fun AddEditTaskScreen(
                     onValueChange = descriptionState.onValueChange,
                     singleLine = false,
                     label = { Text(text = stringResource(id = R.string.description)) },
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement(),
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_DATE_TEXT_FIELD,
@@ -435,9 +455,13 @@ private fun AddEditTaskScreen(
                     date = date,
                     onClick = onDateClick,
                     onDateRemove = onDateRemove,
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_TIME_TEXT_FIELD,
@@ -448,9 +472,13 @@ private fun AddEditTaskScreen(
                     onClick = onTimeClick,
                     onTimeRemove = onTimeRemove,
                     enabled = date != null,
-                    modifier = Modifier.fillMaxWidth().animateItemPlacement()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.REMINDER_TEXT_FIELD,
@@ -465,7 +493,9 @@ private fun AddEditTaskScreen(
                     onOptionClick = onReminderOptionClick,
                     modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
 
             item(
@@ -477,7 +507,9 @@ private fun AddEditTaskScreen(
                     onPriorityClick = onPriorityClick,
                     modifier = Modifier.animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(24.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(24.dp)
+                    .animateItemPlacement())
             }
 
             item(

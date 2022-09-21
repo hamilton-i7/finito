@@ -18,8 +18,8 @@ import com.example.finito.ui.theme.FinitoTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
-private fun dataChanged(task: TaskWithSubtasks?, date: LocalDate?, time: LocalTime?): Boolean {
-    return task?.task?.date?.isEqual(date) == false || task?.task?.time != time
+private fun dataChanged(task: TaskWithSubtasks, date: LocalDate?, time: LocalTime?): Boolean {
+    return task.task.date != date || task.task.time != time
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +55,6 @@ fun TaskDateTimeFullDialog(
                     }
                     onAlertChangesMade()
                 },
-                saveButtonEnabled = date != null,
                 onSave = {
                     onSaveClick()
                     onCloseClick()

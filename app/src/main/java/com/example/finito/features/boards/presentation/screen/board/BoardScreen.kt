@@ -334,6 +334,7 @@ fun BoardScreen(
                     },
                     onDateRemove = {
                         boardViewModel.onEvent(BoardEvent.ChangeTaskDate(date = null))
+                        boardViewModel.onEvent(BoardEvent.ChangeTaskTime(time = null))
                     },
                     time = boardViewModel.selectedTime,
                     onTimeFieldClick = {
@@ -379,7 +380,7 @@ private fun BoardScreen(
     val completedTasks = tasks.filter { it.task.completed }
     val uncompletedTasks = tasks.filter { !it.task.completed }
 
-    // TODO: Show board labels
+    // TODO 21/09/2022: Show board labels
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {

@@ -7,4 +7,6 @@ sealed class AppEvent {
     data class UndoBoardChange(val board: DetailedBoard) : AppEvent()
 
     data class UndoTaskChange(val task: TaskWithSubtasks) : AppEvent()
+
+    data class RecoverTask(val task: TaskWithSubtasks) : AppEvent()
 }

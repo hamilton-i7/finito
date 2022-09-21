@@ -149,14 +149,14 @@ class AddEditTaskViewModel @Inject constructor(
                     is Result.Success -> {
                         _eventFlow.emitAll(
                             flow {
-                                emit(Event.ShowSnackbar(
+                                emit(Event.Snackbar.UndoTaskChange(
                                     message = if (completed)
                                         R.string.task_marked_as_completed
                                     else
                                         R.string.task_marked_as_uncompleted,
                                     task = this@with
                                 ))
-                                emit(Event.NavigateToBoard(originalRelatedBoard))
+                                emit(Event.NavigateBack)
                             }
                         )
                     }
@@ -185,7 +185,15 @@ class AddEditTaskViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
+                    _eventFlow.emitAll(
+                        flow {
+                            emit(Event.Snackbar.RecoverTask(
+                                message = R.string.task_deleted,
+                                task = this@with
+                            ))
+                            emit(Event.NavigateBack)
+                        }
+                    )
                 }
             }
         }
@@ -220,7 +228,7 @@ class AddEditTaskViewModel @Inject constructor(
                         ))
                     }
                     is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
+                        _eventFlow.emit(Event.NavigateBack)
                     }
                 }
             }
@@ -247,7 +255,7 @@ class AddEditTaskViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
+                    _eventFlow.emit(Event.NavigateBack)
                 }
             }
         }
@@ -328,8 +336,18 @@ class AddEditTaskViewModel @Inject constructor(
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
 
-        data class NavigateToBoard(val id: Int) : Event()
+        object NavigateBack : Event()
 
-        data class ShowSnackbar(@StringRes val message: Int, val task: TaskWithSubtasks) : Event()
+        sealed class Snackbar : Event() {
+            data class UndoTaskChange(
+                @StringRes val message: Int,
+                val task: TaskWithSubtasks,
+            ) : Snackbar()
+
+            data class RecoverTask(
+                @StringRes val message: Int,
+                val task: TaskWithSubtasks,
+            ) : Snackbar()
+        }
     }
 }

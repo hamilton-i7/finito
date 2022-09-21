@@ -31,7 +31,6 @@ fun AddEditTaskDialogs(addEditTaskViewModel: AddEditTaskViewModel) {
                 }
             )
         }
-        AddEditTaskEvent.DialogType.DeleteTask -> TODO()
         null -> Unit
     }
 }

@@ -149,11 +149,28 @@ fun AddEditTaskScreen(
     LaunchedEffect(Unit) {
         addEditTaskViewModel.eventFlow.collect { event ->
             when (event) {
-                is AddEditTaskViewModel.Event.NavigateToBoard -> onNavigateToBoard(event.id)
-                is AddEditTaskViewModel.Event.ShowError -> TODO()
-                is AddEditTaskViewModel.Event.ShowSnackbar -> {
-                    onShowSnackbar(event.message, R.string.undo) {
-                        appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                is AddEditTaskViewModel.Event.NavigateBack -> {
+                    if (previousRoute == Screen.Board.route) {
+                        onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+                        return@collect
+                    }
+                    onNavigateBack()
+                }
+                is AddEditTaskViewModel.Event.ShowError -> {
+                    TODO()
+                }
+                is AddEditTaskViewModel.Event.Snackbar -> {
+                    when (event) {
+                        is AddEditTaskViewModel.Event.Snackbar.RecoverTask -> {
+                            onShowSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.RecoverTask(task = event.task))
+                            }
+                        }
+                        is AddEditTaskViewModel.Event.Snackbar.UndoTaskChange -> {
+                            onShowSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                            }
+                        }
                     }
                 }
             }
@@ -242,9 +259,7 @@ fun AddEditTaskScreen(
                         addEditTaskViewModel.onEvent(AddEditTaskEvent.ToggleCompleted)
                     },
                     onDeleteTask = {
-                        addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
-                            type = AddEditTaskEvent.DialogType.DeleteTask
-                        ))
+                        addEditTaskViewModel.onEvent(AddEditTaskEvent.DeleteTask)
                     },
                     scrollBehavior = topBarScrollBehavior
                 )

@@ -46,8 +46,6 @@ sealed class AddEditTaskEvent {
     data class ShowReminders(val show: Boolean) : AddEditTaskEvent()
 
     sealed class DialogType {
-        object DeleteTask : DialogType()
-
         object Date : DialogType()
 
         object Time : DialogType()

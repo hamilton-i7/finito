@@ -31,6 +31,14 @@ class AppViewModel @Inject constructor(
         when (event) {
             is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
             is AppEvent.UndoTaskChange -> onUndoTaskChange(event.task)
+            is AppEvent.RecoverTask -> onRecoverTask(event.task)
+        }
+    }
+
+    private fun onRecoverTask(task: TaskWithSubtasks) = viewModelScope.launch {
+        when (taskUseCases.createTask(task)) {
+            is Result.Error -> TODO()
+            is Result.Success -> _eventFlow.emit(Event.RefreshBoard)
         }
     }
 

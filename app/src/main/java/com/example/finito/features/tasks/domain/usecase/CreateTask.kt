@@ -2,6 +2,7 @@ package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.domain.ErrorMessages
 import com.example.finito.core.domain.Result
+import com.example.finito.core.domain.util.moveElement
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -22,7 +23,12 @@ class CreateTask(
         if (task.date == null && task.time != null) {
             return Result.Error(message = ErrorMessages.INVALID_TASK_STATE)
         }
-        val taskWithPosition = setupTaskPosition(task)
+        val taskWithPosition = task.let {
+            if (it.boardPosition == -1) {
+                return@let setupTaskPosition(it)
+            }
+            arrangeSameBoard(task = it)
+        }
         return Result.Success(
             data = taskRepository.create(taskWithPosition.copy(
                 name = taskWithPosition.name.trim(),
@@ -35,10 +41,16 @@ class CreateTask(
         )
     }
 
-    private suspend fun setupTaskPosition(task: Task): Task {
-        // If this task was recently deleted, use its board position
-        if (task.boardPosition != -1) return task
+    private suspend fun arrangeSameBoard(task: Task): Task {
+        val tasks = taskRepository.findTasksByBoard(task.boardId) + listOf(task)
+        val arrangedTasks = tasks.moveElement(tasks.lastIndex, task.boardPosition).mapIndexed { index, it ->
+            it.copy(boardPosition = index)
+        }.toTypedArray()
+        taskRepository.updateMany(*arrangedTasks)
+        return arrangedTasks.first { it.taskId == task.taskId }
+    }
 
+    private suspend fun setupTaskPosition(task: Task): Task {
         return taskRepository.findTasksByBoardAmount(task.boardId).let {
             task.copy(boardPosition = it)
         }

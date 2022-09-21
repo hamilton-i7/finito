@@ -76,6 +76,7 @@ class AddEditTaskViewModel @Inject constructor(
 
     private var subtaskNameStateId = -1
     private var relatedBoardId = -1
+    private var recentlyToggledCompletedTask: TaskWithSubtasks? = null
 
     init {
         fetchTask()
@@ -124,29 +125,38 @@ class AddEditTaskViewModel @Inject constructor(
     private fun onToggleCompleted() = viewModelScope.launch {
         if (task == null) return@launch
         with(task!!) {
-            val completed = !task.completed
-            val updatedTask = copy(task = task.copy(
-                completed = completed,
-                completedAt = if (completed) LocalDateTime.now() else null
-            ))
-            when (taskUseCases.updateTask(updatedTask)) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.update_task_error
-                    ))
-                }
-                is Result.Success -> {
-                    _eventFlow.emitAll(
-                        flow {
-                            emit(Event.NavigateToBoard(relatedBoardId))
-                            emit(Event.ShowSnackbar(
-                                message = if (completed)
-                                    R.string.task_marked_as_completed
-                                else
-                                    R.string.task_marked_as_uncompleted
-                            ))
-                        }
-                    )
+            recentlyToggledCompletedTask = this
+            boardUseCases.findOneBoard(task.boardId).let {
+                if (it is Result.Error) return@launch
+                val board = (it as Result.Success).data
+                val uncompletedTasksAmount = board.tasks.count { task -> !task.task.completed }
+                val completed = !task.completed
+                val updatedTask = copy(task = task.copy(
+                    completed = completed,
+                    completedAt = if (completed) LocalDateTime.now() else null,
+                    boardPosition = if (completed) board.tasks.lastIndex else uncompletedTasksAmount
+                ))
+
+                when (taskUseCases.updateTask(updatedTask)) {
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.update_task_error
+                        ))
+                    }
+                    is Result.Success -> {
+                        _eventFlow.emitAll(
+                            flow {
+                                emit(Event.ShowSnackbar(
+                                    message = if (completed)
+                                        R.string.task_marked_as_completed
+                                    else
+                                        R.string.task_marked_as_uncompleted,
+                                    task = this@with
+                                ))
+                                emit(Event.NavigateToBoard(relatedBoardId))
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -292,6 +302,7 @@ class AddEditTaskViewModel @Inject constructor(
                 is Result.Success -> {
                     val board = result.data.board
                     selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
+                    relatedBoardId = result.data.board.boardId
                 }
             }
         }
@@ -316,6 +327,6 @@ class AddEditTaskViewModel @Inject constructor(
 
         data class NavigateToBoard(val id: Int) : Event()
 
-        data class ShowSnackbar(@StringRes val message: Int) : Event()
+        data class ShowSnackbar(@StringRes val message: Int, val task: TaskWithSubtasks) : Event()
     }
 }

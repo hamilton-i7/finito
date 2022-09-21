@@ -79,6 +79,8 @@ class BoardViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    private var recentlyToggleTaskCompleted: TaskWithSubtasks? = null
+
     init {
         fetchBoard()
         fetchBoardState()
@@ -92,6 +94,7 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
+            is BoardEvent.UndoToggleTaskCompleted -> onUndoToggleTaskCompleted()
             BoardEvent.DeleteCompletedTasks -> onDeleteCompletedTasks()
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
@@ -158,9 +161,24 @@ class BoardViewModel @Inject constructor(
         }
     }
 
+    private fun onUndoToggleTaskCompleted() = viewModelScope.launch {
+        if (recentlyToggleTaskCompleted == null) return@launch
+        with(recentlyToggleTaskCompleted!!) {
+            when (taskUseCases.updateTask(this)) {
+                is Result.Error -> TODO()
+                is Result.Success -> {
+                    fetchBoard()
+                    recentlyToggleTaskCompleted = null
+                }
+            }
+        }
+    }
+
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
+            recentlyToggleTaskCompleted = task
+
             val uncompletedTasks = tasks.filter { !it.task.completed }
             val completed = !task.task.completed
             val updatedTask = task.copy(
@@ -176,7 +194,15 @@ class BoardViewModel @Inject constructor(
                         error = R.string.update_task_error
                     ))
                 }
-                is Result.Success -> fetchBoard()
+                is Result.Success -> {
+                    fetchBoard()
+                    _eventFlow.emit(Event.Snackbar.UndoTaskChange(
+                        message = if (completed)
+                            R.string.task_marked_as_completed
+                        else
+                            R.string.task_marked_as_uncompleted
+                    ))
+                }
             }
         }
     }
@@ -278,7 +304,7 @@ class BoardViewModel @Inject constructor(
                 tasks = it.tasks.map { task -> CompletedTask(completed = task.task.completed) }
             )
             boardUseCases.updateBoard(restoredBoard)
-            _eventFlow.emit(Event.ShowSnackbar(
+            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
                 message = R.string.board_was_restored,
                 board = it
             ))
@@ -295,7 +321,7 @@ class BoardViewModel @Inject constructor(
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
                     ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.ShowSnackbar(
+                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
                         message = R.string.board_archived,
                         board = this,
                     ))
@@ -309,7 +335,7 @@ class BoardViewModel @Inject constructor(
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
                     ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.ShowSnackbar(
+                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
                         message = R.string.board_moved_to_trash,
                         board = this@with
                     ))
@@ -319,8 +345,15 @@ class BoardViewModel @Inject constructor(
     }
 
     sealed class Event {
-        data class ShowSnackbar(@StringRes val message: Int, val board: DetailedBoard) : Event()
-
         data class ShowError(@StringRes val error: Int) : Event()
+
+        sealed class Snackbar : Event() {
+            data class UndoBoardChange(
+                @StringRes val message: Int,
+                val board: DetailedBoard,
+            ) : Snackbar()
+
+            data class UndoTaskChange(@StringRes val message: Int) : Snackbar()
+        }
     }
 }

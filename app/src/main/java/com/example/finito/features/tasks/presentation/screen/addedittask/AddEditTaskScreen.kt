@@ -48,6 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
 import com.example.finito.core.presentation.components.textfields.PriorityChips
@@ -96,6 +98,7 @@ private fun calculateDp(bottomSheetState: ModalBottomSheetState): Dp {
 fun AddEditTaskScreen(
     createMode: Boolean,
     addEditTaskViewModel: AddEditTaskViewModel = hiltViewModel(),
+    appViewModel: AppViewModel = hiltViewModel(),
     onNavigateToBoard: (Int) -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onShowSnackbar: (
@@ -134,7 +137,11 @@ fun AddEditTaskScreen(
             when (event) {
                 is AddEditTaskViewModel.Event.NavigateToBoard -> onNavigateToBoard(event.id)
                 is AddEditTaskViewModel.Event.ShowError -> TODO()
-                is AddEditTaskViewModel.Event.ShowSnackbar -> TODO()
+                is AddEditTaskViewModel.Event.ShowSnackbar -> {
+                    onShowSnackbar(event.message, R.string.undo) {
+                        appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                    }
+                }
             }
         }
     }

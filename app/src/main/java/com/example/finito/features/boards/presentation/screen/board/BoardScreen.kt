@@ -65,6 +65,7 @@ fun BoardScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToCreateTask: (boardId: Int, name: String) -> Unit = {_, _ -> },
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
+    onNavigateToEditTask: (taskId: Int) -> Unit = {},
 ) {
     val detailedBoard = boardViewModel.board
 
@@ -117,17 +118,34 @@ fun BoardScreen(
     LaunchedEffect(Unit) {
         boardViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is BoardViewModel.Event.ShowSnackbar -> {
-                    showSnackbar(event.message, R.string.undo) {
-                        appViewModel.onEvent(AppEvent.UndoBoardChange(
-                            board = event.board
-                        ))
+                is BoardViewModel.Event.Snackbar -> {
+                    when (event) {
+                        is BoardViewModel.Event.Snackbar.UndoBoardChange -> {
+                            showSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
+                            }
+                        }
+                        is BoardViewModel.Event.Snackbar.UndoTaskChange -> {
+                            showSnackbar(event.message, R.string.undo) {
+                                boardViewModel.onEvent(BoardEvent.UndoToggleTaskCompleted)
+                            }
+                        }
                     }
                 }
                 is BoardViewModel.Event.ShowError -> {
                     boardViewModel.onEvent(BoardEvent.ShowDialog(
                         type = BoardEvent.DialogType.Error(message = event.error)
                     ))
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        appViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                AppViewModel.Event.RefreshBoard -> {
+                    boardViewModel.onEvent(BoardEvent.RefreshBoard)
                 }
             }
         }
@@ -306,6 +324,7 @@ fun BoardScreen(
                     onToggleShowCompletedTasks = {
                         boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
                     },
+                    onTaskClick = { onNavigateToEditTask(it.task.taskId) },
                     onPriorityClick = {
                         boardViewModel.onEvent(BoardEvent.ShowDialog(
                             type = BoardEvent.DialogType.Priority(it)
@@ -373,6 +392,7 @@ private fun BoardScreen(
     tasks: List<TaskWithSubtasks> = emptyList(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
+    onTaskClick: (TaskWithSubtasks) -> Unit = {},
     onPriorityClick: (TaskWithSubtasks) -> Unit = {},
     onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
     onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
@@ -412,11 +432,13 @@ private fun BoardScreen(
                         hapticFeedback = hapticFeedback,
                         onPriorityClick = { onPriorityClick(it) },
                         onCompletedToggle = { onToggleTaskCompleted(it) },
+                        onTaskClick = { onTaskClick(it) },
+                        onDateTimeClick = { onDateTimeClick(it) },
                         isDragging = isDragging,
                         modifier = Modifier
                             .animateItemPlacement()
                             .detectReorderAfterLongPress(reorderableState)
-                    ) { onDateTimeClick(it) }
+                    )
                 }
             }
             if (completedTasks.isNotEmpty()) {
@@ -444,6 +466,7 @@ private fun BoardScreen(
                         TaskItem(
                             task = it.task,
                             onCompletedToggle = { onToggleTaskCompleted(it) },
+                            onTaskClick = { onTaskClick(it) },
                         )
                     }
                 }

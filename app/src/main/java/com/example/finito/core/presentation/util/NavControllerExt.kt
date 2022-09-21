@@ -57,3 +57,8 @@ fun NavController.navigateToCreateTask(boardId: Int? = null, taskName: String = 
     } ?: Screen.CreateTask.route
     navigate(route)
 }
+
+fun NavController.navigateToEditTask(taskId: Int) {
+    val route = "${Screen.EditTask.prefix}/${taskId}"
+    navigate(route)
+}

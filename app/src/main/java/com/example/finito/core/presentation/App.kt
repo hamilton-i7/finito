@@ -328,6 +328,23 @@ fun App(
                         }
                     )
                 }
+
+                composable(
+                    route = Screen.EditTask.route,
+                    arguments = Screen.EditTask.arguments,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition
+                ) {
+                    AddEditTaskScreen(
+                        createMode = false,
+                        appViewModel = appViewModel,
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToBoard = { boardId ->
+                            navController.navigateToBoard(boardId)
+                        },
+                        onShowSnackbar = onShowSnackbar
+                    )
+                }
             }
         }
     }

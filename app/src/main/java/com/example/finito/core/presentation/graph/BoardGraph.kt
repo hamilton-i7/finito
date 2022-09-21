@@ -44,7 +44,8 @@ fun NavGraphBuilder.boardGraph(
             },
             popEnterTransition = {
                 when (initialState.destination.route) {
-                    Screen.EditBoard.route, Screen.CreateTask.route -> {
+                    Screen.EditBoard.route, Screen.CreateTask.route,
+                    Screen.EditTask.route -> {
                         childScreenPopEnterTransition()
                     }
                     else -> peerScreenEnterTransition()
@@ -72,6 +73,9 @@ fun NavGraphBuilder.boardGraph(
                 },
                 onNavigateToCreateTask = { boardId, taskName ->
                     navController.navigateToCreateTask(boardId, taskName)
+                },
+                onNavigateToEditTask = { taskId ->
+                    navController.navigateToEditTask(taskId)
                 }
             )
         }

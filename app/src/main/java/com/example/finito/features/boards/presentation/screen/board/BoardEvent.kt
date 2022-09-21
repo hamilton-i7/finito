@@ -26,6 +26,8 @@ sealed class BoardEvent {
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 
+    object UndoToggleTaskCompleted : BoardEvent()
+
     data class ShowDialog(val type: DialogType? = null) : BoardEvent()
 
     data class ShowTaskDateTimeFullDialog(val task: TaskWithSubtasks?) : BoardEvent()

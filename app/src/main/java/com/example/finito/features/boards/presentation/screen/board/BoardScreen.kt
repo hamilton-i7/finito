@@ -127,7 +127,7 @@ fun BoardScreen(
                         }
                         is BoardViewModel.Event.Snackbar.UndoTaskChange -> {
                             showSnackbar(event.message, R.string.undo) {
-                                boardViewModel.onEvent(BoardEvent.UndoToggleTaskCompleted)
+                                appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
                             }
                         }
                     }
@@ -142,12 +142,9 @@ fun BoardScreen(
     }
 
     LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collectLatest { event ->
-            when (event) {
-                AppViewModel.Event.RefreshBoard -> {
-                    boardViewModel.onEvent(BoardEvent.RefreshBoard)
-                }
-            }
+        appViewModel.eventFlow.collect { event ->
+            if (event !is AppViewModel.Event.RefreshBoard) return@collect
+            boardViewModel.onEvent(BoardEvent.RefreshBoard)
         }
     }
 

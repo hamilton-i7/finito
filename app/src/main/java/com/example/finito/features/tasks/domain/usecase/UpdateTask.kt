@@ -43,7 +43,7 @@ class UpdateTask(
                     to = task.boardPosition,
                 )
             }
-        } ?: throw ResourceException.NotFoundException
+        } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
         return Result.Success(
             data = taskRepository.update(task.toTaskUpdate()).also {
                 val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()

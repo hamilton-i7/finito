@@ -79,8 +79,6 @@ class BoardViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    private var recentlyToggleTaskCompleted: TaskWithSubtasks? = null
-
     init {
         fetchBoard()
         fetchBoardState()
@@ -94,7 +92,6 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
-            is BoardEvent.UndoToggleTaskCompleted -> onUndoToggleTaskCompleted()
             BoardEvent.DeleteCompletedTasks -> onDeleteCompletedTasks()
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
@@ -161,24 +158,9 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onUndoToggleTaskCompleted() = viewModelScope.launch {
-        if (recentlyToggleTaskCompleted == null) return@launch
-        with(recentlyToggleTaskCompleted!!) {
-            when (taskUseCases.updateTask(this)) {
-                is Result.Error -> TODO()
-                is Result.Success -> {
-                    fetchBoard()
-                    recentlyToggleTaskCompleted = null
-                }
-            }
-        }
-    }
-
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            recentlyToggleTaskCompleted = task
-
             val uncompletedTasks = tasks.filter { !it.task.completed }
             val completed = !task.task.completed
             val updatedTask = task.copy(
@@ -200,7 +182,8 @@ class BoardViewModel @Inject constructor(
                         message = if (completed)
                             R.string.task_marked_as_completed
                         else
-                            R.string.task_marked_as_uncompleted
+                            R.string.task_marked_as_uncompleted,
+                        task = task
                     ))
                 }
             }
@@ -353,7 +336,10 @@ class BoardViewModel @Inject constructor(
                 val board: DetailedBoard,
             ) : Snackbar()
 
-            data class UndoTaskChange(@StringRes val message: Int) : Snackbar()
+            data class UndoTaskChange(
+                @StringRes val message: Int,
+                val task: TaskWithSubtasks
+            ) : Snackbar()
         }
     }
 }

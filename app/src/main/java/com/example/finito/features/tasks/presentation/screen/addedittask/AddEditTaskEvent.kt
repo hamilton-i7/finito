@@ -37,6 +37,8 @@ sealed class AddEditTaskEvent {
 
     object ToggleCompleted : AddEditTaskEvent()
 
+    object RefreshTask : AddEditTaskEvent()
+
     object DeleteTask : AddEditTaskEvent()
 
     data class ShowDialog(val type: DialogType? = null) : AddEditTaskEvent()

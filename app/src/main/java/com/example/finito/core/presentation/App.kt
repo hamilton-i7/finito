@@ -322,6 +322,8 @@ fun App(
                 ) {
                     AddEditTaskScreen(
                         createMode = true,
+                        appViewModel = appViewModel,
+                        previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
                         onNavigateBack = { navController.navigateUp() },
                         onNavigateToBoard = { boardId ->
                             navController.navigateToBoard(boardId)
@@ -338,6 +340,7 @@ fun App(
                     AddEditTaskScreen(
                         createMode = false,
                         appViewModel = appViewModel,
+                        previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
                         onNavigateBack = { navController.navigateUp() },
                         onNavigateToBoard = { boardId ->
                             navController.navigateToBoard(boardId)

@@ -2,6 +2,8 @@ package com.example.finito.core.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -11,6 +13,8 @@ import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,8 +35,26 @@ class AppViewModel @Inject constructor(
     }
 
     private fun onUndoTaskChange(task: TaskWithSubtasks) = viewModelScope.launch {
-        taskUseCases.updateTask(task)
-        _eventFlow.emit(Event.RefreshBoard)
+        when (val result = taskUseCases.updateTask(task)) {
+            is Result.Error -> {
+                if (result.message != ErrorMessages.NOT_FOUND) return@launch
+                taskUseCases.createTask(task)
+                _eventFlow.emitAll(
+                    flow {
+                        emit(Event.RefreshBoard)
+                        emit(Event.RefreshTask)
+                    }
+                )
+            }
+            is Result.Success -> {
+                _eventFlow.emitAll(
+                    flow {
+                        emit(Event.RefreshBoard)
+                        emit(Event.RefreshTask)
+                    }
+                )
+            }
+        }
     }
 
     private fun onUndoBoardChange(originalBoard: DetailedBoard) = viewModelScope.launch {
@@ -49,5 +71,7 @@ class AppViewModel @Inject constructor(
 
     sealed class Event {
         object RefreshBoard : Event()
+
+        object RefreshTask : Event()
     }
 }

@@ -36,6 +36,9 @@ class CreateTask(
     }
 
     private suspend fun setupTaskPosition(task: Task): Task {
+        // If this task was recently deleted, use its board position
+        if (task.boardPosition != -1) return task
+
         return taskRepository.findTasksByBoardAmount(task.boardId).let {
             task.copy(boardPosition = it)
         }

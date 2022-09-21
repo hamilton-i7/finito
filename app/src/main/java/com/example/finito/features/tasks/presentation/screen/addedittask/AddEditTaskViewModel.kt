@@ -74,8 +74,10 @@ class AddEditTaskViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    var originalRelatedBoard = -1
+        private set
+
     private var subtaskNameStateId = -1
-    private var relatedBoardId = -1
     private var recentlyToggledCompletedTask: TaskWithSubtasks? = null
 
     init {
@@ -105,6 +107,7 @@ class AddEditTaskViewModel @Inject constructor(
             AddEditTaskEvent.ToggleCompleted -> onToggleCompleted()
             is AddEditTaskEvent.ShowReminders -> showReminders = event.show
             is AddEditTaskEvent.ChangeSubtaskName -> onChangeSubtaskName(event.id, event.name)
+            AddEditTaskEvent.RefreshTask -> fetchTask()
         }
     }
 
@@ -153,7 +156,7 @@ class AddEditTaskViewModel @Inject constructor(
                                         R.string.task_marked_as_uncompleted,
                                     task = this@with
                                 ))
-                                emit(Event.NavigateToBoard(relatedBoardId))
+                                emit(Event.NavigateToBoard(originalRelatedBoard))
                             }
                         )
                     }
@@ -182,7 +185,7 @@ class AddEditTaskViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
+                    _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
                 }
             }
         }
@@ -217,7 +220,7 @@ class AddEditTaskViewModel @Inject constructor(
                         ))
                     }
                     is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
+                        _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
                     }
                 }
             }
@@ -244,7 +247,7 @@ class AddEditTaskViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
+                    _eventFlow.emit(Event.NavigateToBoard(originalRelatedBoard))
                 }
             }
         }
@@ -279,7 +282,7 @@ class AddEditTaskViewModel @Inject constructor(
             val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
             boards.first { it.boardId == boardId }.let {
                 selectedBoard = it
-                relatedBoardId = it.boardId
+                originalRelatedBoard = it.boardId
             }
         }.launchIn(viewModelScope)
     }
@@ -302,7 +305,7 @@ class AddEditTaskViewModel @Inject constructor(
                 is Result.Success -> {
                     val board = result.data.board
                     selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
-                    relatedBoardId = result.data.board.boardId
+                    originalRelatedBoard = result.data.board.boardId
                 }
             }
         }

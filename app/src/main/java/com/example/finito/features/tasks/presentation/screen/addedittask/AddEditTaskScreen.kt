@@ -50,6 +50,7 @@ import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
+import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
 import com.example.finito.core.presentation.components.textfields.PriorityChips
@@ -97,6 +98,7 @@ private fun calculateDp(bottomSheetState: ModalBottomSheetState): Dp {
 @Composable
 fun AddEditTaskScreen(
     createMode: Boolean,
+    previousRoute: String = "",
     addEditTaskViewModel: AddEditTaskViewModel = hiltViewModel(),
     appViewModel: AppViewModel = hiltViewModel(),
     onNavigateToBoard: (Int) -> Unit = {},
@@ -127,6 +129,18 @@ fun AddEditTaskScreen(
     val focusManager: FocusManager = LocalFocusManager.current
     var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
 
+    BackHandler {
+        if (bottomSheetState.isVisible) {
+            scope.launch { bottomSheetState.hide() }
+            return@BackHandler
+        }
+        if (previousRoute == Screen.Board.route) {
+            onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+            return@BackHandler
+        }
+        onNavigateBack()
+    }
+
     LaunchedEffect(addEditTaskViewModel.subtaskNameStates) {
         focusDirectionToMove?.let(focusManager::moveFocus)
         focusDirectionToMove = null
@@ -146,12 +160,11 @@ fun AddEditTaskScreen(
         }
     }
 
-    BackHandler {
-        if (bottomSheetState.isVisible) {
-            scope.launch { bottomSheetState.hide() }
-            return@BackHandler
+    LaunchedEffect(Unit) {
+        appViewModel.eventFlow.collect { event ->
+            if (event !is AppViewModel.Event.RefreshTask) return@collect
+            addEditTaskViewModel.onEvent(AddEditTaskEvent.RefreshTask)
         }
-        onNavigateBack()
     }
 
     ModalBottomSheetLayout(
@@ -218,7 +231,13 @@ fun AddEditTaskScreen(
                 AddEditTaskTopBar(
                     createMode = createMode,
                     taskCompleted = addEditTaskViewModel.task?.task?.completed ?: false,
-                    onNavigationIconClick = onNavigateBack,
+                    onNavigationIconClick = onNavigationIconClick@{
+                        if (previousRoute == Screen.Board.route) {
+                            onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+                            return@onNavigationIconClick
+                        }
+                        onNavigateBack()
+                    },
                     onToggleTaskCompleted = {
                         addEditTaskViewModel.onEvent(AddEditTaskEvent.ToggleCompleted)
                     },

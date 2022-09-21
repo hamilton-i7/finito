@@ -332,14 +332,18 @@ fun BoardScreen(
                             type = BoardEvent.DialogType.TaskDate
                         ))
                     },
-                    onDateRemove = { /*TODO*/ },
+                    onDateRemove = {
+                        boardViewModel.onEvent(BoardEvent.ChangeTaskDate(date = null))
+                    },
                     time = boardViewModel.selectedTime,
                     onTimeFieldClick = {
                         boardViewModel.onEvent(BoardEvent.ShowDialog(
                             type = BoardEvent.DialogType.TaskTime
                         ))
                     },
-                    onTimeRemove = { /*TODO*/ },
+                    onTimeRemove = {
+                        boardViewModel.onEvent(BoardEvent.ChangeTaskTime(time = null))
+                    },
                     onAlertChangesMade = {
                         boardViewModel.onEvent(BoardEvent.ShowDialog(
                             type = BoardEvent.DialogType.DiscardChanges

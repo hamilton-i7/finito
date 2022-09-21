@@ -19,7 +19,7 @@ fun AddEditBoardDialogs(
                 description = R.string.delete_board_confirmation,
                 onConfirmClick = {
                     addEditBoardViewModel.onEvent(AddEditBoardEvent.DeleteForever)
-                    // TODO Use Event emit
+                    // TODO 21/09/2022: Use AddEditBoardViewModel.Event to track method's result
                     onNavigateToTrash()
                 },
                 onDismissClick = {

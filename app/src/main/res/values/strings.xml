@@ -136,4 +136,6 @@
     <string name="close_boards_menu">Close boards menu</string>
     <string name="move_to">Move to</string>
     <string name="selected">Selected</string>
+    <string name="reorder_task">Reorder task</string>
+    <string name="find_task_error">There was an error while looking for this task</string>
 </resources>

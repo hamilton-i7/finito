@@ -160,7 +160,6 @@ fun App(
                 )
             },
         ) {
-            // TODO 20/09/2022: Allow only the main screens to have a collapsable TopBar
             AnimatedNavHost(
                 navController = navController,
                 startDestination = Screen.Home.route

@@ -228,7 +228,11 @@ class AddEditTaskViewModel @Inject constructor(
             subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map { Subtask(name = it.value) }
         ).let {
             when (taskUseCases.createTask(it)) {
-                is Result.Error -> TODO()
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.create_task_error
+                    ))
+                }
                 is Result.Success -> {
                     _eventFlow.emit(Event.NavigateToBoard(relatedBoardId))
                 }
@@ -248,7 +252,11 @@ class AddEditTaskViewModel @Inject constructor(
         savedStateHandle.get<Int>(Screen.EDIT_TASK_ROUTE_ID_ARGUMENT)?.let { taskId ->
             viewModelScope.launch {
                 when (val result = taskUseCases.findOneTask(taskId)) {
-                    is Result.Error -> TODO()
+                    is Result.Error -> {
+                        _eventFlow.emit(Event.ShowError(
+                            error = R.string.find_task_error
+                        ))
+                    }
                     is Result.Success -> setupData(result.data)
                 }
             }

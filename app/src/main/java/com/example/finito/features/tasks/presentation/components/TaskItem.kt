@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,7 +57,6 @@ fun TaskItem(
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    // TODO: Add Drag handle icon
     Surface(
         onClick = onTaskClick,
         tonalElevation = tonalElevation,
@@ -86,7 +86,7 @@ fun TaskItem(
                     modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                 )
             }
-            Column(modifier = Modifier.fillMaxHeight()) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = task.name,
                     overflow = TextOverflow.Ellipsis,
@@ -217,6 +217,12 @@ fun TaskItem(
                         }
                     }
                 }
+            }
+            if (!task.completed) {
+                Icon(
+                    imageVector = Icons.Outlined.DragIndicator,
+                    contentDescription = stringResource(id = R.string.reorder_task)
+                )
             }
         }
     }

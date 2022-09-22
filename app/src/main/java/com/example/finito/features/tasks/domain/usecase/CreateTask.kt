@@ -24,9 +24,10 @@ class CreateTask(
             return Result.Error(message = ErrorMessages.INVALID_TASK_STATE)
         }
         val taskWithPosition = task.let {
-            if (it.boardPosition == -1) {
+            if (it.boardPosition == null && !it.completed) {
                 return@let setupTaskPosition(it)
             }
+            if (it.boardPosition == null) return@let it
             arrangeSameBoard(task = it)
         }
         return Result.Success(
@@ -43,7 +44,7 @@ class CreateTask(
 
     private suspend fun arrangeSameBoard(task: Task): Task {
         val tasks = taskRepository.findTasksByBoard(task.boardId) + listOf(task)
-        val arrangedTasks = tasks.moveElement(tasks.lastIndex, task.boardPosition).mapIndexed { index, it ->
+        val arrangedTasks = tasks.moveElement(tasks.lastIndex, task.boardPosition!!).mapIndexed { index, it ->
             it.copy(boardPosition = index)
         }.toTypedArray()
         taskRepository.updateMany(*arrangedTasks)

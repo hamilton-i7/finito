@@ -18,7 +18,6 @@ import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.entity.filterCompleted
-import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -141,13 +140,11 @@ class TodayViewModel @Inject constructor(
     }
 
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
-        val uncompletedTasks = tasks.filterUncompleted()
         val completed = !task.task.completed
         val updatedTask = task.copy(
             task = task.task.copy(
                 completed = completed,
-                completedAt = if (completed) LocalDateTime.now() else null,
-                boardPosition = if (completed) tasks.lastIndex else uncompletedTasks.size
+                completedAt = if (completed) LocalDateTime.now() else null
             )
         )
         when (taskUseCases.updateTask(updatedTask)) {

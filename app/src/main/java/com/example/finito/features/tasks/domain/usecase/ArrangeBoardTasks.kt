@@ -6,6 +6,7 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 
 class ArrangeBoardTasks(
@@ -14,15 +15,15 @@ class ArrangeBoardTasks(
 ) {
 
     suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>): Result<Unit, String> {
-        val tasks = tasksWithSubtasks.map { it.task }
-        val subtasks = tasksWithSubtasks.flatMap { it.subtasks }
+        val uncompletedTasks = tasksWithSubtasks.filterUncompleted()
+        val subtasks = uncompletedTasks.flatMap { it.subtasks }
 
-        if (!fromSameBoard(tasks)) {
+        if (!fromSameBoard(uncompletedTasks.map { it.task })) {
             return Result.Error(message = ErrorMessages.DIFFERENT_TASKS_ORIGIN)
         }
         return Result.Success(
-            data = tasksWithSubtasks.mapIndexed { index, taskWithSubtasks ->
-                taskWithSubtasks.task.copy(boardPosition = index)
+            data = uncompletedTasks.mapIndexed { index, task ->
+                task.task.copy(boardPosition = index)
             }.toTypedArray().let { taskRepository.updateMany(*it) }.also {
                 arrangeSubtasks(subtasks)
             }

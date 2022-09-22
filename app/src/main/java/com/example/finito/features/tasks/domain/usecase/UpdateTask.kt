@@ -3,12 +3,10 @@ package com.example.finito.features.tasks.domain.usecase
 import com.example.finito.core.domain.ErrorMessages
 import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.ResourceException
-import com.example.finito.core.domain.util.moveElement
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
-import com.example.finito.features.tasks.domain.entity.toTaskUpdate
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 
 class UpdateTask(
@@ -29,23 +27,26 @@ class UpdateTask(
             return Result.Error(ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
 
-        taskRepository.findOne(task.taskId)?.let {
+        val positionedTask = taskRepository.findOne(task.taskId)?.let {
             if (changedBoard(it.task, task)) {
-                arrangeDiffBoard(
+                return@let arrangeDiffBoard(
                     startBoardId = it.task.boardId,
                     endBoardId = task.boardId,
                     taskToUpdate = task,
                 )
-            } else if (changedPosition(it.task, task)) {
-                arrangeSameBoard(
-                    boardId = task.boardId,
-                    from = it.task.boardPosition,
-                    to = task.boardPosition,
-                )
             }
+            if (!changedCompletedState(it.task, task)) return@let task
+            if (task.completed) {
+                return@let task.copy(boardPosition = null)
+            }
+            return@let task.copy(
+                boardPosition = taskRepository.findTasksByBoard(task.boardId).filter { task1 ->
+                    !task1.completed
+                }.lastIndex
+            )
         } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
         return Result.Success(
-            data = taskRepository.update(task.toTaskUpdate()).also {
+            data = taskRepository.update(positionedTask).also {
                 val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()
                 with(setupSubtaskPositions(subtasks)) {
                     // Delete subtasks not found in the old subtasks list
@@ -65,8 +66,8 @@ class UpdateTask(
         )
     }
 
-    private fun changedPosition(oldTask: Task, newTask: Task): Boolean {
-        return oldTask.boardPosition != newTask.boardPosition
+    private fun changedCompletedState(oldTask: Task, newTask: Task): Boolean {
+        return oldTask.completed != newTask.completed
     }
 
     private fun changedBoard(oldTask: Task, newTask: Task): Boolean {
@@ -80,39 +81,34 @@ class UpdateTask(
         return subtasks.all { it.taskId == taskId }
     }
 
-    private suspend fun arrangeSameBoard(
-        boardId: Int,
-        from: Int,
-        to: Int,
-    ) {
-        val tasks = taskRepository.findTasksByBoard(boardId)
-        val arrangedTasks = tasks.moveElement(from, to).mapIndexed { index, task ->
-            task.copy(boardPosition = index)
-        }.toTypedArray()
-        taskRepository.updateMany(*arrangedTasks)
-    }
-
     private suspend fun arrangeDiffBoard(
         startBoardId: Int,
         endBoardId: Int,
         taskToUpdate: Task,
-    ) {
+    ): Task {
+        var newPosition = 0
+
         val startBoardTasks = taskRepository
             .findTasksByBoard(startBoardId)
-            .filter { it.taskId != taskToUpdate.taskId }
+            .filter { it.taskId != taskToUpdate.taskId && !it.completed }
             .mapIndexed { index, task ->
+                if (task.taskId == taskToUpdate.taskId) {
+                    newPosition = index
+                }
                 task.copy(boardPosition = index)
             }.toTypedArray()
         taskRepository.updateMany(*startBoardTasks)
 
         val endBoardTasks = taskRepository
             .findTasksByBoard(endBoardId)
+            .filter { !it.completed }
             .toMutableList()
-            .also {  it.add(taskToUpdate) }
+            .apply {  add(taskToUpdate) }
             .mapIndexed { index, task ->
                 task.copy(boardPosition = index)
             }.toTypedArray()
         taskRepository.updateMany(*endBoardTasks)
+        return taskToUpdate.copy(boardPosition = newPosition)
     }
 
     private fun setupSubtaskPositions(subtasks: List<Subtask>): Array<Subtask> {

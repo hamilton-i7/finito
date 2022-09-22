@@ -157,33 +157,28 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
-        if (board == null) return@launch
-        with(board!!) {
-            val uncompletedTasks = tasks.filterUncompleted()
-            val completed = !task.task.completed
-            val updatedTask = task.copy(
-                task = task.task.copy(
-                    completed = completed,
-                    completedAt = if (completed) LocalDateTime.now() else null,
-                    boardPosition = if (completed) tasks.lastIndex else uncompletedTasks.size
-                )
+        val completed = !task.task.completed
+        val updatedTask = task.copy(
+            task = task.task.copy(
+                completed = completed,
+                completedAt = if (completed) LocalDateTime.now() else null
             )
-            when (taskUseCases.updateTask(updatedTask)) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.update_task_error
-                    ))
-                }
-                is Result.Success -> {
-                    fetchBoard()
-                    _eventFlow.emit(Event.Snackbar.UndoTaskChange(
-                        message = if (completed)
-                            R.string.task_marked_as_completed
-                        else
-                            R.string.task_marked_as_uncompleted,
-                        task = task
-                    ))
-                }
+        )
+        when (taskUseCases.updateTask(updatedTask)) {
+            is Result.Error -> {
+                _eventFlow.emit(Event.ShowError(
+                    error = R.string.update_task_error
+                ))
+            }
+            is Result.Success -> {
+                fetchBoard()
+                _eventFlow.emit(Event.Snackbar.UndoTaskChange(
+                    message = if (completed)
+                        R.string.task_marked_as_completed
+                    else
+                        R.string.task_marked_as_uncompleted,
+                    task = task
+                ))
             }
         }
     }

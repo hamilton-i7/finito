@@ -39,9 +39,7 @@ class FindTodayTasks(
                         null -> uncompleted.sortedBy { it.task.time }
                     }
                 }
-                val completedTasks = filteredTasks.filterCompleted().let { completed ->
-                    completed.sortedBy { it.task.completedAt }
-                }
+                val completedTasks = filteredTasks.filterCompleted().sortedBy { it.task.completedAt }
                 uncompletedTasks + completedTasks
             }
         )

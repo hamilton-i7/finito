@@ -5,6 +5,8 @@ import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
+import com.example.finito.features.tasks.domain.entity.filterCompleted
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 
 class FindOneBoard(
     private val repository: BoardRepository
@@ -17,7 +19,13 @@ class FindOneBoard(
         return repository.findOne(id)?.let { detailedBoard ->
             Result.Success(
                 data = detailedBoard.copy(
-                    tasks = detailedBoard.tasks.sortedBy { it.task.boardPosition }
+                    tasks = detailedBoard.tasks.let { tasks ->
+                        val uncompletedTasks = tasks.filterUncompleted().sortedBy {
+                            it.task.boardPosition
+                        }
+                        val completedTasks = tasks.filterCompleted().sortedBy { it.task.completedAt }
+                        uncompletedTasks + completedTasks
+                    }
                 )
             )
         } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)

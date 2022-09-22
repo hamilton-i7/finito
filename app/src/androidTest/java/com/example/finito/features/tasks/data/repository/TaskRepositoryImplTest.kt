@@ -5,12 +5,11 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.finito.core.domain.Priority
 import com.example.finito.core.data.FinitoDatabase
+import com.example.finito.core.domain.Priority
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.toTaskUpdate
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -150,7 +149,7 @@ class TaskRepositoryImplTest {
         val task = dummyTasks.random()
         assertThat(task.name).startsWith("Task")
 
-        taskRepositoryImpl.update(task.copy(name = "Updated name").toTaskUpdate())
+        taskRepositoryImpl.update(task.copy(name = "Updated name"))
         assertThat(db.taskDao.findOne(task.taskId)?.task?.name).isEqualTo("Updated name")
     }
 

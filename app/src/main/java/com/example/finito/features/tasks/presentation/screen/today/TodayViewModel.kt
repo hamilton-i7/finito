@@ -114,8 +114,10 @@ class TodayViewModel @Inject constructor(
             TodayEvent.DeleteCompleted -> onDeleteCompletedTasks()
             TodayEvent.SaveNewTask -> onSaveTask()
             is TodayEvent.ShowTaskDateTimeFullDialog -> onShowTaskDateTimeFullDialog(event.task)
+            is TodayEvent.ChangeDate -> selectedDate = event.date
+            is TodayEvent.ChangeTime -> selectedTime = event.time
             TodayEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
-            is TodayEvent.ShowDialog -> dialogType = event.type
+            is TodayEvent.ShowDialog -> onShowDialog(event.type)
             is TodayEvent.ShowScreenMenu -> showScreenMenu = event.show
             is TodayEvent.SortByPriority -> onSortByPriority(event.option)
             TodayEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
@@ -123,6 +125,13 @@ class TodayViewModel @Inject constructor(
             TodayEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
             is TodayEvent.ChangeBottomSheetContent -> bottomSheetContent = event.content
         }
+    }
+
+    private fun onShowDialog(type: TodayEvent.DialogType?) {
+        dialogType = type
+        selectedPriority = if (type is TodayEvent.DialogType.Priority) {
+            type.task.task.priority
+        } else null
     }
 
     private fun onSortByPriority(option: SortingOption.Priority?) {

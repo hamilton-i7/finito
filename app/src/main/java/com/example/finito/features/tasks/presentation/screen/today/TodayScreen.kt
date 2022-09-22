@@ -1,9 +1,8 @@
 package com.example.finito.features.tasks.presentation.screen.today
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -46,7 +45,9 @@ import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.util.toFullFormat
 import com.example.finito.features.tasks.presentation.components.NewTaskSheetContent
+import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.components.TaskItem
+import com.example.finito.features.tasks.presentation.screen.today.components.TodayDialogs
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.launch
@@ -130,86 +131,129 @@ fun TodayScreen(
             }
         }
     ) {
-        Scaffold(
-            topBar = {
-                SmallTopBarWithMenu(
-                    title = stringResource(id = R.string.today),
-                    showMenu = todayViewModel.showScreenMenu,
-                    onDismissMenu = {
-                        todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = false))
-                    },
-                    onMenuClick = {
-                        scope.launch { drawerState.open() }
-                    },
-                    onMoreOptionsClick = {
-                        todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = true))
-                    },
-                    options = listOf<TodayScreenMenuOption>(
-                        TodayScreenMenuOption.DeleteCompleted
-                    ),
-                    onOptionClick = { option ->
-                        todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = false))
-                        when (option) {
-                            TodayScreenMenuOption.DeleteCompleted -> {
-                                todayViewModel.onEvent(TodayEvent.ShowDialog(
-                                    type = TodayEvent.DialogType.DeleteCompleted
-                                ))
+        Box {
+            Scaffold(
+                topBar = {
+                    SmallTopBarWithMenu(
+                        title = stringResource(id = R.string.today),
+                        showMenu = todayViewModel.showScreenMenu,
+                        onDismissMenu = {
+                            todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = false))
+                        },
+                        onMenuClick = {
+                            scope.launch { drawerState.open() }
+                        },
+                        onMoreOptionsClick = {
+                            todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = true))
+                        },
+                        options = listOf<TodayScreenMenuOption>(
+                            TodayScreenMenuOption.DeleteCompleted
+                        ),
+                        onOptionClick = { option ->
+                            todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = false))
+                            when (option) {
+                                TodayScreenMenuOption.DeleteCompleted -> {
+                                    todayViewModel.onEvent(TodayEvent.ShowDialog(
+                                        type = TodayEvent.DialogType.DeleteCompleted
+                                    ))
+                                }
                             }
+                        },
+                        scrollBehavior = topBarScrollBehavior,
+                    )
+                },
+                floatingActionButton = {
+                    CreateFab(
+                        text = R.string.create_task,
+                        onClick = {
+                            scope.launch {
+                                focusRequester.requestFocus()
+                                bottomSheetState.show()
+                            }
+                        },
+                        expanded = expandedFab
+                    )
+                },
+                floatingActionButtonPosition = FabPosition.Center,
+                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+            ) { innerPadding ->
+                TodayDialogs(todayViewModel)
+
+                TodayScreen(
+                    paddingValues = innerPadding,
+                    listState = listState,
+                    selectedSortingOption = todayViewModel.sortingOption,
+                    onSortingOptionClick = onSortingOptionClick@{
+                        if (todayViewModel.sortingOption == it) {
+                            todayViewModel.onEvent(TodayEvent.SortByPriority(option =  null))
+                            return@onSortingOptionClick
                         }
+                        todayViewModel.onEvent(TodayEvent.SortByPriority(it))
                     },
-                    scrollBehavior = topBarScrollBehavior,
-                )
-            },
-            floatingActionButton = {
-                CreateFab(
-                    text = R.string.create_task,
-                    onClick = {
-                        scope.launch {
-                            focusRequester.requestFocus()
-                            bottomSheetState.show()
-                        }
+                    boardsMap = todayViewModel.boardsMap,
+                    tasks = todayViewModel.tasks,
+                    showCompletedTasks = todayViewModel.showCompletedTasks,
+                    onToggleShowCompletedTasks = {
+                        todayViewModel.onEvent(TodayEvent.ToggleCompletedTasksVisibility)
                     },
-                    expanded = expandedFab
-                )
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-            modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-        ) { innerPadding ->
-            TodayScreen(
-                paddingValues = innerPadding,
-                listState = listState,
-                selectedSortingOption = todayViewModel.sortingOption,
-                onSortingOptionClick = onSortingOptionClick@{
-                    if (todayViewModel.sortingOption == it) {
-                        todayViewModel.onEvent(TodayEvent.SortByPriority(option =  null))
-                        return@onSortingOptionClick
+                    onTaskClick = { onNavigateToEditTask(it.task.taskId) },
+                    onPriorityClick = {
+                        todayViewModel.onEvent(TodayEvent.ShowDialog(
+                            type = TodayEvent.DialogType.Priority(it)
+                        ))
+                    },
+                    onDateTimeClick = {
+                        todayViewModel.onEvent(TodayEvent.ShowTaskDateTimeFullDialog(it))
+                    },
+                    onToggleTaskCompleted = {
+                        todayViewModel.onEvent(TodayEvent.ToggleTaskCompleted(it))
+                    },
+                    onBoardNameClick = {
+                        todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
+                            TodayEvent.BottomSheetContent.BoardsList(it)
+                        ))
                     }
-                    todayViewModel.onEvent(TodayEvent.SortByPriority(it))
-                },
-                boardsMap = todayViewModel.boardsMap,
-                tasks = todayViewModel.tasks,
-                showCompletedTasks = todayViewModel.showCompletedTasks,
-                onToggleShowCompletedTasks = {
-                    todayViewModel.onEvent(TodayEvent.ToggleCompletedTasksVisibility)
-                },
-                onTaskClick = { onNavigateToEditTask(it.task.taskId) },
-                onPriorityClick = {
-                    todayViewModel.onEvent(TodayEvent.ShowDialog(
-                        type = TodayEvent.DialogType.Priority(it)
-                    ))
-                },
-                onDateTimeClick = {
-                    todayViewModel.onEvent(TodayEvent.ShowTaskDateTimeFullDialog(it))
-                },
-                onToggleTaskCompleted = {
-                    todayViewModel.onEvent(TodayEvent.ToggleTaskCompleted(it))
-                },
-                onBoardNameClick = {
-                    todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
-                        TodayEvent.BottomSheetContent.BoardsList(it)
-                    ))
-                }
-            )
+                )
+            }
+            AnimatedVisibility(
+                visible = todayViewModel.selectedTask != null,
+                enter = slideInVertically { it / 2 },
+                exit = slideOutVertically { it }
+            ) {
+                TaskDateTimeFullDialog(
+                    task = todayViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
+                    date = todayViewModel.selectedDate,
+                    onDateFieldClick = {
+                        todayViewModel.onEvent(TodayEvent.ShowDialog(
+                            type = TodayEvent.DialogType.TaskDate
+                        ))
+                    },
+                    onDateRemove = {
+                        todayViewModel.onEvent(TodayEvent.ChangeDate(date = null))
+                        todayViewModel.onEvent(TodayEvent.ChangeTime(time = null))
+                    },
+                    time = todayViewModel.selectedTime,
+                    onTimeFieldClick = {
+                        todayViewModel.onEvent(TodayEvent.ShowDialog(
+                            type = TodayEvent.DialogType.TaskTime
+                        ))
+                    },
+                    onTimeRemove = {
+                        todayViewModel.onEvent(TodayEvent.ChangeTime(time = null))
+                    },
+                    onAlertChangesMade = {
+                        todayViewModel.onEvent(TodayEvent.ShowDialog(
+                            type = TodayEvent.DialogType.DiscardChanges
+                        ))
+                    },
+                    onCloseClick = {
+                        todayViewModel.onEvent(TodayEvent.ShowTaskDateTimeFullDialog(task = null))
+                    },
+                    onSaveClick = {
+                        todayViewModel.onEvent(TodayEvent.SaveTaskDateTimeChanges)
+                    }
+                )
+            }
         }
     }
 }

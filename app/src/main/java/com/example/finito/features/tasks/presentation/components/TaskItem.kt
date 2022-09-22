@@ -111,10 +111,10 @@ fun TaskItem(
                     )
                 }
                 if (!isSimpleTask) {
+                    // TODO 22/09/2022: Fix spacing on the cross axis
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         mainAxisSpacing = 8.dp,
-                        crossAxisSpacing = 8.dp
                     ) {
                         if (boardName != null) {
                             InputChip(

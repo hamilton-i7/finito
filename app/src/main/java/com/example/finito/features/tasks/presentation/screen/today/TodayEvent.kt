@@ -4,6 +4,8 @@ import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import java.time.LocalDate
+import java.time.LocalTime
 
 sealed class TodayEvent {
     data class ShowScreenMenu(val show: Boolean) : TodayEvent()
@@ -17,6 +19,10 @@ sealed class TodayEvent {
     data class ShowDialog(val type: DialogType? = null) : TodayEvent()
 
     data class ShowTaskDateTimeFullDialog(val task: TaskWithSubtasks?) : TodayEvent()
+
+    data class ChangeDate(val date: LocalDate? = null) : TodayEvent()
+
+    data class ChangeTime(val time: LocalTime? = null) : TodayEvent()
 
     object SaveTaskDateTimeChanges : TodayEvent()
 
@@ -44,6 +50,8 @@ sealed class TodayEvent {
         object TaskDate : DialogType()
 
         object TaskTime : DialogType()
+
+        object DiscardChanges : DialogType()
     }
 
     sealed class BottomSheetContent {

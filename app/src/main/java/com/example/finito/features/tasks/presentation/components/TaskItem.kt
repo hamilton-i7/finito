@@ -25,11 +25,13 @@ import com.example.finito.R
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.util.isPast
 import com.example.finito.features.tasks.domain.util.toFormattedChipDate
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import com.google.accompanist.flowlayout.FlowRow
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +40,7 @@ fun TaskItem(
     modifier: Modifier = Modifier,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
+    showDragIndicator: Boolean = false,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
@@ -182,10 +185,13 @@ fun TaskItem(
                             }
                         }
                         if (task.date != null) {
-                            val isPast = task.date.isBefore(LocalDate.now())
+                            val isPastDate = task.date.isBefore(LocalDate.now())
+                            val isPastTime = task.time?.let {
+                                LocalDateTime.of(task.date, it).isPast()
+                            } ?: false
                             val contentColor: Color
                             val borderColor: Color
-                            if (isPast) {
+                            if (isPastDate || isPastTime) {
                                 contentColor = finitoColors.error
                                 borderColor = finitoColors.error
                             } else {
@@ -218,7 +224,7 @@ fun TaskItem(
                     }
                 }
             }
-            if (!task.completed) {
+            if (showDragIndicator) {
                 Icon(
                     imageVector = Icons.Outlined.DragIndicator,
                     contentDescription = stringResource(id = R.string.reorder_task)

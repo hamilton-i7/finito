@@ -4,6 +4,8 @@ import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -22,21 +24,25 @@ class FindTodayTasks(
                     it.board.boardId
                 }
                 val filteredTasks = tasks.filter { activeBoardIds[it.task.boardId] != null }
-                when (taskOrder) {
-                    SortingOption.Priority.MostUrgent -> filteredTasks.sortedWith(
-                        compareByDescending<TaskWithSubtasks> {
-                            it.task.priority?.level
-                        }.thenByDescending { it.task.time }
-                    )
-                    SortingOption.Priority.LeastUrgent -> filteredTasks.sortedWith(
-                        compareBy<TaskWithSubtasks> {
-                            it.task.priority?.level
-                        }.thenByDescending { it.task.time }
-                    )
-                    null -> filteredTasks.sortedWith(
-                        compareByDescending { it.task.time }
-                    )
+                val uncompletedTasks = filteredTasks.filterUncompleted().let { uncompleted ->
+                    when (taskOrder) {
+                        SortingOption.Priority.MostUrgent -> uncompleted.sortedWith(
+                            compareByDescending<TaskWithSubtasks> {
+                                it.task.priority?.level
+                            }.thenBy { it.task.time }
+                        )
+                        SortingOption.Priority.LeastUrgent -> uncompleted.sortedWith(
+                            compareBy<TaskWithSubtasks> {
+                                it.task.priority?.level
+                            }.thenBy { it.task.time }
+                        )
+                        null -> uncompleted.sortedBy { it.task.time }
+                    }
                 }
+                val completedTasks = filteredTasks.filterCompleted().let { completed ->
+                    completed.sortedBy { it.task.completedAt }
+                }
+                uncompletedTasks + completedTasks
             }
         )
     }

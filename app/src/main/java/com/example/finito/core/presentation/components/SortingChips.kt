@@ -21,11 +21,11 @@ import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SortingChips(
-    options: List<SortingOption>,
+fun <T: SortingOption> SortingChips(
+    options: List<T>,
+    selectedOption: T?,
     modifier: Modifier = Modifier,
-    selectedOption: SortingOption,
-    onOptionClick: (SortingOption) -> Unit = {}
+    onOptionClick: (T) -> Unit = {}
 ) {
     Column(
         modifier = modifier,
@@ -37,7 +37,7 @@ fun SortingChips(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { option ->
-                val selected = option.label == selectedOption.label
+                val selected = option.label == selectedOption?.label
                 FilterChip(
                     selected = selected,
                     onClick = { onOptionClick(option) },

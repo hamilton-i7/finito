@@ -4,11 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -16,19 +13,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -62,6 +59,7 @@ import com.example.finito.core.presentation.util.menu.TaskReminderOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
+import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 import com.example.finito.features.subtasks.presentation.components.SubtaskTextFieldItem
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskDialogs
@@ -199,58 +197,14 @@ fun AddEditTaskScreen(
         sheetShape = RoundedCornerShape(topStart = bottomSheetCorners, topEnd = bottomSheetCorners),
         sheetBackgroundColor = finitoColors.surface,
         sheetContent = {
-            LazyColumn(
-                modifier = Modifier.navigationBarsPadding()
-            ) {
-                item {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(vertical = 22.dp)
-                                .width(32.dp)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(finitoColors.onSurfaceVariant.copy(alpha = 0.4f))
-                        )
-                    }
+            BoardsListSheetContent(
+                boards = addEditTaskViewModel.boards,
+                selectedBoard = addEditTaskViewModel.selectedBoard,
+                onBoardClick = {
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeBoard(it))
+                    scope.launch { bottomSheetState.hide() }
                 }
-                item {
-                    Text(
-                        text = stringResource(id = R.string.move_to),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = finitoColors.outline,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
-                items(addEditTaskViewModel.boards) { board ->
-                    val selected = board.boardId == addEditTaskViewModel.selectedBoard?.boardId
-                    ListItem(
-                        headlineText = {
-                            Text(
-                                text = board.name,
-                                color = if (selected) finitoColors.primary else finitoColors.onSurface
-                            )
-                        },
-                        trailingContent = trailingContent@{
-                            if (!selected) return@trailingContent
-                            Icon(
-                                imageVector = Icons.Outlined.Check,
-                                contentDescription = stringResource(id = R.string.selected),
-                                tint = finitoColors.primary
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeBoard(board))
-                                scope.launch { bottomSheetState.hide() }
-                            }
-                    )
-                }
-            }
+            )
         }
     ) {
         Scaffold(

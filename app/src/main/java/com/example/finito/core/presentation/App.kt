@@ -32,6 +32,7 @@ import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
 import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskScreen
+import com.example.finito.features.tasks.presentation.screen.today.TodayScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -189,6 +190,34 @@ fun App(
                         onShowSnackbar = onShowSnackbar,
                         onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
                         onNavigateToBoard = { navController.navigateToBoardFlow(it) }
+                    )
+                }
+
+                composable(
+                    route = Screen.Today.route,
+                    enterTransition = {
+                        when(initialState.destination.route) {
+                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
+                    },
+                    exitTransition = {
+                        when(targetState.destination.route) {
+                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                                childScreenExitTransition()
+                            }
+                            else -> peerScreenExitTransition()
+                        }
+                    },
+                ) {
+                    TodayScreen(
+                        drawerState = drawerState,
+                        onNavigateToCreateTask = { boardId, taskName ->
+                            navController.navigateToCreateTask(boardId, taskName)
+                        },
+                        onShowSnackbar = onShowSnackbar
                     )
                 }
 

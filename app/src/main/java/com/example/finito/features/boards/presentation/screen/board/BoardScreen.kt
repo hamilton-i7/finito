@@ -12,12 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -32,7 +29,6 @@ import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
-import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
@@ -47,6 +43,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
+import com.example.finito.features.tasks.presentation.components.NewTaskSheetContent
 import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.components.TaskItem
 import com.example.finito.ui.theme.FinitoTheme
@@ -88,8 +85,7 @@ fun BoardScreen(
         }
     )
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        initialValue = ModalBottomSheetValue.Hidden
     )
     val expandedFab by remember {
         derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
@@ -161,44 +157,25 @@ fun BoardScreen(
         sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         sheetBackgroundColor = finitoColors.surface,
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .imePadding()
-                    .padding(vertical = 12.dp, horizontal = 16.dp)
-            ) {
-                BasicTextField(
-                    state = boardViewModel.newTaskNameState.copy(
-                        onValueChange = {
-                            boardViewModel.onEvent(BoardEvent.ChangeNewTaskName(it))
-                        }),
-                    placeholder = R.string.new_task,
-                    modifier = Modifier.focusRequester(focusRequester)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    TextButton(onClick = {
-                        onNavigateToCreateTask(
-                            detailedBoard!!.board.boardId,
-                            boardViewModel.newTaskNameState.value
-                        )
-                        scope.launch { bottomSheetState.hide() }
-                    }) {
-                        Text(text = stringResource(id = R.string.view_more_options))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            boardViewModel.onEvent(BoardEvent.SaveTask)
-                            scope.launch { bottomSheetState.hide() }
-                        },
-                        enabled = boardViewModel.newTaskNameState.value.isNotBlank()
-                    ) { Text(text = stringResource(id = R.string.save)) }
-                }
-            }
+            NewTaskSheetContent(
+                nameTextFieldState = boardViewModel.newTaskNameState.copy(
+                    onValueChange = {
+                        boardViewModel.onEvent(BoardEvent.ChangeNewTaskName(it))
+                    }),
+                focusRequester = focusRequester,
+                onViewMoreOptionsClick = {
+                    onNavigateToCreateTask(
+                        detailedBoard!!.board.boardId,
+                        boardViewModel.newTaskNameState.value
+                    )
+                    scope.launch { bottomSheetState.hide() }
+                },
+                onSaveClick = {
+                    boardViewModel.onEvent(BoardEvent.SaveTask)
+                    scope.launch { bottomSheetState.hide() }
+                },
+                saveButtonEnabled = boardViewModel.newTaskNameState.value.isNotBlank()
+            )
         },
     ) {
         Box {
@@ -331,10 +308,11 @@ fun BoardScreen(
                     },
                     onDateTimeClick = {
                         boardViewModel.onEvent(BoardEvent.ShowTaskDateTimeFullDialog(it))
+                    },
+                    onToggleTaskCompleted = {
+                        boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     }
-                ) {
-                    boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
-                }
+                )
             }
 
             AnimatedVisibility(
@@ -434,6 +412,7 @@ private fun BoardScreen(
                         onTaskClick = { onTaskClick(it) },
                         onDateTimeClick = { onDateTimeClick(it) },
                         isDragging = isDragging,
+                        showDragIndicator = true,
                         modifier = Modifier
                             .animateItemPlacement()
                             .detectReorderAfterLongPress(reorderableState)

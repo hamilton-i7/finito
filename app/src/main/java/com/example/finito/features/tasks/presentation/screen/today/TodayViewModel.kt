@@ -17,8 +17,11 @@ import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -39,8 +42,13 @@ class TodayViewModel @Inject constructor(
     var boards by mutableStateOf<List<SimpleBoard>>(emptyList())
         private set
 
+    var boardsMap by mutableStateOf<Map<Int, String>>(mapOf())
+        private set
+
     var tasks by mutableStateOf<List<TaskWithSubtasks>>(emptyList())
         private set
+
+    private var fetchTasksJob: Job? = null
 
     var sortingOption by mutableStateOf(
         value = preferences.getString(
@@ -84,6 +92,10 @@ class TodayViewModel @Inject constructor(
     var selectedTime by mutableStateOf<LocalTime?>(null)
         private set
 
+    var bottomSheetContent by mutableStateOf<TodayEvent.BottomSheetContent>(
+        TodayEvent.BottomSheetContent.NewTask
+    ); private set
+
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -94,7 +106,7 @@ class TodayViewModel @Inject constructor(
 
     fun onEvent(event: TodayEvent) {
         when (event) {
-            is TodayEvent.ChangeBoard -> onChangeBoard(event.boardId, event.task)
+            is TodayEvent.ChangeBoard -> onChangeBoard(event.board, event.task)
             is TodayEvent.ChangeNewTaskName -> newTaskNameState = newTaskNameState.copy(
                 value = event.name
             )
@@ -106,14 +118,30 @@ class TodayViewModel @Inject constructor(
             TodayEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
             is TodayEvent.ShowDialog -> dialogType = event.type
             is TodayEvent.ShowScreenMenu -> showScreenMenu = event.show
-            is TodayEvent.SortByPriority -> sortingOption = event.option
+            is TodayEvent.SortByPriority -> onSortByPriority(event.option)
             TodayEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is TodayEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
+            TodayEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
+            is TodayEvent.ChangeBottomSheetContent -> bottomSheetContent = event.content
         }
     }
 
+    private fun onSortByPriority(option: SortingOption.Priority?) {
+        sortingOption = option
+        with(preferences.edit()) {
+            putString(PreferencesModule.TAG.TASKS_ORDER.name, option?.name)
+            apply()
+        }
+        fetchTasks()
+    }
+
+    private fun onResetBottomSheetContent() {
+        selectedBoard = boards.first()
+        newTaskNameState = newTaskNameState.copy(value = "")
+    }
+
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
-        val uncompletedTasks = tasks.filter { !it.task.completed }
+        val uncompletedTasks = tasks.filterUncompleted()
         val completed = !task.task.completed
         val updatedTask = task.copy(
             task = task.task.copy(
@@ -182,7 +210,7 @@ class TodayViewModel @Inject constructor(
     }
 
     private fun onDeleteCompletedTasks() = viewModelScope.launch {
-        val completedTasks = tasks.filter { it.task.completed }.map { it.task }
+        val completedTasks = tasks.filterCompleted().map { it.task }
         when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
             is Result.Error -> {
                 _eventFlow.emit(Event.ShowError(
@@ -202,17 +230,22 @@ class TodayViewModel @Inject constructor(
     }
 
     private fun onChangeBoard(
-        boardId: Int,
-        task: TaskWithSubtasks,
+        board: SimpleBoard,
+        task: TaskWithSubtasks?,
     ) = viewModelScope.launch {
+        if (task == null) {
+            selectedBoard = board
+            return@launch
+        }
         val updatedTask = task.copy(
-            task = task.task.copy(boardId = boardId)
+            task = task.task.copy(boardId = board.boardId)
         )
         taskUseCases.updateTask(updatedTask)
     }
 
     private fun fetchTasks() = viewModelScope.launch {
-        taskUseCases.findTodayTasks(taskOrder = sortingOption).data.onEach { tasks ->
+        fetchTasksJob?.cancel()
+        fetchTasksJob = taskUseCases.findTodayTasks(taskOrder = sortingOption).data.onEach { tasks ->
             this@TodayViewModel.tasks = tasks
         }.launchIn(viewModelScope)
     }
@@ -221,6 +254,11 @@ class TodayViewModel @Inject constructor(
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@TodayViewModel.boards = boards
             selectedBoard = boards.first()
+            boardsMap = mutableMapOf<Int, String>().apply {
+                boards.forEach { board ->
+                    set(board.boardId, board.name)
+                }
+            }
         }.launchIn(viewModelScope)
     }
 

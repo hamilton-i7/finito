@@ -14,6 +14,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -196,7 +197,7 @@ private fun ArchiveScreen(
             onRemoveFiltersClick = onRemoveFiltersClick,
             boards = boards,
             selectedSortingOption = selectedSortingOption,
-            sortingOptions = SortingOption.Common.options,
+            sortingOptions = commonSortingOptions,
             onSortOptionClick = onSortOptionClick,
             onBoardClick = onBoardClick,
             showCardMenu = showCardMenu,

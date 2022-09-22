@@ -3,6 +3,7 @@ package com.example.finito.features.tasks.domain.util
 import android.content.Context
 import com.example.finito.R
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -80,6 +81,15 @@ fun LocalDate.toFullFormat(locale: Locale, complete: Boolean = false): String {
 
 fun LocalTime.formatted(): String {
     return format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+}
+
+fun LocalDateTime.isPast(): Boolean {
+    val now = LocalDateTime.now()
+    if (toLocalDate().isBefore(now.toLocalDate())) return true
+    if (toLocalDate().isAfter(now.toLocalDate())) return false
+    if (hour < now.hour) return true
+    if (hour > now.hour) return false
+    return minute < now.minute
 }
 
 private fun LocalDate.isTomorrow(today: LocalDate): Boolean = isEqual(today.plusDays(1))

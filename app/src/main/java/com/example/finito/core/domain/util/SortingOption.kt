@@ -22,8 +22,8 @@ sealed class SortingOption(@StringRes val label: Int) {
         }
     }
 
-    sealed class Priority(label: Int) : SortingOption(label) {
-        object MostUrgent : Priority(R.string.most_urgent)
-        object LeastUrgent : Priority(R.string.least_urgent)
+    sealed class Priority(label: Int, val name: String) : SortingOption(label) {
+        object MostUrgent : Priority(R.string.most_urgent, name = "MOST_URGENT")
+        object LeastUrgent : Priority(R.string.least_urgent, name = "LEAST_URGENT")
     }
 }

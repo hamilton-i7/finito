@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -25,8 +27,10 @@ fun BoardsListSheetContent(
     boards: List<SimpleBoard>,
     selectedBoard: SimpleBoard? = null,
     onBoardClick: (SimpleBoard) -> Unit = {},
+    state: LazyListState = rememberLazyListState(),
 ) {
     LazyColumn(
+        state = state,
         modifier = Modifier.navigationBarsPadding()
     ) {
         item {

@@ -1,6 +1,8 @@
 package com.example.finito.features.tasks.presentation.screen.today
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,6 +39,7 @@ import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.components.bars.SmallTopBarWithMenu
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
+import com.example.finito.core.presentation.util.calculateDp
 import com.example.finito.core.presentation.util.menu.TodayScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
@@ -60,6 +63,7 @@ fun TodayScreen(
     todayViewModel: TodayViewModel = hiltViewModel(),
     onNavigateToCreateTask: (boardId: Int, name: String) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
+    finishActivity: () -> Unit = {},
     onShowSnackbar: (
         message: Int,
         actionLabel: Int?,
@@ -67,6 +71,7 @@ fun TodayScreen(
     ) -> Unit = {_, _, _ -> },
 ) {
     val listState = rememberLazyListState()
+    val bottomSheetListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -75,18 +80,30 @@ fun TodayScreen(
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
+    val bottomSheetCorners by animateDpAsState(
+        targetValue = calculateDp(bottomSheetState)
+    )
     val expandedFab by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
 
+    BackHandler {
+        if (bottomSheetState.isVisible) {
+            scope.launch { bottomSheetState.hide() }
+            return@BackHandler
+        }
+        finishActivity()
+    }
+
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
-        sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        sheetShape = RoundedCornerShape(topStart = bottomSheetCorners, topEnd = bottomSheetCorners),
         sheetBackgroundColor = finitoColors.surface,
         sheetContent = sheetContent@{
             when (todayViewModel.bottomSheetContent) {
                 is TodayEvent.BottomSheetContent.BoardsList -> {
                     BoardsListSheetContent(
+                        state = bottomSheetListState,
                         boards = todayViewModel.boards,
                         selectedBoard = todayViewModel.selectedBoard,
                         onBoardClick = {
@@ -95,6 +112,7 @@ fun TodayScreen(
                                     .BottomSheetContent
                                     .BoardsList
                             ).task
+                            scope.launch { bottomSheetState.hide() }
                             todayViewModel.onEvent(TodayEvent.ChangeBoard(board = it, task = task))
                         }
                     )
@@ -212,6 +230,13 @@ fun TodayScreen(
                         todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
                             TodayEvent.BottomSheetContent.BoardsList(it)
                         ))
+                        scope.launch {
+                            if (todayViewModel.selectedBoard == null) return@launch
+                            bottomSheetListState.scrollToItem(
+                                index = todayViewModel.boards.indexOf(todayViewModel.selectedBoard)
+                            )
+                            bottomSheetState.show()
+                        }
                     }
                 )
             }

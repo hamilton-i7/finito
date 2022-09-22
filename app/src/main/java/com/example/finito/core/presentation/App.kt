@@ -95,7 +95,7 @@ fun App(
 
     // Change WindowSoftInputMode depending on route
     when (currentRoute) {
-        Screen.Board.route -> {
+        Screen.Board.route, Screen.Today.route -> {
             (context as Activity).window.setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
             )
@@ -217,6 +217,7 @@ fun App(
                         onNavigateToCreateTask = { boardId, taskName ->
                             navController.navigateToCreateTask(boardId, taskName)
                         },
+                        finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
                     )
                 }

@@ -123,8 +123,16 @@ class TodayViewModel @Inject constructor(
             TodayEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is TodayEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
             TodayEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
-            is TodayEvent.ChangeBottomSheetContent -> bottomSheetContent = event.content
+            is TodayEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
         }
+    }
+
+    private fun onShowBottomSheetContent(content: TodayEvent.BottomSheetContent) {
+        bottomSheetContent = content
+        if (content !is TodayEvent.BottomSheetContent.BoardsList) return
+        selectedBoard = content.task?.let { task ->
+            boards.first { it.boardId == task.task.boardId }
+        } ?: boards.first()
     }
 
     private fun onShowDialog(type: TodayEvent.DialogType?) {

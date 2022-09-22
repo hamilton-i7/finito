@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -52,11 +51,8 @@ import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
 import com.example.finito.core.presentation.components.textfields.PriorityChips
 import com.example.finito.core.presentation.components.textfields.TimeTextField
-import com.example.finito.core.presentation.util.ContentTypes
-import com.example.finito.core.presentation.util.LazyListKeys
-import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.*
 import com.example.finito.core.presentation.util.menu.TaskReminderOption
-import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
@@ -74,24 +70,6 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 import java.time.LocalDate
 import java.time.LocalTime
-
-@OptIn(ExperimentalMaterialApi::class)
-private fun calculateDp(bottomSheetState: ModalBottomSheetState): Dp {
-    if (bottomSheetState.currentValue == ModalBottomSheetValue.Hidden) return 28.dp
-    if (bottomSheetState.currentValue == ModalBottomSheetValue.HalfExpanded) {
-        return when (bottomSheetState.direction) {
-            -1f -> 28.dp.times(other = 1 - bottomSheetState.progress.fraction)
-            else -> 28.dp
-        }
-    }
-    return when (bottomSheetState.direction) {
-        -1f, 0f -> 0.dp
-        else -> {
-            if (bottomSheetState.progress.to == ModalBottomSheetValue.Expanded) 0.dp
-            else 28.dp.times(bottomSheetState.progress.fraction)
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable

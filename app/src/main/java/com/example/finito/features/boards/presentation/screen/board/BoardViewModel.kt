@@ -19,9 +19,7 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
-import com.example.finito.features.tasks.domain.entity.CompletedTask
-import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.*
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -133,20 +131,20 @@ class BoardViewModel @Inject constructor(
     private fun onReorderTasks(from: ItemPosition, to: ItemPosition) {
         if (tasks.isEmpty()) return
 
-        val uncompletedTasks = tasks.filter { !it.task.completed }.toMutableList().apply {
+        val uncompletedTasks = tasks.filterUncompleted().toMutableList().apply {
             add(
                 index = indexOfFirst { it.task.taskId == to.key },
                 element = removeAt(indexOfFirst { it.task.taskId == from.key })
             )
         }
-        val completedTasks = tasks.filter { it.task.completed }
+        val completedTasks = tasks.filterCompleted()
         tasks = uncompletedTasks + completedTasks
     }
 
     private fun onDeleteCompletedTasks() = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            val completedTasks = tasks.filter { it.task.completed }.map { it.task }
+            val completedTasks = tasks.filterCompleted().map { it.task }
             when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
                 is Result.Error -> {
                     _eventFlow.emit(Event.ShowError(
@@ -161,7 +159,7 @@ class BoardViewModel @Inject constructor(
     private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            val uncompletedTasks = tasks.filter { !it.task.completed }
+            val uncompletedTasks = tasks.filterUncompleted()
             val completed = !task.task.completed
             val updatedTask = task.copy(
                 task = task.task.copy(

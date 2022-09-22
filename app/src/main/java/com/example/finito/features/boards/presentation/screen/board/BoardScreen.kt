@@ -44,6 +44,8 @@ import com.example.finito.features.boards.presentation.screen.board.components.B
 import com.example.finito.features.boards.presentation.screen.board.components.BoardTopBar
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.presentation.components.CompletedTasksProgressBar
 import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.components.TaskItem
@@ -394,8 +396,8 @@ private fun BoardScreen(
     onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
     onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
 ) {
-    val completedTasks = tasks.filter { it.task.completed }
-    val uncompletedTasks = tasks.filter { !it.task.completed }
+    val completedTasks = tasks.filterCompleted()
+    val uncompletedTasks = tasks.filterUncompleted()
 
     // TODO 21/09/2022: Show board labels
     Surface(modifier = Modifier

@@ -22,3 +22,11 @@ data class TaskWithSubtasks(
         }
     }
 }
+
+fun List<TaskWithSubtasks>.filterUncompleted(): List<TaskWithSubtasks> {
+    return filter { !it.task.completed }
+}
+
+fun List<TaskWithSubtasks>.filterCompleted(): List<TaskWithSubtasks> {
+    return filter { it.task.completed }
+}

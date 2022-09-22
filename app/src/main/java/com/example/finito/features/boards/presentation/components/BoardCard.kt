@@ -32,7 +32,7 @@ fun BoardCard(
     options: List<BoardCardMenuOption> = emptyList(),
     onMenuItemClick: (BoardCardMenuOption) -> Unit = {},
 ) {
-    val completedTasks = board.tasks.let {
+    val completedTasksProgress = board.tasks.let {
         if (it.isEmpty()) return@let 0F
 
         val completedAmount = it.filter { task -> task.completed }.size.toFloat()
@@ -50,7 +50,7 @@ fun BoardCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 PercentageIndicator(
-                    progress = completedTasks,
+                    progress = completedTasksProgress,
                     modifier = Modifier.padding(start = 16.dp)
                 )
                 IconButton(

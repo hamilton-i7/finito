@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.TestTags
@@ -213,7 +212,7 @@ private fun HomeScreen(
             onLabelClick = onLabelClick,
             onRemoveFiltersClick = onRemoveFiltersClick,
             boards = boards,
-            sortingOptions = commonSortingOptions,
+            sortingOptions = SortingOption.Common.options,
             selectedSortingOption = selectedSortingOption,
             onSortOptionClick = onSortOptionClick,
             onBoardClick = onBoardClick,

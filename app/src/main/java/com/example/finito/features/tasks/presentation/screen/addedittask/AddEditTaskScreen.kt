@@ -61,6 +61,7 @@ import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.core.presentation.util.menu.TaskReminderOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 import com.example.finito.features.subtasks.presentation.components.SubtaskTextFieldItem
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskDialogs
@@ -101,7 +102,7 @@ fun AddEditTaskScreen(
     previousRoute: String = "",
     addEditTaskViewModel: AddEditTaskViewModel = hiltViewModel(),
     appViewModel: AppViewModel = hiltViewModel(),
-    onNavigateToBoard: (Int) -> Unit = {},
+    onNavigateToBoard: (boardId: Int, BoardState) -> Unit = {_, _ -> },
     onNavigateBack: () -> Unit = {},
     onShowSnackbar: (
         message: Int,
@@ -110,10 +111,14 @@ fun AddEditTaskScreen(
     ) -> Unit = {_, _, _ -> },
 ) {
     val scope = rememberCoroutineScope()
+    val focusManager: FocusManager = LocalFocusManager.current
+    var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
+
     val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden
     )
+
     val hapticFeedback = LocalHapticFeedback.current
     val reorderableState = rememberReorderableLazyListState(
         onMove = { from, to ->
@@ -126,16 +131,16 @@ fun AddEditTaskScreen(
         targetValue = calculateDp(bottomSheetState)
     )
 
-    val focusManager: FocusManager = LocalFocusManager.current
-    var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
-
     BackHandler {
         if (bottomSheetState.isVisible) {
             scope.launch { bottomSheetState.hide() }
             return@BackHandler
         }
         if (previousRoute == Screen.Board.route) {
-            onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+            onNavigateToBoard(
+                addEditTaskViewModel.originalRelatedBoard!!.boardId,
+                addEditTaskViewModel.originalRelatedBoard!!.state
+            )
             return@BackHandler
         }
         onNavigateBack()
@@ -151,13 +156,18 @@ fun AddEditTaskScreen(
             when (event) {
                 is AddEditTaskViewModel.Event.NavigateBack -> {
                     if (previousRoute == Screen.Board.route) {
-                        onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+                        onNavigateToBoard(
+                            addEditTaskViewModel.originalRelatedBoard!!.boardId,
+                            addEditTaskViewModel.originalRelatedBoard!!.state
+                        )
                         return@collect
                     }
                     onNavigateBack()
                 }
                 is AddEditTaskViewModel.Event.ShowError -> {
-                    TODO()
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
+                        type = AddEditTaskEvent.DialogType.Error(event.error)
+                    ))
                 }
                 is AddEditTaskViewModel.Event.Snackbar -> {
                     when (event) {
@@ -250,7 +260,10 @@ fun AddEditTaskScreen(
                     taskCompleted = addEditTaskViewModel.task?.task?.completed ?: false,
                     onNavigationIconClick = onNavigationIconClick@{
                         if (previousRoute == Screen.Board.route) {
-                            onNavigateToBoard(addEditTaskViewModel.originalRelatedBoard)
+                            onNavigateToBoard(
+                                addEditTaskViewModel.originalRelatedBoard!!.boardId,
+                                addEditTaskViewModel.originalRelatedBoard!!.state
+                            )
                             return@onNavigationIconClick
                         }
                         onNavigateBack()
@@ -274,6 +287,7 @@ fun AddEditTaskScreen(
                 paddingValues = innerPadding,
                 createMode = createMode,
                 hapticFeedback = hapticFeedback,
+                focusManager = focusManager,
                 reorderableState = reorderableState,
                 selectedBoardName = addEditTaskViewModel.selectedBoard?.name ?: "",
                 showBoardsMenu = bottomSheetState.isVisible,
@@ -398,6 +412,7 @@ private fun AddEditTaskScreen(
     paddingValues: PaddingValues = PaddingValues(),
     createMode: Boolean = true,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
+    focusManager: FocusManager = LocalFocusManager.current,
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
@@ -431,7 +446,7 @@ private fun AddEditTaskScreen(
         .padding(paddingValues)
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(vertical = 12.dp, horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
             state = reorderableState.listState,
             modifier = Modifier
                 .fillMaxSize()
@@ -445,7 +460,9 @@ private fun AddEditTaskScreen(
                     boardName = selectedBoardName,
                     expanded = showBoardsMenu,
                     onIndicatorClick = onBoardIndicatorClick,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(16.dp)
@@ -459,7 +476,9 @@ private fun AddEditTaskScreen(
                     value = nameState.value,
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement(),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
@@ -478,7 +497,9 @@ private fun AddEditTaskScreen(
                     onValueChange = descriptionState.onValueChange,
                     singleLine = false,
                     label = { Text(text = stringResource(id = R.string.description)) },
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement(),
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -492,7 +513,9 @@ private fun AddEditTaskScreen(
                     date = date,
                     onClick = onDateClick,
                     onDateRemove = onDateRemove,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -507,7 +530,9 @@ private fun AddEditTaskScreen(
                     onClick = onTimeClick,
                     onTimeRemove = onTimeRemove,
                     enabled = date != null,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -524,7 +549,9 @@ private fun AddEditTaskScreen(
                     showDropdown = showReminderDropdown,
                     onDismissDropdown = onDismissReminderDropdown,
                     onOptionClick = onReminderOptionClick,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -538,7 +565,9 @@ private fun AddEditTaskScreen(
                 PriorityChips(
                     selectedPriority = priority,
                     onPriorityClick = onPriorityClick,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
                 Spacer(modifier = Modifier
                     .height(24.dp)
@@ -552,7 +581,9 @@ private fun AddEditTaskScreen(
                 Text(
                     text = stringResource(id = R.string.subtasks),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 )
             }
 
@@ -561,11 +592,13 @@ private fun AddEditTaskScreen(
                 key = { _, state -> state.id },
                 contentType = { _, _ -> ContentTypes.SUBTASK_TEXT_FIELDS }
             ) { index, textFieldState ->
+                // TODO: 22/09/2022: Fix offset when closing the IME while dragging
                 ReorderableItem(reorderableState, key = textFieldState.id) { isDragging ->
                     SubtaskTextFieldItem(
                         state = textFieldState,
                         reorderableState = reorderableState,
                         hapticFeedback = hapticFeedback,
+                        focusManager = focusManager,
                         isDragging = isDragging,
                         onRemoveSubtask = { onRemoveSubtask(textFieldState) },
                         keyboardOptions = KeyboardOptions(
@@ -594,7 +627,9 @@ private fun AddEditTaskScreen(
             ) {
                 TextButton(
                     onClick = onCreateSubtask,
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -611,7 +646,9 @@ private fun AddEditTaskScreen(
                 AnimatedContent(
                     targetState = nameState.value.isNotBlank(),
                     transitionSpec = { fadeIn() with fadeOut() },
-                    modifier = Modifier.animateItemPlacement()
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) { validName ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Button(

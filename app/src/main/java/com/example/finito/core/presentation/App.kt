@@ -242,6 +242,7 @@ fun App(
                         }
                     }
                 ) {
+                    // TODO 21/09/2022: Disable task editing functionalities
                     TrashScreen(
                         drawerState = drawerState,
                         finishActivity = finishActivity,
@@ -325,8 +326,8 @@ fun App(
                         appViewModel = appViewModel,
                         previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
                         onNavigateBack = { navController.navigateUp() },
-                        onNavigateToBoard = { boardId ->
-                            navController.navigateToBoard(boardId)
+                        onNavigateToBoard = { boardId, boardState ->
+                            navController.navigateToBoard(boardId, boardState)
                         }
                     )
                 }
@@ -342,8 +343,8 @@ fun App(
                         appViewModel = appViewModel,
                         previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
                         onNavigateBack = { navController.navigateUp() },
-                        onNavigateToBoard = { boardId ->
-                            navController.navigateToBoard(boardId)
+                        onNavigateToBoard = { boardId, boardState ->
+                            navController.navigateToBoard(boardId, boardState)
                         },
                         onShowSnackbar = onShowSnackbar
                     )

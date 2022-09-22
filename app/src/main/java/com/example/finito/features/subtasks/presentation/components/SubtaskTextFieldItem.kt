@@ -1,5 +1,7 @@
 package com.example.finito.features.subtasks.presentation.components
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,17 +12,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.ui.theme.finitoColors
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 
@@ -31,6 +38,7 @@ fun SubtaskTextFieldItem(
     modifier: Modifier = Modifier,
     textFieldModifier: Modifier = Modifier,
     onRemoveSubtask: () -> Unit = {},
+    focusManager: FocusManager = LocalFocusManager.current,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions(
@@ -39,14 +47,19 @@ fun SubtaskTextFieldItem(
     ),
     keyboardActions: KeyboardActions = KeyboardActions()
 ) {
+    val elevation by animateDpAsState(targetValue = if (isDragging) 3.dp else 0.dp)
+
     LaunchedEffect(isDragging) {
         if (!isDragging) return@LaunchedEffect
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        focusManager.clearFocus()
     }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = Modifier
+            .background(finitoColors.surfaceColorAtElevation(elevation))
+            .then(modifier)
     ) {
         IconButton(
             onClick = {},

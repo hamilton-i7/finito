@@ -1,5 +1,6 @@
 package com.example.finito.features.tasks.presentation.screen.addedittask
 
+import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.presentation.util.TextFieldState
@@ -49,5 +50,7 @@ sealed class AddEditTaskEvent {
         object Date : DialogType()
 
         object Time : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
     }
 }

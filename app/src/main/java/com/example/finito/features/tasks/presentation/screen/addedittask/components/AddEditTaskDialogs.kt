@@ -2,6 +2,7 @@ package com.example.finito.features.tasks.presentation.screen.addedittask.compon
 
 import androidx.compose.runtime.Composable
 import com.example.finito.core.presentation.components.dialogs.DatePickerDialog
+import com.example.finito.core.presentation.components.dialogs.ErrorDialog
 import com.example.finito.core.presentation.components.dialogs.TimePickerDialog
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskEvent
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskViewModel
@@ -28,6 +29,18 @@ fun AddEditTaskDialogs(addEditTaskViewModel: AddEditTaskViewModel) {
                 },
                 onConfirmClick = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeTime(time = it))
+                }
+            )
+        }
+        is AddEditTaskEvent.DialogType.Error -> {
+            val message = (addEditTaskViewModel.dialogType as AddEditTaskEvent.DialogType.Error).message
+            ErrorDialog(
+                message = message,
+                onDismiss = {
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog())
+                },
+                onConfirmButtonClick = {
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog())
                 }
             )
         }

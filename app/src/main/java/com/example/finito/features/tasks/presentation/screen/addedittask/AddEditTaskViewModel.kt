@@ -13,6 +13,7 @@ import com.example.finito.core.domain.Reminder
 import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.subtasks.domain.entity.Subtask
@@ -74,7 +75,7 @@ class AddEditTaskViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    var originalRelatedBoard = -1
+    var originalRelatedBoard: Board? = null
         private set
 
     private var subtaskNameStateId = -1
@@ -212,11 +213,11 @@ class AddEditTaskViewModel @Inject constructor(
                     reminder = selectedReminder,
                     priority = selectedPriority,
                 ),
-                subtasks = subtaskNameStates.map {
+                subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map {
                     // If it's a new Subtask, create a new instance
                     // Otherwise, simply update its name
                     if (subtasks.indexOfFirst { subtask -> subtask.subtaskId == it.id } == -1) {
-                        Subtask(name = it.value)
+                        return@map Subtask(name = it.value, taskId = task.taskId)
                     }
                     subtasks.first { subtask -> subtask.subtaskId == it.id }.copy(name = it.value)
                 }
@@ -290,7 +291,10 @@ class AddEditTaskViewModel @Inject constructor(
             val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
             boards.first { it.boardId == boardId }.let {
                 selectedBoard = it
-                originalRelatedBoard = it.boardId
+            }
+            when (val result = boardUseCases.findOneBoard(boardId)) {
+                is Result.Error -> TODO()
+                is Result.Success -> originalRelatedBoard = result.data.board
             }
         }.launchIn(viewModelScope)
     }
@@ -313,7 +317,7 @@ class AddEditTaskViewModel @Inject constructor(
                 is Result.Success -> {
                     val board = result.data.board
                     selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
-                    originalRelatedBoard = result.data.board.boardId
+                    originalRelatedBoard = result.data.board
                 }
             }
         }

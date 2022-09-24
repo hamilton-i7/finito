@@ -49,12 +49,32 @@ fun NavController.navigateToEditBoard(boardId: Int, state: BoardState = BoardSta
     navigate(route)
 }
 
-fun NavController.navigateToCreateTask(boardId: Int? = null, taskName: String = "") {
-    val route = boardId?.let {
+fun NavController.navigateToCreateTask(boardId: Int, includeTodayDate: Boolean = false) {
+    val route = if (includeTodayDate) {
         "${Screen.CreateTask.prefix}" +
-                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$it" +
-                "&${Screen.TASK_NAME_ARGUMENT}=$taskName"
-    } ?: Screen.CreateTask.route
+                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+                "&${Screen.INCLUDE_TODAY_DATE_ARGUMENT}=true"
+    } else {
+        "${Screen.CreateTask.prefix}?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId"
+    }
+    navigate(route)
+}
+
+fun NavController.navigateToCreateTask(
+    boardId: Int,
+    taskName: String,
+    includeTodayDate: Boolean = false,
+) {
+    val route = if (includeTodayDate) {
+        "${Screen.CreateTask.prefix}" +
+                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+                "&${Screen.TASK_NAME_ARGUMENT}=$taskName" +
+                "&${Screen.INCLUDE_TODAY_DATE_ARGUMENT}=true"
+    } else {
+        "${Screen.CreateTask.prefix}" +
+                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+                "&${Screen.TASK_NAME_ARGUMENT}=true"
+    }
     navigate(route)
 }
 

@@ -70,7 +70,8 @@ sealed class Screen(
     object CreateTask : Screen(
         route = "create_task?" +
                 "$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}" +
-                "&$TASK_NAME_ARGUMENT={$TASK_NAME_ARGUMENT}",
+                "&$TASK_NAME_ARGUMENT={$TASK_NAME_ARGUMENT}" +
+                "&$INCLUDE_TODAY_DATE_ARGUMENT={$INCLUDE_TODAY_DATE_ARGUMENT}",
         prefix = "create_task",
         arguments = listOf(
             navArgument(BOARD_ROUTE_ID_ARGUMENT) {
@@ -80,6 +81,10 @@ sealed class Screen(
             navArgument(TASK_NAME_ARGUMENT) {
                 type = NavType.StringType
                 defaultValue = ""
+            },
+            navArgument(INCLUDE_TODAY_DATE_ARGUMENT) {
+                type = NavType.BoolType
+                defaultValue = false
             }
         )
     )
@@ -98,5 +103,6 @@ sealed class Screen(
         const val LABEL_ROUTE_ARGUMENT = "labelId"
         const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
         const val TASK_NAME_ARGUMENT = "taskName"
+        const val INCLUDE_TODAY_DATE_ARGUMENT = "includeDate"
     }
 }

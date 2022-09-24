@@ -85,6 +85,7 @@ class AddEditTaskViewModel @Inject constructor(
         fetchTask()
         fetchBoards()
         fetchNameState()
+        fetchDateState()
     }
 
     fun onEvent(event: AddEditTaskEvent) {
@@ -302,6 +303,13 @@ class AddEditTaskViewModel @Inject constructor(
     private fun fetchNameState() {
         savedStateHandle.get<String>(Screen.TASK_NAME_ARGUMENT)?.let { name ->
             nameState = nameState.copy(value = name)
+        }
+    }
+
+    private fun fetchDateState() {
+        savedStateHandle.get<Boolean>(Screen.INCLUDE_TODAY_DATE_ARGUMENT)?.let { includeDate ->
+            if (!includeDate) return@let
+            selectedDate = LocalDate.now()
         }
     }
     

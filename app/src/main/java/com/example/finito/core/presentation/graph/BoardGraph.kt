@@ -73,7 +73,9 @@ fun NavGraphBuilder.boardGraph(
                     navController.navigateToEditBoard(boardId, boardState)
                 },
                 onNavigateToCreateTask = { boardId, taskName ->
-                    navController.navigateToCreateTask(boardId, taskName)
+                    taskName?.let {
+                        navController.navigateToCreateTask(boardId, it)
+                    } ?: navController.navigateToCreateTask(boardId)
                 },
                 onNavigateToEditTask = { taskId ->
                     navController.navigateToEditTask(taskId)

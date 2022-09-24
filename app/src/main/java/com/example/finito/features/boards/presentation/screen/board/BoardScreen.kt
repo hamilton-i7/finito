@@ -62,7 +62,7 @@ fun BoardScreen(
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    onNavigateToCreateTask: (boardId: Int, name: String) -> Unit = {_, _ -> },
+    onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
 ) {
@@ -166,11 +166,11 @@ fun BoardScreen(
                     }),
                 focusRequester = focusRequester,
                 onViewMoreOptionsClick = {
+                    scope.launch { bottomSheetState.hide() }
                     onNavigateToCreateTask(
                         detailedBoard!!.board.boardId,
-                        boardViewModel.newTaskNameState.value
+                        boardViewModel.newTaskNameState.value.takeIf { it.isNotBlank() }
                     )
-                    scope.launch { bottomSheetState.hide() }
                 },
                 onSaveClick = {
                     boardViewModel.onEvent(BoardEvent.SaveTask)

@@ -1,5 +1,6 @@
 package com.example.finito.features.tasks.presentation.screen.today
 
+import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.SimpleBoard
@@ -54,6 +55,8 @@ sealed class TodayEvent {
         object TaskTime : DialogType()
 
         object DiscardChanges : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
     }
 
     sealed class BottomSheetContent {

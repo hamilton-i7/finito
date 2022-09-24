@@ -13,7 +13,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.dialog
 import com.example.finito.core.presentation.components.Drawer
-import com.example.finito.core.presentation.components.bars.BottomBarHeight
 import com.example.finito.core.presentation.graph.boardGraph
 import com.example.finito.core.presentation.util.*
 import com.example.finito.core.presentation.util.NavigationTransitions.childScreenEnterTransition
@@ -75,23 +74,18 @@ fun App(
 
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
-    var snackbarModifier: Modifier = Modifier
-
-    LaunchedEffect(currentRoute) {
-        snackbarModifier = when(currentRoute) {
-            Screen.Home.route, Screen.Archive.route, Screen.Label.route -> Modifier
-                .navigationBarsPadding()
-            Screen.Board.route -> {
-                if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
-                    Modifier.navigationBarsPadding()
-                } else {
-                    Modifier
-                        .navigationBarsPadding()
-                        .padding(bottom = BottomBarHeight)
-                }
+    val snackbarModifier = when(currentRoute) {
+        Screen.Today.route, Screen.Tomorrow.route,
+        Screen.Urgent.route, Screen.Home.route,
+        Screen.Archive.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
+        Screen.Board.route -> {
+            if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
+                Modifier.navigationBarsPadding()
+            } else {
+                Modifier.navigationBarsPadding().padding(bottom = FabPadding)
             }
-            else -> Modifier.navigationBarsPadding()
         }
+        else -> Modifier.navigationBarsPadding()
     }
 
     navController.addOnDestinationChangedListener(
@@ -201,8 +195,14 @@ fun App(
                 ) {
                     TodayScreen(
                         drawerState = drawerState,
+                        appViewModel = appViewModel,
                         onNavigateToCreateTask = { boardId, taskName ->
-                            navController.navigateToCreateTask(boardId, taskName)
+                            taskName?.let {
+                                navController.navigateToCreateTask(boardId, it, includeTodayDate = true)
+                            } ?: navController.navigateToCreateTask(boardId, includeTodayDate = true)
+                        },
+                        onNavigateToEditTask = { taskId ->
+                            navController.navigateToEditTask(taskId)
                         },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar

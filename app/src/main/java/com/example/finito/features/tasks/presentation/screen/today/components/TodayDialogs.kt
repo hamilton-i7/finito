@@ -2,10 +2,7 @@ package com.example.finito.features.tasks.presentation.screen.today.components
 
 import androidx.compose.runtime.Composable
 import com.example.finito.R
-import com.example.finito.core.presentation.components.dialogs.DatePickerDialog
-import com.example.finito.core.presentation.components.dialogs.DeleteDialog
-import com.example.finito.core.presentation.components.dialogs.SimpleDialog
-import com.example.finito.core.presentation.components.dialogs.TimePickerDialog
+import com.example.finito.core.presentation.components.dialogs.*
 import com.example.finito.features.tasks.presentation.components.PriorityDialog
 import com.example.finito.features.tasks.presentation.screen.today.TodayEvent
 import com.example.finito.features.tasks.presentation.screen.today.TodayViewModel
@@ -76,6 +73,18 @@ fun TodayDialogs(todayViewModel: TodayViewModel) {
                 },
                 onConfirmClick = {
                     todayViewModel.onEvent(TodayEvent.ShowTaskDateTimeFullDialog(task = null))
+                }
+            )
+        }
+        is TodayEvent.DialogType.Error -> {
+            val message = (todayViewModel.dialogType as TodayEvent.DialogType.Error).message
+            ErrorDialog(
+                message = message,
+                onDismiss = {
+                    todayViewModel.onEvent(TodayEvent.ShowDialog())
+                },
+                onConfirmButtonClick = {
+                    todayViewModel.onEvent(TodayEvent.ShowDialog())
                 }
             )
         }

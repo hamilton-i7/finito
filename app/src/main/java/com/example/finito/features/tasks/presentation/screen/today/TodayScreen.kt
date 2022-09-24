@@ -34,6 +34,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.prioritySortingOptions
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.SortingChips
@@ -54,6 +56,7 @@ import com.example.finito.features.tasks.presentation.components.TaskItem
 import com.example.finito.features.tasks.presentation.screen.today.components.TodayDialogs
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -62,7 +65,8 @@ import java.time.LocalDate
 fun TodayScreen(
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     todayViewModel: TodayViewModel = hiltViewModel(),
-    onNavigateToCreateTask: (boardId: Int, name: String) -> Unit = {_, _ -> },
+    appViewModel: AppViewModel = hiltViewModel(),
+    onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
     finishActivity: () -> Unit = {},
     onShowSnackbar: (
@@ -107,10 +111,28 @@ fun TodayScreen(
         finishActivity()
     }
 
+    LaunchedEffect(Unit) {
+        todayViewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is TodayViewModel.Event.ShowError -> {
+                    todayViewModel.onEvent(TodayEvent.ShowDialog(
+                        type = TodayEvent.DialogType.Error(message = event.error)
+                    ))
+                }
+                is TodayViewModel.Event.Snackbar.UndoTaskChange -> {
+                    onShowSnackbar(event.message, R.string.undo) {
+                        appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                    }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(bottomSheetState.currentValue) {
         if (bottomSheetState.currentValue != ModalBottomSheetValue.Hidden) return@LaunchedEffect
 
         if (todayViewModel.bottomSheetContent == TodayEvent.BottomSheetContent.NewTask) {
+            // Reset flag to initial state
             creatingTask = false
         }
     }
@@ -166,11 +188,11 @@ fun TodayScreen(
                             }),
                         focusRequester = focusRequester,
                         onViewMoreOptionsClick = {
+                            scope.launch { bottomSheetState.hide() }
                             onNavigateToCreateTask(
                                 todayViewModel.selectedBoard!!.boardId,
-                                todayViewModel.newTaskNameState.value
+                                todayViewModel.newTaskNameState.value.takeIf { it.isNotBlank() }
                             )
-                            scope.launch { bottomSheetState.hide() }
                         },
                         onSaveClick = {
                             todayViewModel.onEvent(TodayEvent.SaveNewTask)

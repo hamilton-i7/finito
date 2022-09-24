@@ -1,8 +1,6 @@
 package com.example.finito.core.presentation
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.view.WindowManager
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -77,33 +75,22 @@ fun App(
 
     // Dynamically change Snackbar bottom padding
     var currentRoute by remember { mutableStateOf(navController.currentDestination?.route) }
-    val snackbarModifier = when(currentRoute) {
-        Screen.Home.route, Screen.Archive.route, Screen.Label.route -> Modifier
-            .navigationBarsPadding()
-            .padding(bottom = BottomBarHeight)
-        Screen.Board.route -> {
-            if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
-                Modifier.navigationBarsPadding()
-            } else {
-                Modifier
-                    .navigationBarsPadding()
-                    .padding(bottom = BottomBarHeight)
-            }
-        }
-        else -> Modifier.navigationBarsPadding()
-    }
+    var snackbarModifier: Modifier = Modifier
 
-    // Change WindowSoftInputMode depending on route
-    when (currentRoute) {
-        Screen.Board.route, Screen.Today.route -> {
-            (context as Activity).window.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
-            )
-        }
-        else -> {
-            (context as Activity).window.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
-            )
+    LaunchedEffect(currentRoute) {
+        snackbarModifier = when(currentRoute) {
+            Screen.Home.route, Screen.Archive.route, Screen.Label.route -> Modifier
+                .navigationBarsPadding()
+            Screen.Board.route -> {
+                if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
+                    Modifier.navigationBarsPadding()
+                } else {
+                    Modifier
+                        .navigationBarsPadding()
+                        .padding(bottom = BottomBarHeight)
+                }
+            }
+            else -> Modifier.navigationBarsPadding()
         }
     }
 

@@ -91,8 +91,10 @@ fun AddEditTaskScreen(
     var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
 
     val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
     )
 
     val hapticFeedback = LocalHapticFeedback.current
@@ -373,16 +375,11 @@ private fun AddEditTaskScreen(
     onNextSubtask: (position: Int) -> Unit = {},
     onAddEditButtonClick: () -> Unit = {},
 ) {
-    Surface(modifier = Modifier
-        .fillMaxSize()
-        .padding(paddingValues)
-    ) {
+    Surface(modifier = Modifier.padding(paddingValues)) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 12.dp),
             state = reorderableState.listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .reorderable(reorderableState)
+            modifier = Modifier.reorderable(reorderableState)
         ) {
             item(
                 key = LazyListKeys.SELECTED_BOARD_INDICATOR,

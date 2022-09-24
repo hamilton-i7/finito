@@ -233,7 +233,7 @@ private fun AddEditBoardScreen(
     ) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item(contentType = { ContentTypes.NAME_TEXT_FIELD }) {
                 FinitoTextField(

@@ -80,6 +80,7 @@ fun TodayScreen(
 
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
     )
     val bottomSheetCorners by animateDpAsState(
         targetValue = calculateDp(bottomSheetState)
@@ -133,7 +134,7 @@ fun TodayScreen(
             )
         },
         sheetBackgroundColor = finitoColors.surface,
-        sheetContent = sheetContent@{
+        sheetContent = {
             when (todayViewModel.bottomSheetContent) {
                 is TodayEvent.BottomSheetContent.BoardsList -> {
                     BoardsListSheetContent(

@@ -1,13 +1,16 @@
 package com.example.finito.features.tasks.presentation.components
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
@@ -27,6 +30,17 @@ fun NewTaskSheetContent(
     boardsMenuExpanded: Boolean = false,
     onBoardIndicatorClick: () -> Unit = {}
 ) {
+    val window = (LocalView.current.context as Activity).window
+    var focused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(focused) {
+        if (focused) {
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+            return@LaunchedEffect
+        }
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+    }
+
     Column(
         modifier = Modifier
             .navigationBarsPadding()
@@ -49,9 +63,10 @@ fun NewTaskSheetContent(
         BasicTextField(
             state = nameTextFieldState,
             placeholder = R.string.new_task,
-            modifier = Modifier.focusRequester(focusRequester)
+            modifier = Modifier
+                .focusRequester(focusRequester)
+                .onFocusEvent { focused = it.hasFocus || it.isFocused }
         )
-        Spacer(modifier = Modifier.height(24.dp))
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()

@@ -86,7 +86,8 @@ fun BoardScreen(
         }
     )
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden
+        initialValue = ModalBottomSheetValue.Hidden,
+        skipHalfExpanded = true
     )
     val expandedFab by remember {
         derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }

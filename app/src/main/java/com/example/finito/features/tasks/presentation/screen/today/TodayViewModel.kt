@@ -124,7 +124,13 @@ class TodayViewModel @Inject constructor(
             is TodayEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
             TodayEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
             is TodayEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
+            TodayEvent.DismissBottomSheet -> onDismissBottomSheet()
         }
+    }
+
+    private fun onDismissBottomSheet() {
+        newTaskNameState = newTaskNameState.copy(value = "")
+        selectedBoard = boards.firstOrNull()
     }
 
     private fun onShowBottomSheetContent(content: TodayEvent.BottomSheetContent) {
@@ -132,7 +138,7 @@ class TodayViewModel @Inject constructor(
         if (content !is TodayEvent.BottomSheetContent.BoardsList) return
         selectedBoard = content.task?.let { task ->
             boards.first { it.boardId == task.task.boardId }
-        } ?: boards.first()
+        } ?: selectedBoard
     }
 
     private fun onShowDialog(type: TodayEvent.DialogType?) {
@@ -209,7 +215,8 @@ class TodayViewModel @Inject constructor(
         TaskWithSubtasks(
             task = Task(
                 boardId = selectedBoard!!.boardId,
-                name = newTaskNameState.value
+                name = newTaskNameState.value,
+                date = LocalDate.now()
             )
         ).let {
             when (taskUseCases.createTask(it)) {

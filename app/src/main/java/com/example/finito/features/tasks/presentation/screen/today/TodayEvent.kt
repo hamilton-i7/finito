@@ -42,6 +42,8 @@ sealed class TodayEvent {
 
     object SaveNewTask : TodayEvent()
 
+    object DismissBottomSheet : TodayEvent()
+
     sealed class DialogType {
         object DeleteCompleted : DialogType()
 

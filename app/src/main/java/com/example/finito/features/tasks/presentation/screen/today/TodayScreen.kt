@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -78,7 +79,7 @@ fun TodayScreen(
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden
+        initialValue = ModalBottomSheetValue.Hidden,
     )
     val bottomSheetCorners by animateDpAsState(
         targetValue = calculateDp(bottomSheetState)
@@ -87,17 +88,50 @@ fun TodayScreen(
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
 
+    var creatingTask by rememberSaveable { mutableStateOf(false) }
+
     BackHandler {
+        if (creatingTask
+            && todayViewModel.bottomSheetContent is TodayEvent.BottomSheetContent.BoardsList) {
+            todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
+                TodayEvent.BottomSheetContent.NewTask
+            ))
+            return@BackHandler
+        }
         if (bottomSheetState.isVisible) {
             scope.launch { bottomSheetState.hide() }
+            creatingTask = false
             return@BackHandler
         }
         finishActivity()
     }
 
+    LaunchedEffect(bottomSheetState.currentValue) {
+        if (bottomSheetState.currentValue != ModalBottomSheetValue.Hidden) return@LaunchedEffect
+
+        if (todayViewModel.bottomSheetContent == TodayEvent.BottomSheetContent.NewTask) {
+            creatingTask = false
+        }
+    }
+
+    LaunchedEffect(bottomSheetState.isVisible) {
+        if (bottomSheetState.isVisible) return@LaunchedEffect
+        focusManager.clearFocus()
+        todayViewModel.onEvent(TodayEvent.DismissBottomSheet)
+    }
+
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
-        sheetShape = RoundedCornerShape(topStart = bottomSheetCorners, topEnd = bottomSheetCorners),
+        sheetShape = when (todayViewModel.bottomSheetContent) {
+            is TodayEvent.BottomSheetContent.BoardsList -> RoundedCornerShape(
+                topStart = bottomSheetCorners,
+                topEnd = bottomSheetCorners
+            )
+            TodayEvent.BottomSheetContent.NewTask -> RoundedCornerShape(
+                topStart = 28.dp,
+                topEnd = 28.dp
+            )
+        },
         sheetBackgroundColor = finitoColors.surface,
         sheetContent = sheetContent@{
             when (todayViewModel.bottomSheetContent) {
@@ -112,7 +146,13 @@ fun TodayScreen(
                                     .BottomSheetContent
                                     .BoardsList
                             ).task
-                            scope.launch { bottomSheetState.hide() }
+                            if (creatingTask) {
+                                todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
+                                    TodayEvent.BottomSheetContent.NewTask
+                                ))
+                            } else {
+                                scope.launch { bottomSheetState.hide() }
+                            }
                             todayViewModel.onEvent(TodayEvent.ChangeBoard(board = it, task = task))
                         }
                     )
@@ -139,7 +179,13 @@ fun TodayScreen(
                         includeBoardIndicator = true,
                         selectedBoardName = todayViewModel.selectedBoard?.name ?: "",
                         boardsMenuExpanded = bottomSheetState.isVisible,
-                        onBoardIndicatorClick = {
+                        onBoardIndicatorClick = onBoardIndicatorClick@{
+                            if (todayViewModel.selectedBoard == null) return@onBoardIndicatorClick
+                            scope.launch {
+                                bottomSheetListState.scrollToItem(
+                                    index = todayViewModel.boards.indexOf(todayViewModel.selectedBoard)
+                                )
+                            }
                             todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
                                 content = TodayEvent.BottomSheetContent.BoardsList()
                             ))
@@ -184,6 +230,10 @@ fun TodayScreen(
                     CreateFab(
                         text = R.string.create_task,
                         onClick = {
+                            creatingTask = true
+                            todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
+                                TodayEvent.BottomSheetContent.NewTask
+                            ))
                             scope.launch {
                                 focusRequester.requestFocus()
                                 bottomSheetState.show()

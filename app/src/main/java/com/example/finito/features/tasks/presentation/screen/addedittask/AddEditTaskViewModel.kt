@@ -307,9 +307,8 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun fetchDateState() {
-        savedStateHandle.get<Boolean>(Screen.INCLUDE_TODAY_DATE_ARGUMENT)?.let { includeDate ->
-            if (!includeDate) return@let
-            selectedDate = LocalDate.now()
+        savedStateHandle.get<String>(Screen.DATE_ARGUMENT)?.let { date ->
+            selectedDate = LocalDate.parse(date)
         }
     }
     

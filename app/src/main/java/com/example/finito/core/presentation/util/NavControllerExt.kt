@@ -3,6 +3,7 @@ package com.example.finito.core.presentation.util
 import androidx.navigation.NavController
 import com.example.finito.core.presentation.Screen
 import com.example.finito.features.boards.domain.entity.BoardState
+import java.time.LocalDate
 
 fun NavController.navigateToHome() {
     navigate(Screen.Home.route) {
@@ -49,32 +50,34 @@ fun NavController.navigateToEditBoard(boardId: Int, state: BoardState = BoardSta
     navigate(route)
 }
 
-fun NavController.navigateToCreateTask(boardId: Int, includeTodayDate: Boolean = false) {
-    val route = if (includeTodayDate) {
-        "${Screen.CreateTask.prefix}" +
-                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
-                "&${Screen.INCLUDE_TODAY_DATE_ARGUMENT}=true"
-    } else {
-        "${Screen.CreateTask.prefix}?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId"
-    }
+fun NavController.navigateToCreateTask(boardId: Int) {
+    val route = "${Screen.CreateTask.prefix}?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId"
+    navigate(route)
+}
+
+fun NavController.navigateToCreateTask(boardId: Int, date: LocalDate) {
+    val route = "${Screen.CreateTask.prefix}" +
+            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "&${Screen.DATE_ARGUMENT}=$date"
+    navigate(route)
+}
+
+fun NavController.navigateToCreateTask(boardId: Int, taskName: String) {
+    val route = "${Screen.CreateTask.prefix}" +
+            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "&${Screen.TASK_NAME_ARGUMENT}=$taskName"
     navigate(route)
 }
 
 fun NavController.navigateToCreateTask(
     boardId: Int,
     taskName: String,
-    includeTodayDate: Boolean = false,
+    date: LocalDate,
 ) {
-    val route = if (includeTodayDate) {
-        "${Screen.CreateTask.prefix}" +
-                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
-                "&${Screen.TASK_NAME_ARGUMENT}=$taskName" +
-                "&${Screen.INCLUDE_TODAY_DATE_ARGUMENT}=true"
-    } else {
-        "${Screen.CreateTask.prefix}" +
-                "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
-                "&${Screen.TASK_NAME_ARGUMENT}=true"
-    }
+    val route = "${Screen.CreateTask.prefix}" +
+            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "&${Screen.TASK_NAME_ARGUMENT}=$taskName" +
+            "&${Screen.DATE_ARGUMENT}=$date"
     navigate(route)
 }
 

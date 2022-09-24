@@ -44,7 +44,9 @@ fun ReminderDropdownTextField(
                 Icon(imageVector = Icons.Outlined.NotificationAdd, contentDescription = null)
             },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showDropdown) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
         )
         DropdownMenu(
             expanded = showDropdown,

@@ -41,7 +41,7 @@ class TodayViewModel @Inject constructor(
     var boards by mutableStateOf<List<SimpleBoard>>(emptyList())
         private set
 
-    var boardsMap by mutableStateOf<Map<Int, String>>(mapOf())
+    var boardNamesMap by mutableStateOf<Map<Int, String>>(mapOf())
         private set
 
     var tasks by mutableStateOf<List<TaskWithSubtasks>>(emptyList())
@@ -275,7 +275,7 @@ class TodayViewModel @Inject constructor(
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@TodayViewModel.boards = boards
             selectedBoard = boards.first()
-            boardsMap = mutableMapOf<Int, String>().apply {
+            boardNamesMap = mutableMapOf<Int, String>().apply {
                 boards.forEach { board ->
                     set(board.boardId, board.name)
                 }

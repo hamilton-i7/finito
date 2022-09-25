@@ -139,4 +139,6 @@
     <string name="reorder_task">Reorder task</string>
     <string name="find_task_error">There was an error while looking for this task</string>
     <string name="task_deleted">Task deleted</string>
+    <string name="with_date">Urgent tasks with date specified</string>
+    <string name="without_date">Urgent tasks without dates</string>
 </resources>

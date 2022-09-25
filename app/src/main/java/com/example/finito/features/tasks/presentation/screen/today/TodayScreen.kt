@@ -281,7 +281,7 @@ fun TodayScreen(
                         }
                         todayViewModel.onEvent(TodayEvent.SortByPriority(it))
                     },
-                    boardsMap = todayViewModel.boardsMap,
+                    boardNamesMap = todayViewModel.boardNamesMap,
                     tasks = todayViewModel.tasks,
                     showCompletedTasks = todayViewModel.showCompletedTasks,
                     onToggleShowCompletedTasks = {
@@ -363,7 +363,7 @@ private fun TodayScreen(
     listState: LazyListState = rememberLazyListState(),
     selectedSortingOption: SortingOption.Priority? = null,
     onSortingOptionClick: (SortingOption.Priority) -> Unit = {},
-    boardsMap: Map<Int, String> = mapOf(),
+    boardNamesMap: Map<Int, String> = mapOf(),
     tasks: List<TaskWithSubtasks> = emptyList(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
@@ -383,7 +383,7 @@ private fun TodayScreen(
             .padding(paddingValues)
     ) {
         LazyColumn(
-            contentPadding = PaddingValues(top = 12.dp, bottom = 72.dp),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
             state = listState
         ) {
             item {
@@ -417,7 +417,7 @@ private fun TodayScreen(
             ) {
                 TaskItem(
                     task = it.task,
-                    boardName = boardsMap[it.task.boardId],
+                    boardName = boardNamesMap[it.task.boardId],
                     onTaskClick = { onTaskClick(it) },
                     onCompletedToggle = { onToggleTaskCompleted(it) },
                     onPriorityClick = { onPriorityClick(it) },
@@ -453,7 +453,7 @@ private fun TodayScreen(
                     TaskItem(
                         task = it.task,
                         onCompletedToggle = { onToggleTaskCompleted(it) },
-                        boardName = boardsMap[it.task.boardId],
+                        boardName = boardNamesMap[it.task.boardId],
                         onTaskClick = { onTaskClick(it) },
                     )
                 }

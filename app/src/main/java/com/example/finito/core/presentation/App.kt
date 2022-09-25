@@ -31,6 +31,7 @@ import com.example.finito.features.labels.presentation.screen.label.LabelScreen
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskScreen
 import com.example.finito.features.tasks.presentation.screen.today.TodayScreen
 import com.example.finito.features.tasks.presentation.screen.tomorrow.TomorrowScreen
+import com.example.finito.features.tasks.presentation.screen.urgent.UrgentScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -232,6 +233,42 @@ fun App(
                     },
                 ) {
                     TomorrowScreen(
+                        drawerState = drawerState,
+                        appViewModel = appViewModel,
+                        onNavigateToCreateTask = { boardId, taskName ->
+                            val tomorrow = LocalDate.now().plusDays(1)
+                            taskName?.let {
+                                navController.navigateToCreateTask(boardId, taskName = it, date = tomorrow)
+                            } ?: navController.navigateToCreateTask(boardId, date = tomorrow)
+                        },
+                        onNavigateToEditTask = { taskId ->
+                            navController.navigateToEditTask(taskId)
+                        },
+                        finishActivity = finishActivity,
+                        onShowSnackbar = onShowSnackbar
+                    )
+                }
+
+                composable(
+                    route = Screen.Urgent.route,
+                    enterTransition = {
+                        when(initialState.destination.route) {
+                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                                childScreenPopEnterTransition()
+                            }
+                            else -> peerScreenEnterTransition()
+                        }
+                    },
+                    exitTransition = {
+                        when(targetState.destination.route) {
+                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                                childScreenExitTransition()
+                            }
+                            else -> peerScreenExitTransition()
+                        }
+                    },
+                ) {
+                    UrgentScreen(
                         drawerState = drawerState,
                         appViewModel = appViewModel,
                         onNavigateToCreateTask = { boardId, taskName ->

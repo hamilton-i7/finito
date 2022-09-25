@@ -384,7 +384,7 @@ private fun BoardScreen(
         .fillMaxSize()
         .padding(paddingValues)) {
         LazyColumn(
-            contentPadding = PaddingValues(top = 12.dp, bottom = 72.dp),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
             state = reorderableState.listState,
             modifier = Modifier.reorderable(reorderableState),
         ) {

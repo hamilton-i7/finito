@@ -1,4 +1,4 @@
-package com.example.finito.features.tasks.presentation.screen.tomorrow
+package com.example.finito.features.tasks.presentation.screen.urgent
 
 import android.content.SharedPreferences
 import androidx.annotation.StringRes
@@ -32,7 +32,7 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
-class TomorrowViewModel @Inject constructor(
+class UrgentViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
     private val boardUseCases: BoardUseCases,
     private val preferences: SharedPreferences
@@ -44,7 +44,7 @@ class TomorrowViewModel @Inject constructor(
     var boardNamesMap by mutableStateOf<Map<Int, String>>(mapOf())
         private set
 
-    var tasks by mutableStateOf<List<TaskWithSubtasks>>(emptyList())
+    var tasks by mutableStateOf<Map<LocalDate?, List<TaskWithSubtasks>>>(emptyMap())
         private set
 
     private var fetchTasksJob: Job? = null
@@ -70,7 +70,7 @@ class TomorrowViewModel @Inject constructor(
         true
     )); private set
 
-    var dialogType by mutableStateOf<TomorrowEvent.DialogType?>(null)
+    var dialogType by mutableStateOf<UrgentEvent.DialogType?>(null)
         private set
 
     var newTaskNameState by mutableStateOf(TextFieldState())
@@ -91,8 +91,8 @@ class TomorrowViewModel @Inject constructor(
     var selectedTime by mutableStateOf<LocalTime?>(null)
         private set
 
-    var bottomSheetContent by mutableStateOf<TomorrowEvent.BottomSheetContent>(
-        TomorrowEvent.BottomSheetContent.NewTask
+    var bottomSheetContent by mutableStateOf<UrgentEvent.BottomSheetContent>(
+        UrgentEvent.BottomSheetContent.NewTask
     ); private set
 
     private val _eventFlow = MutableSharedFlow<Event>()
@@ -103,28 +103,27 @@ class TomorrowViewModel @Inject constructor(
         fetchBoards()
     }
 
-    fun onEvent(event: TomorrowEvent) {
+    fun onEvent(event: UrgentEvent) {
         when (event) {
-            is TomorrowEvent.ChangeBoard -> onChangeBoard(event.board, event.task)
-            is TomorrowEvent.ChangeNewTaskName -> newTaskNameState = newTaskNameState.copy(
+            is UrgentEvent.ChangeBoard -> onChangeBoard(event.board, event.task)
+            is UrgentEvent.ChangeNewTaskName -> newTaskNameState = newTaskNameState.copy(
                 value = event.name
             )
-            is TomorrowEvent.ChangeTaskPriority -> selectedPriority = event.priority
-            is TomorrowEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
-            TomorrowEvent.DeleteCompleted -> onDeleteCompletedTasks()
-            TomorrowEvent.SaveNewTask -> onSaveTask()
-            is TomorrowEvent.ShowTaskDateTimeFullDialog -> onShowTaskDateTimeFullDialog(event.task)
-            is TomorrowEvent.ChangeDate -> selectedDate = event.date
-            is TomorrowEvent.ChangeTime -> selectedTime = event.time
-            TomorrowEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
-            is TomorrowEvent.ShowDialog -> onShowDialog(event.type)
-            is TomorrowEvent.ShowScreenMenu -> showScreenMenu = event.show
-            is TomorrowEvent.SortByPriority -> onSortByPriority(event.option)
-            TomorrowEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
-            is TomorrowEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
-            TomorrowEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
-            is TomorrowEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
-            TomorrowEvent.DismissBottomSheet -> onDismissBottomSheet()
+            is UrgentEvent.ChangeTaskPriority -> selectedPriority = event.priority
+            is UrgentEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
+            UrgentEvent.DeleteCompleted -> onDeleteCompletedTasks()
+            UrgentEvent.SaveNewTask -> onSaveTask()
+            is UrgentEvent.ShowTaskDateTimeFullDialog -> onShowTaskDateTimeFullDialog(event.task)
+            is UrgentEvent.ChangeDate -> selectedDate = event.date
+            is UrgentEvent.ChangeTime -> selectedTime = event.time
+            UrgentEvent.SaveTaskDateTimeChanges -> onSaveTaskDateTimeChanges()
+            is UrgentEvent.ShowDialog -> onShowDialog(event.type)
+            is UrgentEvent.ShowScreenMenu -> showScreenMenu = event.show
+            UrgentEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
+            is UrgentEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
+            UrgentEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
+            is UrgentEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
+            UrgentEvent.DismissBottomSheet -> onDismissBottomSheet()
         }
     }
 
@@ -133,28 +132,19 @@ class TomorrowViewModel @Inject constructor(
         selectedBoard = boards.firstOrNull()
     }
 
-    private fun onShowBottomSheetContent(content: TomorrowEvent.BottomSheetContent) {
+    private fun onShowBottomSheetContent(content: UrgentEvent.BottomSheetContent) {
         bottomSheetContent = content
-        if (content !is TomorrowEvent.BottomSheetContent.BoardsList) return
+        if (content !is UrgentEvent.BottomSheetContent.BoardsList) return
         selectedBoard = content.task?.let { task ->
             boards.first { it.boardId == task.task.boardId }
         } ?: selectedBoard
     }
 
-    private fun onShowDialog(type: TomorrowEvent.DialogType?) {
+    private fun onShowDialog(type: UrgentEvent.DialogType?) {
         dialogType = type
-        selectedPriority = if (type is TomorrowEvent.DialogType.Priority) {
+        selectedPriority = if (type is UrgentEvent.DialogType.Priority) {
             type.task.task.priority
         } else null
-    }
-
-    private fun onSortByPriority(option: SortingOption.Priority?) {
-        sortingOption = option
-        with(preferences.edit()) {
-            putString(PreferencesModule.TAG.TASKS_ORDER.name, option?.name)
-            apply()
-        }
-        fetchTasks()
     }
 
     private fun onResetBottomSheetContent() {
@@ -231,7 +221,7 @@ class TomorrowViewModel @Inject constructor(
     }
 
     private fun onDeleteCompletedTasks() = viewModelScope.launch {
-        val completedTasks = tasks.filterCompleted().map { it.task }
+        val completedTasks = tasks.values.flatten().filterCompleted().map { it.task }
         when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
             is Result.Error -> {
                 _eventFlow.emit(Event.ShowError(
@@ -266,14 +256,14 @@ class TomorrowViewModel @Inject constructor(
 
     private fun fetchTasks() = viewModelScope.launch {
         fetchTasksJob?.cancel()
-        fetchTasksJob = taskUseCases.findTomorrowTasks(taskOrder = sortingOption).data.onEach { tasks ->
-            this@TomorrowViewModel.tasks = tasks
+        fetchTasksJob = taskUseCases.findUrgentTasks().data.onEach { tasks ->
+            this@UrgentViewModel.tasks = tasks
         }.launchIn(viewModelScope)
     }
 
     private fun fetchBoards() = viewModelScope.launch {
         boardUseCases.findSimpleBoards().data.onEach { boards ->
-            this@TomorrowViewModel.boards = boards
+            this@UrgentViewModel.boards = boards
             selectedBoard = boards.first()
             boardNamesMap = mutableMapOf<Int, String>().apply {
                 boards.forEach { board ->

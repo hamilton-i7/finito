@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 fun CreateFab(
     @StringRes text: Int,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     expanded: Boolean = true,
 ) {
     ExtendedFloatingActionButton(
@@ -31,6 +32,6 @@ fun CreateFab(
             pressedElevation = 1.dp,
 
         ),
-        modifier = Modifier.navigationBarsPadding()
+        modifier = Modifier.navigationBarsPadding().then(modifier)
     )
 }

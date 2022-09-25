@@ -22,6 +22,10 @@ class FindOneBoard(
                     tasks = detailedBoard.tasks.let { tasks ->
                         val uncompletedTasks = tasks.filterUncompleted().sortedBy {
                             it.task.boardPosition
+                        }.let { list ->
+                            list.map { it.copy(
+                                subtasks = it.subtasks.sortedBy { subtask -> subtask.position }
+                            ) }
                         }
                         val completedTasks = tasks.filterCompleted().sortedBy { it.task.completedAt }
                         uncompletedTasks + completedTasks

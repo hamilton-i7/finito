@@ -4,5 +4,6 @@ data class SubtaskUseCases(
     val createSubtask: CreateSubtask,
     val findOneSubtask: FindOneSubtask,
     val updateSubtask: UpdateSubtask,
-    val deleteSubtask: DeleteSubtask
+    val deleteSubtask: DeleteSubtask,
+    val arrangeSubtasks: ArrangeSubtasks,
 )

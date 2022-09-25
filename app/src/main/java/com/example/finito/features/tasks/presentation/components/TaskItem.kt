@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.presentation.components
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -27,6 +28,7 @@ import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.util.isPast
 import com.example.finito.features.tasks.domain.util.toFormattedChipDate
+import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import com.google.accompanist.flowlayout.FlowRow
@@ -41,35 +43,44 @@ fun TaskItem(
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
     showDragIndicator: Boolean = false,
+    ghostVariant: Boolean = false,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
     onPriorityClick: () -> Unit = {},
     onBoardNameClick: (() -> Unit)? = null,
     onDateTimeClick: () -> Unit = {},
+    onDragging: () -> Unit = {},
+    onDragEnd: () -> Unit = {},
 ) {
-    val locale = LocalConfiguration.current.locales[0]
-    val context = LocalContext.current
-    val isSimpleTask = task.description == null
-            && task.date == null
-            && task.priority == null
     val tonalElevation by animateDpAsState(targetValue = if (isDragging) 3.dp else 0.dp)
 
     LaunchedEffect(isDragging) {
-        if (!isDragging) return@LaunchedEffect
+        if (!isDragging) {
+            onDragEnd()
+            return@LaunchedEffect
+        }
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        onDragging()
     }
 
     Surface(
-        onClick = onTaskClick,
         tonalElevation = tonalElevation,
         modifier = Modifier
             .fillMaxWidth()
             .then(modifier)
     ) {
+        val locale = LocalConfiguration.current.locales[0]
+        val context = LocalContext.current
+        val isSimpleTask = task.description == null
+                && task.date == null
+                && task.priority == null
+
         Row(
             verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier
+                .clickable(onClick = onTaskClick)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             if (task.completed) {
                 IconButton(
@@ -86,12 +97,16 @@ fun TaskItem(
                 RadioButton(
                     selected = false,
                     onClick = onCompletedToggle,
+                    enabled = !ghostVariant,
                     modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = task.name,
+                    color = if (ghostVariant) finitoColors.onSurface.copy(
+                        alpha = DisabledAlpha
+                    ) else finitoColors.onSurface,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                     textDecoration = if (task.completed)
@@ -102,7 +117,9 @@ fun TaskItem(
                     Text(
                         text = task.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = finitoColors.onSurfaceVariant,
+                        color = if (ghostVariant) finitoColors.onSurfaceVariant.copy(
+                            alpha = DisabledAlpha
+                        ) else finitoColors.onSurfaceVariant,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 3,
                         textDecoration = if (task.completed)
@@ -129,7 +146,7 @@ fun TaskItem(
                                         color = finitoColors.primary
                                     )
                                 },
-                                enabled = !task.completed,
+                                enabled = !task.completed && !ghostVariant,
                             )
                         }
                         if (task.priority != null) {
@@ -146,7 +163,7 @@ fun TaskItem(
                                             containerColor = finitoColors.lowPriorityContainer,
                                             disabledContainerColor = finitoColors.lowPriorityContainer.copy(alpha = 0.25f),
                                         ),
-                                        enabled = !task.completed,
+                                        enabled = !task.completed && !ghostVariant,
                                         border = null
                                     )
                                 }
@@ -162,7 +179,7 @@ fun TaskItem(
                                             containerColor = finitoColors.mediumPriorityContainer,
                                             disabledContainerColor = finitoColors.mediumPriorityContainer.copy(alpha = 0.25f),
                                         ),
-                                        enabled = !task.completed,
+                                        enabled = !task.completed && !ghostVariant,
                                         border = null
                                     )
                                 }
@@ -178,7 +195,7 @@ fun TaskItem(
                                             containerColor = finitoColors.urgentPriorityContainer,
                                             disabledContainerColor = finitoColors.urgentPriorityContainer.copy(alpha = 0.25f),
                                         ),
-                                        enabled = !task.completed,
+                                        enabled = !task.completed && !ghostVariant,
                                         border = null
                                     )
                                 }
@@ -210,12 +227,12 @@ fun TaskItem(
                                         locale = locale
                                     ))
                                 },
-                                enabled = !task.completed,
+                                enabled = !task.completed && !ghostVariant,
                                 colors = InputChipDefaults.inputChipColors(
                                     labelColor = contentColor,
                                     trailingIconColor = contentColor,
 
-                                ),
+                                    ),
                                 border = InputChipDefaults.inputChipBorder(
                                     borderColor = borderColor,
                                 )
@@ -224,7 +241,7 @@ fun TaskItem(
                     }
                 }
             }
-            if (showDragIndicator) {
+            if (showDragIndicator && !ghostVariant) {
                 Icon(
                     imageVector = Icons.Outlined.DragIndicator,
                     contentDescription = stringResource(id = R.string.reorder_task)
@@ -237,10 +254,13 @@ fun TaskItem(
 @ThemePreviews
 @Composable
 private fun TaskItemPreview() {
-
+    val item = Task.dummyTasks.random()
     FinitoTheme {
         Surface {
-            TaskItem(task = Task.dummyTasks.random())
+            TaskItem(
+                task = item,
+                ghostVariant = !item.completed
+            )
         }
     }
 }

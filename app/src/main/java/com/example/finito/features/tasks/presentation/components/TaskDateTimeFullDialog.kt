@@ -13,19 +13,19 @@ import com.example.finito.core.presentation.components.bars.DialogTopBar
 import com.example.finito.core.presentation.components.textfields.DateTextField
 import com.example.finito.core.presentation.components.textfields.TimeTextField
 import com.example.finito.core.presentation.util.preview.ThemePreviews
-import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.ui.theme.FinitoTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
-private fun dataChanged(task: TaskWithSubtasks, date: LocalDate?, time: LocalTime?): Boolean {
-    return task.task.date != date || task.task.time != time
+private fun dataChanged(task: Task, date: LocalDate?, time: LocalTime?): Boolean {
+    return task.date != date || task.time != time
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDateTimeFullDialog(
-    task: TaskWithSubtasks,
+    task: Task?,
     date: LocalDate?,
     onDateFieldClick: () -> Unit = {},
     onDateRemove: () -> Unit = {},
@@ -37,6 +37,8 @@ fun TaskDateTimeFullDialog(
     onAlertChangesMade: () -> Unit = {},
 ) {
     BackHandler {
+        if (task == null) return@BackHandler
+
         if (!dataChanged(task, date, time)) {
             onCloseClick()
             return@BackHandler
@@ -49,6 +51,8 @@ fun TaskDateTimeFullDialog(
             DialogTopBar(
                 title = R.string.edit_date_time,
                 onCloseClick = onCloseClick@{
+                    if (task == null) return@onCloseClick
+
                     if (!dataChanged(task, date, time)) {
                         onCloseClick()
                         return@onCloseClick
@@ -98,7 +102,7 @@ private fun TaskDateTimeFullDialogPreview() {
         TaskDateTimeFullDialog(
             date = LocalDate.now(),
             time = LocalTime.now(),
-            task = TaskWithSubtasks.dummyTasks.random()
+            task = Task.dummyTasks.random()
         )
     }
 }

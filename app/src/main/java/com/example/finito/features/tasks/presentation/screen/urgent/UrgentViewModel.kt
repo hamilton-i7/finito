@@ -82,7 +82,7 @@ class UrgentViewModel @Inject constructor(
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
         private set
 
-    var selectedTask by mutableStateOf<TaskWithSubtasks?>(null)
+    var selectedTask by mutableStateOf<Task?>(null)
         private set
 
     var selectedDate by mutableStateOf<LocalDate?>(null)
@@ -187,7 +187,7 @@ class UrgentViewModel @Inject constructor(
     }
 
     private fun onShowTaskDateTimeFullDialog(task: TaskWithSubtasks?) {
-        selectedTask = task
+        selectedTask = task?.task
         selectedDate = task?.task?.date
         selectedTime = task?.task?.time
     }
@@ -196,7 +196,7 @@ class UrgentViewModel @Inject constructor(
         if (selectedTask == null) return@launch
         with(selectedTask!!) {
             taskUseCases.updateTask(
-                copy(task = task.copy(time = selectedTime, date = selectedDate))
+                copy(time = selectedTime, date = selectedDate)
             )
         }
     }

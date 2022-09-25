@@ -19,6 +19,8 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.*
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +37,7 @@ import javax.inject.Inject
 class BoardViewModel @Inject constructor(
     private val boardUseCases: BoardUseCases,
     private val taskUseCases: TaskUseCases,
+    private val subtaskUseCases: SubtaskUseCases,
     private val preferences: SharedPreferences,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -59,7 +62,7 @@ class BoardViewModel @Inject constructor(
     var tasks by mutableStateOf<List<TaskWithSubtasks>>(emptyList())
         private set
 
-    var selectedTask by mutableStateOf<TaskWithSubtasks?>(null)
+    var selectedTask by mutableStateOf<Task?>(null)
         private set
 
     var newTaskNameState by mutableStateOf(TextFieldState())
@@ -73,6 +76,12 @@ class BoardViewModel @Inject constructor(
 
     var selectedTime by mutableStateOf<LocalTime?>(null)
         private set
+
+    var draggingContent by mutableStateOf<BoardEvent.DraggingContent?>(null)
+        private set
+
+    private var recentlyReorderedSubtasks: List<Subtask> = emptyList()
+    private var relatedTaskId: Int? = null
 
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -107,11 +116,15 @@ class BoardViewModel @Inject constructor(
             )
             BoardEvent.SaveTask -> onSaveTask()
             is BoardEvent.ReorderTasks -> onReorderTasks(event.from, event.to)
-            BoardEvent.SaveTasksOrder -> onSaveTasksOrder()
+            is BoardEvent.SaveTasksOrder -> onSaveTasksOrder(event.from, event.to)
+            is BoardEvent.DragContent -> draggingContent = event.content
+            is BoardEvent.ReorderSubtasks -> onReorderSubtasks(event.from, event.to)
+            is BoardEvent.SaveSubtasksOrder -> onSaveSubtasksOrder(event.from, event.to)
         }
     }
 
-    private fun onSaveTasksOrder() = viewModelScope.launch {
+    private fun onSaveTasksOrder(from: Int, to: Int) = viewModelScope.launch {
+        if (from == to) return@launch
         if (tasks.isEmpty()) return@launch
         when (taskUseCases.arrangeBoardTasks(tasks)) {
             is Result.Error -> {
@@ -123,14 +136,37 @@ class BoardViewModel @Inject constructor(
         }
     }
 
+    private fun onSaveSubtasksOrder(from: Int, to: Int) = viewModelScope.launch {
+        if (from == to) {
+            relatedTaskId = null
+            return@launch
+        }
+        if (recentlyReorderedSubtasks.isEmpty()) return@launch
+        subtaskUseCases.arrangeSubtasks(recentlyReorderedSubtasks)
+        recentlyReorderedSubtasks = emptyList()
+        relatedTaskId = null
+    }
+
     fun canDragTask(position: ItemPosition): Boolean {
-        if (tasks.isEmpty()) return false
-        return tasks.filter { !it.task.completed }.any { it.task.taskId == position.key }
+        return if (tasks.isEmpty()) false
+        else tasks.filterUncompleted().any { it.task.taskId == position.key }
+    }
+
+    fun canDragSubtask(position: ItemPosition): Boolean {
+        val subtasks = tasks.flatMap { it.subtasks }
+        val subtask = subtasks.find { it.subtaskId == position.key } ?: return false
+
+        if (relatedTaskId == null) {
+            relatedTaskId = subtask.taskId
+        }
+
+        return subtasks.filter {
+            it.taskId == relatedTaskId
+        }.any { it.subtaskId == position.key }
     }
 
     private fun onReorderTasks(from: ItemPosition, to: ItemPosition) {
         if (tasks.isEmpty()) return
-
         val uncompletedTasks = tasks.filterUncompleted().toMutableList().apply {
             add(
                 index = indexOfFirst { it.task.taskId == to.key },
@@ -139,6 +175,34 @@ class BoardViewModel @Inject constructor(
         }
         val completedTasks = tasks.filterCompleted()
         tasks = uncompletedTasks + completedTasks
+    }
+
+    private fun onReorderSubtasks(from: ItemPosition, to: ItemPosition) {
+        val fromSubtask = tasks.flatMap { it.subtasks }.first { it.subtaskId == from.key }
+
+        val subtasks = tasks.flatMap { it.subtasks }.filter {
+            it.taskId == fromSubtask.taskId
+        }.toMutableList().apply {
+            if (isEmpty()) return
+            add(
+                index = indexOfFirst {
+                    it.subtaskId == to.key
+                },
+                element = removeAt(indexOfFirst {
+                    it.subtaskId == from.key
+                })
+            )
+        }.also { recentlyReorderedSubtasks = it }
+
+        tasks = tasks.toMutableList().apply {
+            val task = first { it.task.taskId == fromSubtask.taskId }
+            add(
+                index = indexOfFirst { it.task.taskId == task.task.taskId },
+                element = removeAt(indexOfFirst {
+                    it.task.taskId == task.task.taskId
+                }).copy(subtasks = subtasks)
+            )
+        }
     }
 
     private fun onDeleteCompletedTasks() = viewModelScope.launch {
@@ -156,13 +220,11 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onToggleTaskCompleted(task: TaskWithSubtasks) = viewModelScope.launch {
-        val completed = !task.task.completed
+    private fun onToggleTaskCompleted(task: Task) = viewModelScope.launch {
+        val completed = !task.completed
         val updatedTask = task.copy(
-            task = task.task.copy(
-                completed = completed,
-                completedAt = if (completed) LocalDateTime.now() else null
-            )
+            completed = completed,
+            completedAt = if (completed) LocalDateTime.now() else null
         )
         when (taskUseCases.updateTask(updatedTask)) {
             is Result.Error -> {
@@ -171,13 +233,15 @@ class BoardViewModel @Inject constructor(
                 ))
             }
             is Result.Success -> {
+                val oldTaskWithSubtasks = board!!.tasks.first { it.task.taskId == task.taskId }
+
                 fetchBoard()
                 _eventFlow.emit(Event.Snackbar.UndoTaskChange(
                     message = if (completed)
                         R.string.task_marked_as_completed
                     else
                         R.string.task_marked_as_uncompleted,
-                    task = task
+                    task = oldTaskWithSubtasks
                 ))
             }
         }
@@ -204,17 +268,17 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onShowTaskDateTimeFullDialog(task: TaskWithSubtasks?) {
+    private fun onShowTaskDateTimeFullDialog(task: Task?) {
         selectedTask = task
-        selectedDate = task?.task?.date
-        selectedTime = task?.task?.time
+        selectedDate = task?.date
+        selectedTime = task?.time
     }
 
     private fun onSaveTaskDateTimeChanges() = viewModelScope.launch {
         if (selectedTask == null) return@launch
         with(selectedTask!!) {
             taskUseCases.updateTask(
-                copy(task = task.copy(time = selectedTime, date = selectedDate))
+                copy(time = selectedTime, date = selectedDate)
             ).also { fetchBoard() }
         }
     }
@@ -222,17 +286,14 @@ class BoardViewModel @Inject constructor(
     private fun onShowDialogChange(dialogType: BoardEvent.DialogType?) {
         this.dialogType = dialogType
         selectedPriority = if (dialogType is BoardEvent.DialogType.Priority) {
-            dialogType.taskWithSubtasks.task.priority
+            dialogType.taskWithSubtasks.priority
         } else null
     }
 
-    private fun onChangeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
-        if (task.task.priority == selectedPriority) return@launch
+    private fun onChangeTaskPriorityConfirm(task: Task) = viewModelScope.launch {
+        if (task.priority == selectedPriority) return@launch
         taskUseCases.updateTask(
-            TaskWithSubtasks(
-                task = task.task.copy(priority = selectedPriority),
-                subtasks = task.subtasks
-            )
+            task.copy(priority = selectedPriority)
         ).also { fetchBoard() }
     }
 

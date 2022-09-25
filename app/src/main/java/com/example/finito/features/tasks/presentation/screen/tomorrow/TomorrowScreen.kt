@@ -322,7 +322,7 @@ fun TomorrowScreen(
                 exit = slideOutVertically { it }
             ) {
                 TaskDateTimeFullDialog(
-                    task = tomorrowViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
+                    task = tomorrowViewModel.selectedTask,
                     date = tomorrowViewModel.selectedDate,
                     onDateFieldClick = {
                         tomorrowViewModel.onEvent(TomorrowEvent.ShowDialog(

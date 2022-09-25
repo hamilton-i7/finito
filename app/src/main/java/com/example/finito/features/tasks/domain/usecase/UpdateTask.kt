@@ -14,6 +14,37 @@ class UpdateTask(
     private val subtaskRepository: SubtaskRepository,
 ) {
 
+    suspend operator fun invoke(task: Task): Result<Unit, String> {
+        if (task.name.isBlank()) {
+            return Result.Error(ErrorMessages.EMPTY_NAME)
+        }
+        if (task.date == null && task.time != null) {
+            return Result.Error(ErrorMessages.INVALID_TASK_STATE)
+        }
+
+        val positionedTask = taskRepository.findOne(task.taskId)?.let {
+            if (changedBoard(it.task, task)) {
+                return@let arrangeDiffBoard(
+                    startBoardId = it.task.boardId,
+                    endBoardId = task.boardId,
+                    taskToUpdate = task,
+                )
+            }
+            if (!changedCompletedState(it.task, task)) return@let task
+            if (task.completed) {
+                return@let task.copy(boardPosition = null)
+            }
+            return@let task.copy(
+                boardPosition = taskRepository.findTasksByBoard(task.boardId).filter { task1 ->
+                    !task1.completed
+                }.size
+            )
+        } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
+        return Result.Success(
+            data = taskRepository.update(positionedTask)
+        )
+    }
+
     suspend operator fun invoke(tasksWithSubtasks: TaskWithSubtasks): Result<Unit, String> {
         val (task, subtasks) = tasksWithSubtasks
         

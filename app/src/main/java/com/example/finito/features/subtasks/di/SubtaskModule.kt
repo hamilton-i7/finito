@@ -28,6 +28,7 @@ object SubtaskModule {
             findOneSubtask = FindOneSubtask(repository),
             updateSubtask = UpdateSubtask(repository),
             deleteSubtask = DeleteSubtask(repository),
+            arrangeSubtasks = ArrangeSubtasks(repository),
         )
     }
 }

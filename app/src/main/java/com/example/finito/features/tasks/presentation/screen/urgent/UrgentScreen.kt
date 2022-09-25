@@ -345,7 +345,7 @@ fun UrgentScreen(
                 exit = slideOutVertically { it }
             ) {
                 TaskDateTimeFullDialog(
-                    task = urgentViewModel.selectedTask ?: TaskWithSubtasks.dummyTasks.random(),
+                    task = urgentViewModel.selectedTask,
                     date = urgentViewModel.selectedDate,
                     onDateFieldClick = {
                         urgentViewModel.onEvent(UrgentEvent.ShowDialog(

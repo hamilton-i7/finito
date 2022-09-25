@@ -16,16 +16,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.ui.theme.finitoColors
 
 @Composable
 fun CompletedTasksProgressBar(
-    tasks: List<CompletedTask>,
+    totalTasks: Int,
+    completedTasks: Int,
     modifier: Modifier = Modifier,
 ) {
-    val completedTasksAmount = tasks.filter { it.completed }.size
-    val progress by animateFloatAsState(targetValue = completedTasksAmount / tasks.size.toFloat())
+    val progress by animateFloatAsState(targetValue = completedTasks / totalTasks.toFloat())
 
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -39,7 +38,7 @@ fun CompletedTasksProgressBar(
                 text = stringResource(id = R.string.tasks_completed),
                 style = MaterialTheme.typography.bodyMedium
             )
-            Text(text = "$completedTasksAmount/${tasks.size}")
+            Text(text = "$completedTasks/$totalTasks")
         }
         LinearProgressIndicator(
             progress = progress,

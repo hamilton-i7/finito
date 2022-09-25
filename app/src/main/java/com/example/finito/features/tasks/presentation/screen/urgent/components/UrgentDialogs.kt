@@ -15,7 +15,7 @@ fun UrgentDialogs(urgentViewModel: UrgentViewModel) {
                 onDismiss = {
                     urgentViewModel.onEvent(UrgentEvent.ShowDialog())
                 },
-                description = R.string.delete_completed_tasks_confirmation,
+                description = R.string.delete_completed_urgent_tasks_confirmation,
                 onDismissClick = {
                     urgentViewModel.onEvent(UrgentEvent.ShowDialog())
                 },

@@ -141,4 +141,7 @@
     <string name="task_deleted">Task deleted</string>
     <string name="with_date">Urgent tasks with date specified</string>
     <string name="without_date">Urgent tasks without dates</string>
+    <string name="delete_completed_urgent_tasks_confirmation">All completed tasks marked as urgent will be deleted</string>
+    <string name="delete_completed_today_tasks_confirmation">All completed tasks set for today will be deleted</string>
+    <string name="delete_completed_tomorrow_tasks_confirmation">All completed tasks set for tomorrow will be deleted</string>
 </resources>

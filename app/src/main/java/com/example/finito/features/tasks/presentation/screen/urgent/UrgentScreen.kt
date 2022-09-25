@@ -32,10 +32,11 @@ import com.example.finito.core.presentation.components.bars.SmallTopBarWithMenu
 import com.example.finito.core.presentation.util.AnimationDurationConstants.LongDurationMillis
 import com.example.finito.core.presentation.util.AnimationDurationConstants.RegularDurationMillis
 import com.example.finito.core.presentation.util.calculateDp
-import com.example.finito.core.presentation.util.menu.TodayScreenMenuOption
+import com.example.finito.core.presentation.util.menu.UrgentScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.presentation.components.NewTaskSheetContent
 import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.screen.urgent.components.UrgentDialogs
@@ -53,7 +54,8 @@ import java.time.LocalDate
 @OptIn(
     ExperimentalMaterialApi::class,
     ExperimentalMaterial3Api::class,
-    ExperimentalPagerApi::class, ExperimentalAnimationApi::class
+    ExperimentalPagerApi::class,
+    ExperimentalAnimationApi::class
 )
 @Composable
 fun UrgentScreen(
@@ -97,6 +99,8 @@ fun UrgentScreen(
         }
     }
     var creatingTask by rememberSaveable { mutableStateOf(false) }
+    val noCompletedTasks = urgentViewModel.tasks.values.flatten().filterCompleted().isEmpty()
+    val disabledMenuOptions = listOf(UrgentScreenMenuOption.DeleteCompleted)
 
     BackHandler {
         if (creatingTask
@@ -237,13 +241,14 @@ fun UrgentScreen(
                         onMoreOptionsClick = {
                             urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = true))
                         },
-                        options = listOf<TodayScreenMenuOption>(
-                            TodayScreenMenuOption.DeleteCompleted
+                        options = listOf<UrgentScreenMenuOption>(
+                            UrgentScreenMenuOption.DeleteCompleted
                         ),
+                        disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
                         onOptionClick = { option ->
                             urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = false))
                             when (option) {
-                                TodayScreenMenuOption.DeleteCompleted -> {
+                                UrgentScreenMenuOption.DeleteCompleted -> {
                                     urgentViewModel.onEvent(UrgentEvent.ShowDialog(
                                         type = UrgentEvent.DialogType.DeleteCompleted
                                     ))

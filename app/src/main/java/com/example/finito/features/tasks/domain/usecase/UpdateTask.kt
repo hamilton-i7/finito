@@ -42,7 +42,7 @@ class UpdateTask(
             return@let task.copy(
                 boardPosition = taskRepository.findTasksByBoard(task.boardId).filter { task1 ->
                     !task1.completed
-                }.lastIndex
+                }.size
             )
         } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
         return Result.Success(

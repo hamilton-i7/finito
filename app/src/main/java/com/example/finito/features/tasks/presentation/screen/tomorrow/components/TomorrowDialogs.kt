@@ -15,7 +15,7 @@ fun TomorrowDialogs(tomorrowViewModel: TomorrowViewModel) {
                 onDismiss = {
                     tomorrowViewModel.onEvent(TomorrowEvent.ShowDialog())
                 },
-                description = R.string.delete_completed_tasks_confirmation,
+                description = R.string.delete_completed_tomorrow_tasks_confirmation,
                 onDismissClick = {
                     tomorrowViewModel.onEvent(TomorrowEvent.ShowDialog())
                 },

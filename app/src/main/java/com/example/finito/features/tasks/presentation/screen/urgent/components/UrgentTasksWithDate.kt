@@ -57,12 +57,7 @@ fun UrgentTasksWithDate(
                         text = date!!.toFullFormat(locale, complete = true),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier
-                            .padding(
-                                bottom = 12.dp,
-                                start = 16.dp,
-                                end = 16.dp
-                            )
-                            .animateItemPlacement()
+                            .padding(vertical = 12.dp, horizontal = 16.dp)
                     )
                 }
             }

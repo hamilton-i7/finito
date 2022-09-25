@@ -94,6 +94,8 @@ fun TodayScreen(
     }
 
     var creatingTask by rememberSaveable { mutableStateOf(false) }
+    val noCompletedTasks = todayViewModel.tasks.filterCompleted().isEmpty()
+    val disabledMenuOptions = listOf(TodayScreenMenuOption.DeleteCompleted)
 
     BackHandler {
         if (creatingTask
@@ -236,6 +238,7 @@ fun TodayScreen(
                         options = listOf<TodayScreenMenuOption>(
                             TodayScreenMenuOption.DeleteCompleted
                         ),
+                        disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
                         onOptionClick = { option ->
                             todayViewModel.onEvent(TodayEvent.ShowScreenMenu(show = false))
                             when (option) {

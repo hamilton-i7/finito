@@ -15,7 +15,7 @@ fun TodayDialogs(todayViewModel: TodayViewModel) {
                 onDismiss = {
                     todayViewModel.onEvent(TodayEvent.ShowDialog())
                 },
-                description = R.string.delete_completed_tasks_confirmation,
+                description = R.string.delete_completed_today_tasks_confirmation,
                 onDismissClick = {
                     todayViewModel.onEvent(TodayEvent.ShowDialog())
                 },

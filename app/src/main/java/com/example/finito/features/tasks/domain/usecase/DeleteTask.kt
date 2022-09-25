@@ -14,10 +14,11 @@ class DeleteTask(
         if (tasks.any { !isValidId(it.taskId) }) {
             return Result.Error(message = ErrorMessages.INVALID_ID)
         }
+        val formattedTasks = tasks.map { it.copy(boardPosition = null) }
         return Result.Success(
-            data = taskRepository.remove(*tasks).also {
+            data = taskRepository.remove(*formattedTasks.toTypedArray()).also {
                 val tasksToArrange = mutableListOf<Task>()
-                tasks.groupBy { it.boardId }.keys.forEach {
+                formattedTasks.groupBy { it.boardId }.keys.forEach {
                     tasksToArrange.addAll(taskRepository.findTasksByBoard(it))
                 }
                 arrangeTasks(tasksToArrange)

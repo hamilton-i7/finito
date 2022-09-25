@@ -43,7 +43,7 @@ import com.example.finito.core.presentation.components.bars.SmallTopBarWithMenu
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.calculateDp
-import com.example.finito.core.presentation.util.menu.TodayScreenMenuOption
+import com.example.finito.core.presentation.util.menu.TomorrowScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -94,6 +94,8 @@ fun TomorrowScreen(
     }
 
     var creatingTask by rememberSaveable { mutableStateOf(false) }
+    val noCompletedTasks = tomorrowViewModel.tasks.filterCompleted().isEmpty()
+    val disabledMenuOptions = listOf(TomorrowScreenMenuOption.DeleteCompleted)
 
     BackHandler {
         if (creatingTask
@@ -233,13 +235,14 @@ fun TomorrowScreen(
                         onMoreOptionsClick = {
                             tomorrowViewModel.onEvent(TomorrowEvent.ShowScreenMenu(show = true))
                         },
-                        options = listOf<TodayScreenMenuOption>(
-                            TodayScreenMenuOption.DeleteCompleted
+                        options = listOf<TomorrowScreenMenuOption>(
+                            TomorrowScreenMenuOption.DeleteCompleted
                         ),
+                        disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
                         onOptionClick = { option ->
                             tomorrowViewModel.onEvent(TomorrowEvent.ShowScreenMenu(show = false))
                             when (option) {
-                                TodayScreenMenuOption.DeleteCompleted -> {
+                                TomorrowScreenMenuOption.DeleteCompleted -> {
                                     tomorrowViewModel.onEvent(TomorrowEvent.ShowDialog(
                                         type = TomorrowEvent.DialogType.DeleteCompleted
                                     ))

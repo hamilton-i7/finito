@@ -49,3 +49,8 @@ data class Subtask(
         }.shuffled()
     }
 }
+
+
+fun List<Subtask>.filterUncompleted(): List<Subtask> = filter { !it.completed }
+
+fun List<Subtask>.filterCompleted(): List<Subtask> = filter { it.completed }

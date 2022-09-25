@@ -34,8 +34,7 @@ class CreateTask(
             data = taskRepository.create(taskWithPosition.copy(
                 name = taskWithPosition.name.trim(),
                 description = taskWithPosition.description?.trim()
-            )
-            ).toInt().also {
+            )).toInt().also {
                 if (subtasks.isEmpty()) return@also
                 subtaskRepository.createMany(*setupSubtaskPositions(it, subtasks))
             }
@@ -44,7 +43,6 @@ class CreateTask(
 
     private suspend fun arrangeSameBoard(task: Task): Task {
         val tasks = taskRepository.findTasksByBoard(task.boardId) + listOf(task)
-        println("Tasks: $tasks")
         val arrangedTasks = tasks.moveElement(tasks.lastIndex, task.boardPosition!!).mapIndexed { index, it ->
             it.copy(boardPosition = index)
         }.toTypedArray()

@@ -86,6 +86,7 @@ class AddEditTaskViewModel @Inject constructor(
         fetchBoards()
         fetchNameState()
         fetchDateState()
+        fetchPriorityState()
     }
 
     fun onEvent(event: AddEditTaskEvent) {
@@ -290,6 +291,8 @@ class AddEditTaskViewModel @Inject constructor(
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@AddEditTaskViewModel.boards = boards
             val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
+            if (boardId == -1) return@onEach
+
             boards.first { it.boardId == boardId }.let {
                 selectedBoard = it
             }
@@ -308,7 +311,15 @@ class AddEditTaskViewModel @Inject constructor(
 
     private fun fetchDateState() {
         savedStateHandle.get<String>(Screen.DATE_ARGUMENT)?.let { date ->
+            if (date.isEmpty()) return@let
             selectedDate = LocalDate.parse(date)
+        }
+    }
+
+    private fun fetchPriorityState() {
+        savedStateHandle.get<Boolean>(Screen.IS_URGENT_ARGUMENT)?.let { isUrgent ->
+            if (!isUrgent) return@let
+            selectedPriority = Priority.URGENT
         }
     }
     

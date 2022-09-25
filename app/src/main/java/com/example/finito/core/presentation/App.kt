@@ -272,10 +272,9 @@ fun App(
                         drawerState = drawerState,
                         appViewModel = appViewModel,
                         onNavigateToCreateTask = { boardId, taskName ->
-                            val tomorrow = LocalDate.now().plusDays(1)
                             taskName?.let {
-                                navController.navigateToCreateTask(boardId, taskName = it, date = tomorrow)
-                            } ?: navController.navigateToCreateTask(boardId, date = tomorrow)
+                                navController.navigateToCreateTask(boardId, taskName = it, isUrgent = true)
+                            } ?: navController.navigateToCreateTask(boardId, isUrgent = true)
                         },
                         onNavigateToEditTask = { taskId ->
                             navController.navigateToEditTask(taskId)

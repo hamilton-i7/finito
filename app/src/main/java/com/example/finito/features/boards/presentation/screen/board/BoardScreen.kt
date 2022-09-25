@@ -506,7 +506,7 @@ private fun BoardScreen(
                     }
                 }
             }
-            if (tasksWithCompletedSubtasks.isNotEmpty()) {
+            if (completedTasksAmount != 0) {
                 item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
                     RowToggle(
                         showContent = showCompletedTasks,

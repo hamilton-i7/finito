@@ -152,9 +152,9 @@ fun BoardScreen(
                                 appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                             }
                         }
-                        is BoardViewModel.Event.Snackbar.UndoTaskChange -> {
+                        is BoardViewModel.Event.Snackbar.UndoTaskCompletedToggle -> {
                             showSnackbar(event.message, R.string.undo) {
-                                appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                                appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
                     }
@@ -404,35 +404,23 @@ private fun BoardScreen(
     onTaskClick: (Task) -> Unit = {},
     onPriorityClick: (Task) -> Unit = {},
     onDateTimeClick: (Task) -> Unit = {},
-    onToggleTaskCompleted: (Task) -> Unit = {},
+    onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
     onSubtaskClick: (Subtask) -> Unit = {},
     onToggleSubtaskCompleted: (Subtask) -> Unit = {},
     onDraggingContent: (BoardEvent.DraggingContent?) -> Unit = {},
 ) {
-    val uncompletedTasksMap = tasks.filterUncompleted().groupBy { it.task }.mapValues {
-        it.value.flatMap { taskWithSubtasks -> taskWithSubtasks.subtasks }
+    val uncompletedTasks = tasks.filterUncompleted()
+    val tasksWithNoCompletedSubtasks = uncompletedTasks.map {
+        it.copy(subtasks = it.subtasks.filterUncompleted())
     }
-    val tasksWithNoCompletedSubtasks = uncompletedTasksMap.mapValues {
-        it.value.filterUncompleted()
-    }
-    val tasksWithCompletedSubtasks = uncompletedTasksMap.mapValues {
-        it.value.filterCompleted()
-    }.let {
-        val result = mutableMapOf<Task, List<Subtask>>()
-        it.keys.forEach { key ->
-            if (it[key]!!.isNotEmpty()) {
-                result[key] = it[key]!!
-            }
-        }
-        result
-    }
-    val completedTasksMap = tasks.filterCompleted().groupBy { it.task }.mapValues {
-        it.value.flatMap { taskWithSubtasks -> taskWithSubtasks.subtasks }
-    }
+    val tasksWithCompletedSubtasks = uncompletedTasks.filter {
+        it.subtasks.filterCompleted().isNotEmpty()
+    }.map { it.copy(subtasks = it.subtasks.filterCompleted()) }
+    val completedTasks = tasks.filterCompleted()
     val totalTasksAmount = tasks.size + tasks.flatMap { it.subtasks }.size
-    val completedTasksAmount = tasksWithCompletedSubtasks.values.flatten().size
-        .plus(completedTasksMap.values.flatten().size)
-        .plus(completedTasksMap.keys.size)
+    val completedTasksAmount = tasksWithCompletedSubtasks.flatMap { it.subtasks }.size
+        .plus(completedTasks.flatMap { it.subtasks }.size)
+        .plus(completedTasks.size)
 
     // TODO 21/09/2022: Show board labels
     Surface(modifier = Modifier
@@ -456,17 +444,17 @@ private fun BoardScreen(
                         .padding(bottom = 24.dp)
                 )
             }
-            tasksWithNoCompletedSubtasks.forEach { (task, subtasks) ->
-                item(key = task.taskId) {
-                    ReorderableItem(reorderableState, key = task.taskId) { isDragging ->
+            tasksWithNoCompletedSubtasks.forEach {
+                item(key = "${it.task.taskId} UNCOMPLETED") {
+                    ReorderableItem(reorderableState, key = it.task.taskId) { isDragging ->
                         TaskItem(
-                            task = task,
+                            task = it.task,
                             hapticFeedback = hapticFeedback,
                             isDragging = isDragging,
-                            onPriorityClick = { onPriorityClick(task) },
-                            onCompletedToggle = { onToggleTaskCompleted(task) },
-                            onTaskClick = { onTaskClick(task) },
-                            onDateTimeClick = { onDateTimeClick(task) },
+                            onPriorityClick = { onPriorityClick(it.task) },
+                            onCompletedToggle = { onToggleTaskCompleted(it) },
+                            onTaskClick = { onTaskClick(it.task) },
+                            onDateTimeClick = { onDateTimeClick(it.task) },
                             onDragging = { onDraggingContent(BoardEvent.DraggingContent.TASK) },
                             onDragEnd = { onDraggingContent(null) },
                             showDragIndicator = true,
@@ -477,12 +465,12 @@ private fun BoardScreen(
                     }
                 }
                 items(
-                    items = subtasks,
-                    key = { it.subtaskId }
-                ) {
-                    ReorderableItem(reorderableState, key = it.subtaskId) { isDragging ->
+                    items = it.subtasks,
+                    key = { subtask -> "${subtask.subtaskId} UNCOMPLETED" }
+                ) { subtask ->
+                    ReorderableItem(reorderableState, key = subtask.subtaskId) { isDragging ->
                         AnimatedVisibility(
-                            visible = task.taskId != reorderableState.draggingItemKey,
+                            visible = it.task.taskId != reorderableState.draggingItemKey,
                             enter = fadeIn() + slideInVertically(
                                 animationSpec = spring(stiffness = Spring.StiffnessHigh)
                             ),
@@ -492,12 +480,12 @@ private fun BoardScreen(
                             modifier = Modifier.animateItemPlacement()
                         ) {
                             SubtaskItem(
-                                subtask = it,
+                                subtask = subtask,
                                 isDragging = isDragging,
                                 hapticFeedback = hapticFeedback,
                                 showDragIndicator = true,
-                                onSubtaskClick = { onSubtaskClick(it) },
-                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                onSubtaskClick = { onSubtaskClick(subtask) },
+                                onCompletedToggle = { onToggleSubtaskCompleted(subtask) },
                                 onDragging = { onDraggingContent(BoardEvent.DraggingContent.SUBTASK) },
                                 onDragEnd = { onDraggingContent(null) },
                                 modifier = Modifier.detectReorderAfterLongPress(reorderableState)
@@ -550,8 +538,8 @@ private fun BoardScreen(
                         }
                     }
                 }
-                completedTasksMap.forEach { (task, subtasks) ->
-                    item(key = task.taskId) {
+                completedTasks.forEach {
+                    item(key = "${it.task.taskId} COMPLETED") {
                         AnimatedVisibility(
                             visible = showCompletedTasks,
                             enter = fadeIn(),
@@ -559,15 +547,15 @@ private fun BoardScreen(
                             modifier = Modifier.animateItemPlacement()
                         ) {
                             TaskItem(
-                                task = task,
-                                onCompletedToggle = { onToggleTaskCompleted(task) },
-                                onTaskClick = { onTaskClick(task) },
+                                task = it.task,
+                                onCompletedToggle = { onToggleTaskCompleted(it) },
+                                onTaskClick = { onTaskClick(it.task) },
                             )
                         }
                     }
                     items(
-                        items = subtasks,
-                        key = { it.subtaskId }
+                        items = it.subtasks,
+                        key = { subtask -> "${subtask.subtaskId} COMPLETED" }
                     ) {
                         AnimatedVisibility(
                             visible = showCompletedTasks,

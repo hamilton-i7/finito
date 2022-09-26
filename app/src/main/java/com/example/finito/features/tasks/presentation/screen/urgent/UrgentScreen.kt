@@ -129,7 +129,7 @@ fun UrgentScreen(
                 }
                 is UrgentViewModel.Event.Snackbar.UndoTaskChange -> {
                     onShowSnackbar(event.message, R.string.undo) {
-                        appViewModel.onEvent(AppEvent.UndoTaskChange(task = event.task))
+                        appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                     }
                 }
             }

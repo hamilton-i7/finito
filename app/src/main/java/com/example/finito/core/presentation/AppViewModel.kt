@@ -30,7 +30,7 @@ class AppViewModel @Inject constructor(
     fun onEvent(event: AppEvent) {
         when (event) {
             is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
-            is AppEvent.UndoTaskChange -> onUndoTaskChange(event.task)
+            is AppEvent.UndoTaskCompletedToggle -> onUndoTaskCompletedToggle(event.task)
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
         }
     }
@@ -42,8 +42,8 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    private fun onUndoTaskChange(task: TaskWithSubtasks) = viewModelScope.launch {
-        when (val result = taskUseCases.updateTask(task)) {
+    private fun onUndoTaskCompletedToggle(task: TaskWithSubtasks) = viewModelScope.launch {
+        when (val result = taskUseCases.toggleTaskCompleted(task, undoingToggle = true)) {
             is Result.Error -> {
                 if (result.message != ErrorMessages.NOT_FOUND) return@launch
                 taskUseCases.createTask(task)

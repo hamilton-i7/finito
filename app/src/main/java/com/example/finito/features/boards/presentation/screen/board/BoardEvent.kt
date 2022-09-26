@@ -3,6 +3,7 @@ package com.example.finito.features.boards.presentation.screen.board
 import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
 import java.time.LocalTime
@@ -28,7 +29,7 @@ sealed class BoardEvent {
 
     data class SaveSubtasksOrder(val from: Int, val to: Int) : BoardEvent()
 
-    data class ToggleTaskCompleted(val task: Task) : BoardEvent()
+    data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 
     data class ShowDialog(val type: DialogType? = null) : BoardEvent()
 

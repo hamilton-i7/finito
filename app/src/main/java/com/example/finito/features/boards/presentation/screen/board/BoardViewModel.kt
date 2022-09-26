@@ -220,28 +220,28 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onToggleTaskCompleted(task: Task) = viewModelScope.launch {
-        val completed = !task.completed
-        val updatedTask = task.copy(
-            completed = completed,
-            completedAt = if (completed) LocalDateTime.now() else null
+    private fun onToggleTaskCompleted(taskWithSubtasks: TaskWithSubtasks) = viewModelScope.launch {
+        val completed = !taskWithSubtasks.task.completed
+        val updatedTask = taskWithSubtasks.copy(
+            task = taskWithSubtasks.task.copy(
+                completed = completed,
+                completedAt = if (completed) LocalDateTime.now() else null
+            )
         )
-        when (taskUseCases.updateTask(updatedTask)) {
+        when (taskUseCases.toggleTaskCompleted(updatedTask)) {
             is Result.Error -> {
                 _eventFlow.emit(Event.ShowError(
                     error = R.string.update_task_error
                 ))
             }
             is Result.Success -> {
-                val oldTaskWithSubtasks = board!!.tasks.first { it.task.taskId == task.taskId }
-
                 fetchBoard()
-                _eventFlow.emit(Event.Snackbar.UndoTaskChange(
+                _eventFlow.emit(Event.Snackbar.UndoTaskCompletedToggle(
                     message = if (completed)
                         R.string.task_marked_as_completed
                     else
                         R.string.task_marked_as_uncompleted,
-                    task = oldTaskWithSubtasks
+                    task = taskWithSubtasks
                 ))
             }
         }
@@ -390,7 +390,7 @@ class BoardViewModel @Inject constructor(
                 val board: DetailedBoard,
             ) : Snackbar()
 
-            data class UndoTaskChange(
+            data class UndoTaskCompletedToggle(
                 @StringRes val message: Int,
                 val task: TaskWithSubtasks
             ) : Snackbar()

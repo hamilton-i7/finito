@@ -6,7 +6,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 sealed class AppEvent {
     data class UndoBoardChange(val board: DetailedBoard) : AppEvent()
 
-    data class UndoTaskChange(val task: TaskWithSubtasks) : AppEvent()
+    data class UndoTaskCompletedToggle(val task: TaskWithSubtasks) : AppEvent()
 
     data class RecoverTask(val task: TaskWithSubtasks) : AppEvent()
 }

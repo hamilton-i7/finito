@@ -2,7 +2,6 @@ package com.example.finito.features.tasks.domain.usecase
 
 import com.example.finito.core.domain.ErrorMessages
 import com.example.finito.core.domain.Result
-import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -21,32 +20,14 @@ class UpdateTask(
         if (task.date == null && task.time != null) {
             return Result.Error(ErrorMessages.INVALID_TASK_STATE)
         }
+        taskRepository.findOne(task.taskId) ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
 
-        val positionedTask = taskRepository.findOne(task.taskId)?.let {
-            if (changedBoard(it.task, task)) {
-                return@let arrangeDiffBoard(
-                    startBoardId = it.task.boardId,
-                    endBoardId = task.boardId,
-                    taskToUpdate = task,
-                )
-            }
-            if (!changedCompletedState(it.task, task)) return@let task
-            if (task.completed) {
-                return@let task.copy(boardPosition = null)
-            }
-            return@let task.copy(
-                boardPosition = taskRepository.findTasksByBoard(task.boardId).filter { task1 ->
-                    !task1.completed
-                }.size
-            )
-        } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
-        return Result.Success(
-            data = taskRepository.update(positionedTask)
-        )
+        return Result.Success(data = taskRepository.update(task))
     }
 
     suspend operator fun invoke(tasksWithSubtasks: TaskWithSubtasks): Result<Unit, String> {
         val (task, subtasks) = tasksWithSubtasks
+        val newSubtasks = subtasks.filter { it.subtaskId == 0 }
         
         if (task.name.isBlank()) {
             return Result.Error(ErrorMessages.EMPTY_NAME)
@@ -58,47 +39,38 @@ class UpdateTask(
             return Result.Error(ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
 
-        val positionedTask = taskRepository.findOne(task.taskId)?.let {
-            if (changedBoard(it.task, task)) {
-                return@let arrangeDiffBoard(
-                    startBoardId = it.task.boardId,
-                    endBoardId = task.boardId,
-                    taskToUpdate = task,
-                )
-            }
-            if (!changedCompletedState(it.task, task)) return@let task
-            if (task.completed) {
-                return@let task.copy(boardPosition = null)
-            }
-            return@let task.copy(
-                boardPosition = taskRepository.findTasksByBoard(task.boardId).filter { task1 ->
-                    !task1.completed
-                }.size
+        var positionedTask = taskRepository.findOne(task.taskId)?.let {
+            if (!changedBoard(it.task, task)) return@let task
+            return@let arrangeDiffBoard(
+                startBoardId = it.task.boardId,
+                endBoardId = task.boardId,
+                taskToUpdate = task,
             )
         } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
+
+        // Mark task as uncompleted if new subtasks were added
+        // while this task was completed
+        if (newSubtasks.isNotEmpty() && !task.completed) {
+            positionedTask = positionedTask.copy(
+                completed = false,
+                completedAt = null,
+                boardPosition = getUncompletedPosition(task)
+            )
+        }
+
         return Result.Success(
             data = taskRepository.update(positionedTask).also {
                 val oldSubtasks = subtaskRepository.findAllByTaskId(task.taskId).toTypedArray()
                 with(setupSubtaskPositions(subtasks)) {
                     // Delete subtasks not found in the old subtasks list
-                    deleteSubtasks(oldSubtasks, newSubtasks = this)
+                    deleteSubtasks(oldSubtasks, updatedSubtasks = this)
                     // Create the new subtasks
-                    createSubtasks(subtasks = this)
-
-                    filter { it.subtaskId != 0 }.let {
-                        val ids = oldSubtasks.groupBy { subtask -> subtask.subtaskId }
-                        if (it.any { subtask -> ids[subtask.subtaskId] == null }) {
-                            throw ResourceException.NotFoundException
-                        }
-                        subtaskRepository.updateMany(*it.toTypedArray())
-                    }
+                    createSubtasks(newSubtasks.toTypedArray())
+                    // Update subtasks
+                    subtaskRepository.updateMany(subtasks = this)
                 }
             }
         )
-    }
-
-    private fun changedCompletedState(oldTask: Task, newTask: Task): Boolean {
-        return oldTask.completed != newTask.completed
     }
 
     private fun changedBoard(oldTask: Task, newTask: Task): Boolean {
@@ -149,19 +121,22 @@ class UpdateTask(
     }
 
     private suspend fun createSubtasks(subtasks: Array<out Subtask>) {
-        subtasks.filter { it.subtaskId == 0 }.let {
-            subtaskRepository.createMany(*it.toTypedArray())
-        }
+        subtaskRepository.createMany(*subtasks)
     }
 
     private suspend fun deleteSubtasks(
         oldSubtasks: Array<out Subtask>,
-        newSubtasks: Array<out Subtask>,
+        updatedSubtasks: Array<out Subtask>,
     ) {
-        val ids = newSubtasks.groupBy { it.subtaskId }
+        val ids = updatedSubtasks.groupBy { it.subtaskId }
         oldSubtasks.filter { ids[it.subtaskId] == null }.let {
             subtaskRepository.removeMany(*it.toTypedArray())
         }
     }
 
+    private suspend fun getUncompletedPosition(task: Task): Int {
+        return taskRepository.findTasksByBoard(task.boardId).filter {
+            !it.completed
+        }.size
+    }
 }

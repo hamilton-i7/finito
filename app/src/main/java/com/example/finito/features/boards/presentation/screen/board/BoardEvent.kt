@@ -21,13 +21,13 @@ sealed class BoardEvent {
 
     object DeleteCompletedTasks : BoardEvent()
 
-    data class ReorderTasks(val from: ItemPosition, val to: ItemPosition) : BoardEvent()
+    data class ReorderTasks(val to: ItemPosition) : BoardEvent()
 
     data class ReorderSubtasks(val from: ItemPosition, val to: ItemPosition) : BoardEvent()
 
-    data class SaveTasksOrder(val from: Int, val to: Int) : BoardEvent()
+    object SaveTasksOrder : BoardEvent()
 
-    data class SaveSubtasksOrder(val from: Int, val to: Int) : BoardEvent()
+    object SaveSubtasksOrder : BoardEvent()
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 
@@ -51,8 +51,6 @@ sealed class BoardEvent {
 
     object ToggleCompletedTasksVisibility : BoardEvent()
 
-    data class DragContent(val content: DraggingContent? = null) : BoardEvent()
-
     sealed class DialogType {
         object DeleteCompletedTasks : DialogType()
 
@@ -65,9 +63,5 @@ sealed class BoardEvent {
         object TaskTime : DialogType()
 
         object DiscardChanges : DialogType()
-    }
-
-    enum class DraggingContent {
-        TASK, SUBTASK
     }
 }

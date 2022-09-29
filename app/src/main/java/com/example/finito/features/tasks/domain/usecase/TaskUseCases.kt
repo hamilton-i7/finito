@@ -9,8 +9,5 @@ data class TaskUseCases(
     val updateTask: UpdateTask,
     val deleteTask: DeleteTask,
     val arrangeBoardTasks: ArrangeBoardTasks,
-    val arrangeTodayTasks: ArrangeTodayTasks,
-    val arrangeTomorrowTasks: ArrangeTomorrowTasks,
-    val arrangeUrgentTasks: ArrangeUrgentTasks,
     val toggleTaskCompleted: ToggleTaskCompleted
 )

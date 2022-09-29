@@ -27,7 +27,6 @@ class UpdateTask(
 
     suspend operator fun invoke(tasksWithSubtasks: TaskWithSubtasks): Result<Unit, String> {
         val (task, subtasks) = tasksWithSubtasks
-        val newSubtasks = subtasks.filter { it.subtaskId == 0 }
         
         if (task.name.isBlank()) {
             return Result.Error(ErrorMessages.EMPTY_NAME)
@@ -39,24 +38,23 @@ class UpdateTask(
             return Result.Error(ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
 
-        var positionedTask = taskRepository.findOne(task.taskId)?.let {
+        val positionedTask = taskRepository.findOne(task.taskId)?.let {
             if (!changedBoard(it.task, task)) return@let task
             return@let arrangeDiffBoard(
                 startBoardId = it.task.boardId,
                 endBoardId = task.boardId,
                 taskToUpdate = task,
             )
-        } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
-
-        // Mark task as uncompleted if new subtasks were added
-        // while this task was completed
-        if (newSubtasks.isNotEmpty() && !task.completed) {
-            positionedTask = positionedTask.copy(
+        }?.let {
+            // Mark task as uncompleted if new subtasks were added
+            // while this task is completed
+            if (subtasks.all { subtask -> subtask.subtaskId != 0 } || !task.completed) return@let it
+            return@let it.copy(
                 completed = false,
                 completedAt = null,
                 boardPosition = getUncompletedPosition(task)
             )
-        }
+        } ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
 
         return Result.Success(
             data = taskRepository.update(positionedTask).also {
@@ -65,7 +63,7 @@ class UpdateTask(
                     // Delete subtasks not found in the old subtasks list
                     deleteSubtasks(oldSubtasks, updatedSubtasks = this)
                     // Create the new subtasks
-                    createSubtasks(newSubtasks.toTypedArray())
+                    createSubtasks(filter { it.subtaskId == 0 }.toTypedArray())
                     // Update subtasks
                     subtaskRepository.updateMany(subtasks = this)
                 }

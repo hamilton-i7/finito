@@ -333,7 +333,7 @@ fun BoardScreen(
                         boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     },
                     onDragging = {
-                        boardViewModel.draggingItem = it
+                        boardViewModel.onEvent(BoardEvent.DragItem(it))
                     }
                 )
             }

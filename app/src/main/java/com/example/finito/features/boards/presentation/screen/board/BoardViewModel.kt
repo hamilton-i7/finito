@@ -79,7 +79,7 @@ class BoardViewModel @Inject constructor(
         private set
 
     private var recentlyReorderedSubtasks: List<Subtask> = emptyList()
-    var draggingItem: Int? = null
+    private var draggingItem: Int? = null
 
     var draggableTasks by mutableStateOf<List<Any>>(emptyList())
         private set
@@ -122,10 +122,12 @@ class BoardViewModel @Inject constructor(
             BoardEvent.SaveTasksOrder -> onSaveTasksOrder()
             is BoardEvent.ReorderSubtasks -> TODO()
             BoardEvent.SaveSubtasksOrder -> TODO()
+            is BoardEvent.DragItem -> draggingItem = event.itemId
         }
     }
 
     private fun onSaveTasksOrder() = viewModelScope.launch {
+        currentDraggableTask = null
         val tasksIntersection = intersectTasksToSubtasks()
         val task = tasks.find { it.task.taskId == draggingItem }
 
@@ -195,6 +197,7 @@ class BoardViewModel @Inject constructor(
                     subtask.taskId == it.taskId
                 }.toMutableList().apply subtasksApply@{
                     if (isEmpty()) return@subtasksApply
+                    if (!wasTask()) return@subtasksApply
 
                     val subtask = find {
                             subtask -> subtask.subtaskId == draggingItem
@@ -236,6 +239,17 @@ class BoardViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun wasTask(): Boolean {
+        val intersection = intersectTasksToSubtasks()
+        if (intersection.isEmpty()) return false
+
+        val task = tasks.find { it.task.taskId == intersection.first() }
+        val subtask = draggableTasks.filterIsInstance<Subtask>().find {
+            it.subtaskId == intersection.first()
+        }
+        return subtask != null && task != null
     }
 
     private fun wasSubtask(): Boolean {
@@ -289,6 +303,11 @@ class BoardViewModel @Inject constructor(
             it.subtaskId == draggingItem
         }
         val targetTask = tasks.find { it.task.taskId == targetPosition.key }
+
+        if (currentDraggableTask == null) {
+            currentDraggableTask = tasks.find { it.task.taskId == draggingItem }
+        }
+
         if (fromTask != null && targetTask != null) {
             val subtasks = draggableTasks.filterIsInstance<Subtask>().filter {
                 it.taskId == fromTask.taskId
@@ -303,19 +322,14 @@ class BoardViewModel @Inject constructor(
                 reorderTasks(targetPosition)
                 return
             }
-
-            // From task to task with subtasks
-            if (subtasks.isEmpty()) {
-                reorderTaskToTaskWithSubtasks(targetPosition)
-                return
-            }
-
+            reorderTaskToTaskWithSubtasks(targetPosition)
+            return
 //            val isTargetTaskWithSubtasks = tasks.find {
 //                it.task.taskId == to.key
 //            }?.subtasks?.isNotEmpty() ?: false
 
         }
-        if (fromTask != null && targetTask == null) {
+        if (fromTask != null) {
             reorderTaskToTaskWithSubtasks(targetPosition)
             return
         }
@@ -332,11 +346,16 @@ class BoardViewModel @Inject constructor(
                 return
             }
             if (targetTask != null) {
-                reorderSubtaskToTask(targetPosition)
+                if (targetTask.subtasks.isNotEmpty()) {
+                    reorderSubtaskToTask(targetPosition)
+                    return
+                }
+                reorderSubtaskToOuterTask(targetPosition)
                 return
             }
+            reorderTasks(targetPosition)
         }
-        reorderTasks(targetPosition)
+//        reorderTasks(targetPosition)
 //        println("RUNNING REORDER")
 //        println("DRAGGING KEY: $draggingItem")
 //        println("FROM KEY: ${from.key}")
@@ -416,7 +435,7 @@ class BoardViewModel @Inject constructor(
                         if (it is Subtask) it.subtaskId == draggingItem else false
                     }
                 ) as Subtask).let {
-                    Task(
+                    currentDraggableTask?.task ?: Task(
                         taskId = draggingItem as Int,
                         boardId = board!!.board.boardId,
                         name = it.name,

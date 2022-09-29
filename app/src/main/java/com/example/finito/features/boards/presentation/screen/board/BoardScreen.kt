@@ -13,7 +13,6 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -78,18 +77,7 @@ fun BoardScreen(
     val hapticFeedback = LocalHapticFeedback.current
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val taskReorderableState = rememberReorderableLazyListState(
-        onMove = { _, to ->
-            boardViewModel.onEvent(BoardEvent.ReorderTasks(to))
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-        },
-        canDragOver = boardViewModel::canDrag,
-        onDragEnd = onDragEnd@{ from, to ->
-            if (from == to) return@onDragEnd
-            boardViewModel.onEvent(BoardEvent.SaveTasksOrder)
-        }
-    )
-    val subtaskReorderableState = rememberReorderableLazyListState(
+    val reorderableState = rememberReorderableLazyListState(
         onMove = { _, to ->
             boardViewModel.onEvent(BoardEvent.ReorderTasks(to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -105,8 +93,7 @@ fun BoardScreen(
         skipHalfExpanded = true
     )
     val expandedFab by remember {
-//        derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
-        derivedStateOf { true }
+        derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
     }
     val noCompletedTasks = boardViewModel.tasks.none { it.task.completed }
     val disabledMenuOptions = when (boardViewModel.boardState) {
@@ -312,8 +299,7 @@ fun BoardScreen(
                 BoardScreen(
                     paddingValues = innerPadding,
                     hapticFeedback = hapticFeedback,
-                    taskReorderableState = taskReorderableState,
-                    subtaskReorderableState = subtaskReorderableState,
+                    reorderableState = reorderableState,
                     tasks = boardViewModel.tasks,
                     draggableTasks = boardViewModel.draggableTasks,
                     showCompletedTasks = boardViewModel.showCompletedTasks,
@@ -386,10 +372,7 @@ fun BoardScreen(
 private fun BoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
-    taskReorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
-        onMove = { _, _ -> }
-    ),
-    subtaskReorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
+    reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
     tasks: List<TaskWithSubtasks> = emptyList(),
@@ -413,25 +396,13 @@ private fun BoardScreen(
     val completedTasksAmount = tasksWithCompletedSubtasks.flatMap { it.subtasks }.size
         .plus(completedTasks.flatMap { it.subtasks }.size)
         .plus(completedTasks.size)
-    val draggingTask = tasks.find { it.task.taskId == taskReorderableState.draggingItemKey } != null
-    var draggingContent by rememberSaveable { mutableStateOf<DragContent?>(null) }
 
-    LaunchedEffect(taskReorderableState.draggingItemKey) {
-        if (taskReorderableState.draggingItemKey == null) {
-            draggingContent = null
-        } else {
+    LaunchedEffect(reorderableState.draggingItemKey) {
+        if (reorderableState.draggingItemKey != null) {
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         }
-        onDragging(taskReorderableState.draggingItemKey as? Int)
+        onDragging(reorderableState.draggingItemKey as? Int)
     }
-
-    LaunchedEffect(subtaskReorderableState.draggingItemKey) {
-        if (subtaskReorderableState.draggingItemKey == null) {
-            draggingContent = null
-        }
-    }
-
-//    println("CONTENT: $draggingContent")
 
     // TODO 21/09/2022: Show board labels
     Surface(modifier = Modifier
@@ -439,8 +410,8 @@ private fun BoardScreen(
         .padding(paddingValues)) {
         LazyColumn(
             contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
-            state = taskReorderableState.listState,
-            modifier = Modifier.reorderable(taskReorderableState),
+            state = reorderableState.listState,
+            modifier = Modifier.reorderable(reorderableState),
         ) {
             item(
                 key = LazyListKeys.COMPLETED_TASKS_PROGRESS_BAR,
@@ -465,7 +436,7 @@ private fun BoardScreen(
             ) {
                 if (it is Task) {
                     ReorderableItem(
-                        reorderableState = taskReorderableState,
+                        reorderableState = reorderableState,
                         key = it.taskId,
                     ) { isDragging ->
                         TaskItem(
@@ -489,12 +460,12 @@ private fun BoardScreen(
                             showDragIndicator = true,
                             modifier = Modifier
                                 .animateItemPlacement()
-                                .detectReorderAfterLongPress(taskReorderableState)
+                                .detectReorderAfterLongPress(reorderableState)
                         )
                     }
-                } else if (it is Subtask && taskReorderableState.draggingItemKey != it.taskId) {
+                } else if (it is Subtask && reorderableState.draggingItemKey != it.taskId) {
                     ReorderableItem(
-                        reorderableState = taskReorderableState,
+                        reorderableState = reorderableState,
                         key = it.subtaskId,
                     ) { isDragging ->
                         SubtaskItem(
@@ -504,53 +475,11 @@ private fun BoardScreen(
                             showDragIndicator = true,
                             modifier = Modifier
                                 .animateItemPlacement()
-                                .detectReorderAfterLongPress(taskReorderableState)
+                                .detectReorderAfterLongPress(reorderableState)
                         )
                     }
                 }
             }
-
-//            draggableTasks.forEach { taskWithSubtasks ->
-//                item(key = taskWithSubtasks.task.taskId) {
-//                    ReorderableItem(
-//                        reorderableState = taskReorderableState,
-//                        key = taskWithSubtasks.task.taskId,
-//                    ) { isDragging ->
-//                        TaskItem(
-//                            task = taskWithSubtasks.task,
-//                            hapticFeedback = hapticFeedback,
-//                            isDragging = isDragging,
-//                            onPriorityClick = { onPriorityClick(taskWithSubtasks.task) },
-//                            onCompletedToggle = { onToggleTaskCompleted(taskWithSubtasks) },
-//                            onTaskClick = { onTaskClick(taskWithSubtasks.task) },
-//                            onDateTimeClick = { onDateTimeClick(taskWithSubtasks.task) },
-//                            showDragIndicator = true,
-//                            modifier = Modifier
-//                                .animateItemPlacement()
-//                                .detectReorderAfterLongPress(taskReorderableState)
-//                        )
-//                    }
-//                }
-//                items(
-//                    items = taskWithSubtasks.subtasks,
-//                    key = { subtask -> subtask.subtaskId }
-//                ) { subtask ->
-//                    ReorderableItem(
-//                        reorderableState = taskReorderableState,
-//                        key = subtask.subtaskId,
-//                    ) { isDragging ->
-//                        SubtaskItem(
-//                            subtask = subtask,
-//                            isDragging = isDragging,
-//                            hapticFeedback = hapticFeedback,
-//                            showDragIndicator = true,
-//                            modifier = Modifier
-//                                .animateItemPlacement()
-//                                .detectReorderAfterLongPress(taskReorderableState)
-//                        )
-//                    }
-//                }
-//            }
             if (completedTasksAmount != 0) {
                 item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
                     RowToggle(
@@ -641,8 +570,4 @@ private fun BoardScreenPreview() {
             BoardScreen(tasks = TaskWithSubtasks.dummyTasks.shuffled())
         }
     }
-}
-
-enum class DragContent {
-    TASK, SUBTASK
 }

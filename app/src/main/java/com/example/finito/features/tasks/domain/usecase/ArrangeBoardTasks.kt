@@ -52,8 +52,8 @@ class ArrangeBoardTasks(
                 if (positionsMap[it.taskId] == null) 0 else positionsMap[it.taskId]!! + 1
             it.copy(position = positionsMap[it.taskId]!!)
         }.let {
-            val newSubtasks = it.filter { subtask -> subtask.subtaskId == 0 }.also(::println)
-            val subtasksToUpdate = it.filter { subtask -> subtask.subtaskId != 0 }.also(::println)
+            val newSubtasks = it.filter { subtask -> subtask.subtaskId == 0 }
+            val subtasksToUpdate = it.filter { subtask -> subtask.subtaskId != 0 }
             subtaskRepository.createMany(*newSubtasks.toTypedArray())
             subtaskRepository.updateMany(*subtasksToUpdate.toTypedArray())
         }

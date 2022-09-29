@@ -23,13 +23,9 @@ sealed class BoardEvent {
 
     data class ReorderTasks(val to: ItemPosition) : BoardEvent()
 
-    data class ReorderSubtasks(val from: ItemPosition, val to: ItemPosition) : BoardEvent()
-
     data class DragItem(val itemId: Int? = null) : BoardEvent()
 
     object SaveTasksOrder : BoardEvent()
-
-    object SaveSubtasksOrder : BoardEvent()
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 

@@ -419,6 +419,8 @@ private fun BoardScreen(
     LaunchedEffect(taskReorderableState.draggingItemKey) {
         if (taskReorderableState.draggingItemKey == null) {
             draggingContent = null
+        } else {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         }
         onDragging(taskReorderableState.draggingItemKey as? Int)
     }

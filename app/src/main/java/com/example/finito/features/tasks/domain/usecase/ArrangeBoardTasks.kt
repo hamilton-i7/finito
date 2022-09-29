@@ -25,7 +25,13 @@ class ArrangeBoardTasks(
         return Result.Success(
             data = uncompletedTasks.mapIndexed { index, task ->
                 task.task.copy(boardPosition = index)
-            }.toTypedArray().let { taskRepository.updateMany(*it) }.also {
+            }.toTypedArray().let {
+                val newTasks = it.filter { task -> task.taskId == 0 }
+                val tasksToUpdate = it.filter { task -> task.taskId != 0 }.toTypedArray()
+
+                newTasks.forEach { task -> taskRepository.create(task) }
+                taskRepository.updateMany(*tasksToUpdate)
+            }.also {
                 arrangeSubtasks(subtasks)
             }
         )

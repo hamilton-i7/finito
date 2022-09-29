@@ -126,7 +126,7 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun onSaveTasksOrder() = viewModelScope.launch {
-        val intersection = intersectTasksToSubtasks()
+        val tasksIntersection = intersectTasksToSubtasks()
         val task = tasks.find { it.task.taskId == draggingItem }
 
         if (task != null && task.subtasks.isNotEmpty()) {
@@ -158,7 +158,7 @@ class BoardViewModel @Inject constructor(
 
                 if (newTaskId != null) {
                     val subtask = first {
-                        if (it is Subtask) it.subtaskId == intersection.first() else false
+                        if (it is Subtask) it.subtaskId == tasksIntersection.first() else false
                     }
                     add(
                         index = indexOf(subtask),
@@ -193,23 +193,22 @@ class BoardViewModel @Inject constructor(
             draggableTasks.filterIsInstance<Task>().forEach {
                 val subtasks = draggableTasks.filterIsInstance<Subtask>().filter { subtask ->
                     subtask.taskId == it.taskId
+                }.toMutableList().apply subtasksApply@{
+                    if (isEmpty()) return@subtasksApply
+
+                    val subtask = find {
+                            subtask -> subtask.subtaskId == draggingItem
+                    } ?: return@subtasksApply
+                    add(
+                        index = indexOf(subtask),
+                        element = removeAt(indexOf(subtask)).copy(subtaskId = 0)
+                    )
                 }
-//                    .toMutableList().apply subtasksApply@{
-//                    if (isEmpty()) return@subtasksApply
-//                    println("SUBTASKS: $this")
-//
-//                    val intersection = intersectTasksToSubtasks()
-//                    if (intersection.isEmpty()) return@subtasksApply
-//
-//                    val subtask = first { subtask -> subtask.subtaskId == intersection.first() }
-//                    add(
-//                        index = indexOf(subtask),
-//                        element = removeAt(indexOf(subtask)).copy(subtaskId = 0)
-//                    )
-//                }
                 add(
                     TaskWithSubtasks(
-                        task = it,
+                        task = it.copy(
+                            taskId = if (wasSubtask() && it.taskId == draggingItem) 0 else it.taskId
+                        ),
                         subtasks = subtasks
                     )
                 )
@@ -222,19 +221,46 @@ class BoardViewModel @Inject constructor(
                 ))
             }
             is Result.Success -> {
-                if (intersection.isEmpty()) return@launch
-                val taskToDelete = this@BoardViewModel.tasks.first {
-                    it.task.taskId == intersection.first()
+                if (tasksIntersection.isNotEmpty()) {
+                    val taskToDelete = this@BoardViewModel.tasks.first {
+                        it.task.taskId == tasksIntersection.first()
+                    }
+                    taskUseCases.deleteTask(taskToDelete.task)
+                    return@launch
                 }
-                taskUseCases.deleteTask(taskToDelete.task)
+                if (wasSubtask()) {
+                    val subtaskToDelete = this@BoardViewModel.tasks.flatMap { it.subtasks }.first {
+                        it.subtaskId == intersectSubtasksToTasks().first()
+                    }
+                    subtaskUseCases.deleteSubtask(subtaskToDelete)
+                }
             }
         }
+    }
+
+    private fun wasSubtask(): Boolean {
+        val intersection = intersectSubtasksToTasks()
+        if (intersection.isEmpty()) return false
+
+        val task = draggableTasks.filterIsInstance<Task>().find {
+            it.taskId == intersection.first()
+        }
+        val subtask = tasks.flatMap { it.subtasks }.find {
+            it.subtaskId == intersection.first()
+        }
+        return subtask != null && task != null
     }
 
     private fun intersectTasksToSubtasks(): Set<Int> {
         val allTasks = this@BoardViewModel.tasks.map { it.task.taskId }
         val subtasks = draggableTasks.filterIsInstance<Subtask>().map { it.subtaskId }
         return allTasks.intersect(subtasks.toSet())
+    }
+
+    private fun intersectSubtasksToTasks(): Set<Int> {
+        val subtasks = this@BoardViewModel.tasks.flatMap { it.subtasks }.map { it.subtaskId }
+        val allTasks = draggableTasks.filterIsInstance<Task>().map { it.taskId }
+        return subtasks.intersect(allTasks.toSet())
     }
 
     fun canDrag(position: ItemPosition): Boolean {
@@ -289,13 +315,26 @@ class BoardViewModel @Inject constructor(
 //            }?.subtasks?.isNotEmpty() ?: false
 
         }
-        if (targetTask == null) {
+        if (fromTask != null && targetTask == null) {
             reorderTaskToTaskWithSubtasks(targetPosition)
             return
         }
         if (fromSubtask != null) {
-            reorderSubtaskToTask(targetPosition)
-            return
+            val subtask = draggableTasks.filterIsInstance<Subtask>().first { it.subtaskId == fromSubtask.subtaskId }
+            val isLastSubtask = with(draggableTasks.filterIsInstance<Subtask>()) {
+                find { it.subtaskId == targetPosition.key }?.let { foundSubtask ->
+                    last { it.taskId == foundSubtask.taskId }.also { println("LAST SUBTASK: $it") }.subtaskId == foundSubtask.subtaskId
+                }.also { println("NOT FOUND!!") } ?: false
+            }
+            val isRelatedTask = subtask.taskId == targetPosition.key
+            if (isLastSubtask || isRelatedTask) {
+                reorderSubtaskToOuterTask(targetPosition)
+                return
+            }
+            if (targetTask != null) {
+                reorderSubtaskToTask(targetPosition)
+                return
+            }
         }
         reorderTasks(targetPosition)
 //        println("RUNNING REORDER")
@@ -363,6 +402,31 @@ class BoardViewModel @Inject constructor(
 //            // From subtask to subtask
 //            reorderSubtasks(from, to)
 //        }
+    }
+
+    private fun reorderSubtaskToOuterTask(targetPosition: ItemPosition) {
+        with(draggableTasks.toMutableList()) {
+            add(
+                index = indexOfFirst {
+                    if (it is Subtask) it.subtaskId == targetPosition.key
+                    else (it as Task).taskId == targetPosition.key
+                },
+                element = (removeAt(
+                    indexOfFirst {
+                        if (it is Subtask) it.subtaskId == draggingItem else false
+                    }
+                ) as Subtask).let {
+                    Task(
+                        taskId = draggingItem as Int,
+                        boardId = board!!.board.boardId,
+                        name = it.name,
+                        description = it.description,
+                        createdAt = it.createdAt
+                    )
+                }
+            )
+            draggableTasks = this
+        }
     }
 
     private fun reorderSubtaskToTask(targetPosition: ItemPosition) {

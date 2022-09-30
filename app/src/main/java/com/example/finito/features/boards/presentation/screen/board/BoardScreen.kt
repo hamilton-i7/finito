@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.presentation.AppEvent
@@ -433,50 +434,69 @@ private fun BoardScreen(
                     else (it as Subtask).subtaskId
                 }
             ) {
-                if (it is Task) {
-                    val subtasksAmount = tasks.flatMap {
-                            subtasks -> subtasks.subtasks
-                    }.count { subtask -> subtask.taskId == it.taskId && !subtask.completed }
+                when (it) {
+                    is Task -> {
+                        val subtasksAmount = tasks.flatMap {
+                                subtasks -> subtasks.subtasks
+                        }.count { subtask -> subtask.taskId == it.taskId && !subtask.completed }
 
-                    ReorderableItem(
-                        reorderableState = reorderableState,
-                        key = it.taskId,
-                    ) { isDragging ->
-                        TaskItem(
-                            task = it,
-                            subtasksAmount = subtasksAmount,
-                            isDragging = isDragging,
-                            onPriorityClick = { onPriorityClick(it) },
-                            onCompletedToggle = {
-                                val subtasks = draggableTasks.filterIsInstance<Subtask>().let { list ->
-                                    list.filter { subtask -> subtask.taskId == it.taskId }
-                                }
-                                onToggleTaskCompleted(
-                                    TaskWithSubtasks(
-                                        task = it,
-                                        subtasks = subtasks
+                        ReorderableItem(
+                            reorderableState = reorderableState,
+                            key = it.taskId,
+                        ) { isDragging ->
+                            TaskItem(
+                                task = it,
+                                subtasksAmount = subtasksAmount,
+                                isDragging = isDragging,
+                                onPriorityClick = { onPriorityClick(it) },
+                                onCompletedToggle = {
+                                    val subtasks = draggableTasks.filterIsInstance<Subtask>().let { list ->
+                                        list.filter { subtask -> subtask.taskId == it.taskId }
+                                    }
+                                    onToggleTaskCompleted(
+                                        TaskWithSubtasks(
+                                            task = it,
+                                            subtasks = subtasks
+                                        )
                                     )
-                                )
-                            },
-                            onTaskClick = { onTaskClick(it) },
-                            onDateTimeClick = { onDateTimeClick(it) },
-                            showDragIndicator = true,
-                            modifier = Modifier
-                                .animateItemPlacement()
-                                .detectReorderAfterLongPress(reorderableState)
-                        )
+                                },
+                                onTaskClick = { onTaskClick(it) },
+                                onDateTimeClick = { onDateTimeClick(it) },
+                                showDragIndicator = true,
+                                modifier = Modifier
+                                    .animateItemPlacement()
+                                    .detectReorderAfterLongPress(reorderableState)
+                            )
+                        }
                     }
-                } else if (it is Subtask && reorderableState.draggingItemKey != it.taskId) {
-                    ReorderableItem(
-                        reorderableState = reorderableState,
-                        key = it.subtaskId,
-                    ) { isDragging ->
-                        SubtaskItem(
-                            subtask = it,
-                            isDragging = isDragging,
-                            showDragIndicator = true,
-                            modifier = Modifier.detectReorderAfterLongPress(reorderableState)
-                        )
+                    is Subtask -> {
+                        val draggingSubtask = reorderableState.draggingItemKey == it.subtaskId
+                        AnimatedVisibility(
+                            visible = reorderableState.draggingItemKey != it.taskId,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier
+                                .zIndex(if (draggingSubtask) 1f else -1f)
+                                .then(
+                                    // Remove duplicate animation while dragging among subtasks
+                                    other = if (!draggingSubtask)
+                                        Modifier.animateItemPlacement()
+                                    else
+                                        Modifier
+                                )
+                        ) {
+                            ReorderableItem(
+                                reorderableState = reorderableState,
+                                key = it.subtaskId,
+                            ) { isDragging ->
+                                SubtaskItem(
+                                    subtask = it,
+                                    isDragging = isDragging,
+                                    showDragIndicator = true,
+                                    modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                                )
+                            }
+                        }
                     }
                 }
             }

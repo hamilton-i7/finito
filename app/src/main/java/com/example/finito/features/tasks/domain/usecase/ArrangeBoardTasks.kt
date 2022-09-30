@@ -26,14 +26,12 @@ class ArrangeBoardTasks(
             data = uncompletedTasks.mapIndexed { index, task ->
                 task.task.copy(boardPosition = index)
             }.toTypedArray().let {
-                val newTasks = it.filter { task -> task.taskId == 0 }
-                val tasksToUpdate = it.filter { task -> task.taskId != 0 }.toTypedArray()
+                val newTasks = it.filter { task -> task.taskId == 0 }.also(::println)
+                val tasksToUpdate = it.filter { task -> task.taskId != 0 }.also(::println).toTypedArray()
 
                 newTasks.forEach { task -> taskRepository.create(task) }
                 taskRepository.updateMany(*tasksToUpdate)
-            }.also {
-                arrangeSubtasks(subtasks)
-            }
+            }.also { arrangeSubtasks(subtasks) }
         )
     }
 

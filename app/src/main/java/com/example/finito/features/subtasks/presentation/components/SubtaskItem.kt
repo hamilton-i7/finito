@@ -12,8 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +25,6 @@ fun SubtaskItem(
     subtask: Subtask,
     modifier: Modifier = Modifier,
     isDragging: Boolean = false,
-    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     showDragIndicator: Boolean = false,
     onSubtaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
@@ -42,7 +39,6 @@ fun SubtaskItem(
             onDragEnd()
             return@LaunchedEffect
         }
-//        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         onDragging()
     }
 

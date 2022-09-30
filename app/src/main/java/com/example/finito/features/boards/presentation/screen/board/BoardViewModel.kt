@@ -253,9 +253,7 @@ class BoardViewModel @Inject constructor(
             it.subtaskId == draggingItem
         }
         val targetTask = tasks.find { it.task.taskId == targetPosition.key }
-        currentDraggableTask = draggableTasks.filterIsInstance<Task>().find {
-            it.taskId == draggingItem
-        }?.let { tasks.find { taskWithSubtasks -> taskWithSubtasks.task.taskId == it.taskId } }
+        currentDraggableTask = tasks.find { it.task.taskId == draggingItem }
 
         if (fromTask != null) {
             if (targetTask != null) {

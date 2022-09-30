@@ -435,13 +435,17 @@ private fun BoardScreen(
                 }
             ) {
                 if (it is Task) {
+                    val subtasksAmount = tasks.flatMap {
+                            subtasks -> subtasks.subtasks
+                    }.count { subtask -> subtask.taskId == it.taskId && !subtask.completed }
+
                     ReorderableItem(
                         reorderableState = reorderableState,
                         key = it.taskId,
                     ) { isDragging ->
                         TaskItem(
                             task = it,
-                            hapticFeedback = hapticFeedback,
+                            subtasksAmount = subtasksAmount,
                             isDragging = isDragging,
                             onPriorityClick = { onPriorityClick(it) },
                             onCompletedToggle = {
@@ -471,11 +475,8 @@ private fun BoardScreen(
                         SubtaskItem(
                             subtask = it,
                             isDragging = isDragging,
-                            hapticFeedback = hapticFeedback,
                             showDragIndicator = true,
-                            modifier = Modifier
-                                .animateItemPlacement()
-                                .detectReorderAfterLongPress(reorderableState)
+                            modifier = Modifier.detectReorderAfterLongPress(reorderableState)
                         )
                     }
                 }

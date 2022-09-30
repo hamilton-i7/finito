@@ -153,7 +153,11 @@ fun HomeScreen(
             boards = homeViewModel.boards,
             onBoardClick = onNavigateToBoard,
             selectedSortingOption = homeViewModel.boardsOrder,
-            onSortOptionClick = {
+            onSortOptionClick = onSortOptionClick@{
+                if (homeViewModel.boardsOrder == it){
+                    homeViewModel.onEvent(HomeEvent.SortBoards(sortingOption = null))
+                    return@onSortOptionClick
+                }
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))
             },
             onCardOptionsClick = {
@@ -191,7 +195,7 @@ private fun HomeScreen(
     onLabelClick: (labelId: Int) -> Unit = {},
     onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },

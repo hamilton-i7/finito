@@ -3,8 +3,8 @@ package com.example.finito.features.boards.presentation.components
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 
@@ -17,7 +17,7 @@ fun BoardLayout(
     onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
     sortingOptions: List<SortingOption.Common> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean,

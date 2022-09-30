@@ -58,15 +58,16 @@ class HomeViewModel @Inject constructor(
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesModule.TAG.BOARDS_ORDER.name,
-            SortingOption.Common.Default.name
+            null
         )?.let {
             when (it) {
                 SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
-                else -> SortingOption.Common.NameAZ
+                SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
+                else -> null
             }
-        } ?: SortingOption.Common.Default
+        }
     ); private set
     
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -92,47 +93,51 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            is HomeEvent.SelectFilter -> {
-                val exists = labelFilters.contains(event.labelId)
-                labelFilters = if (exists) {
-                    labelFilters.filter { it != event.labelId }
-                } else {
-                    labelFilters + listOf(event.labelId)
-                }
-                fetchBoards()
-            }
-            HomeEvent.RemoveFilters -> {
-                labelFilters = emptyList()
-                fetchBoards()
-            }
-            is HomeEvent.SortBoards -> {
-                if (event.sortingOption::class == boardsOrder::class) return
-
-                boardsOrder = event.sortingOption
-                with(preferences.edit()) {
-                    putString(PreferencesModule.TAG.BOARDS_ORDER.name, event.sortingOption.name)
-                    apply()
-                }
-                fetchBoards()
-            }
-            is HomeEvent.ArchiveBoard -> deactivateBoard(event.board, DeactivateMode.ARCHIVE)
-            is HomeEvent.MoveBoardToTrash -> deactivateBoard(event.board, DeactivateMode.DELETE)
-            is HomeEvent.SearchBoards -> {
-                searchQueryState = searchQueryState.copy(value = event.query)
-
-                searchJob?.cancel()
-                searchJob = viewModelScope.launch {
-                    delay(SEARCH_DELAY_MILLIS)
-                    fetchBoards()
-                }
-            }
-            HomeEvent.ToggleLayout -> toggleLayout()
-            HomeEvent.RestoreBoard -> restoreBoard()
-            is HomeEvent.ShowSearchBar -> {
-                showSearchBar(event.show)
-            }
+            is HomeEvent.SelectFilter -> onSelectFilter(event.labelId)
+            HomeEvent.RemoveFilters -> onRemoveFilters()
+            is HomeEvent.SortBoards -> onSortBoards(event.sortingOption)
+            is HomeEvent.ArchiveBoard -> onDeactivateBoard(event.board, DeactivateMode.ARCHIVE)
+            is HomeEvent.MoveBoardToTrash -> onDeactivateBoard(event.board, DeactivateMode.DELETE)
+            is HomeEvent.SearchBoards -> onSearchBoards(event.query)
+            HomeEvent.ToggleLayout -> onToggleLayout()
+            HomeEvent.RestoreBoard -> onRestoreBoard()
+            is HomeEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
+    }
+
+    private fun onSearchBoards(query: String) {
+        searchQueryState = searchQueryState.copy(value = query)
+
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DELAY_MILLIS)
+            fetchBoards()
+        }
+    }
+
+    private fun onSortBoards(sortingOption: SortingOption.Common?) {
+        boardsOrder = sortingOption
+        with(preferences.edit()) {
+            putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption?.name)
+            apply()
+        }
+        fetchBoards()
+    }
+
+    private fun onRemoveFilters() {
+        labelFilters = emptyList()
+        fetchBoards()
+    }
+
+    private fun onSelectFilter(labelId: Int) {
+        val exists = labelFilters.contains(labelId)
+        labelFilters = if (exists) {
+            labelFilters.filter { it != labelId }
+        } else {
+            labelFilters + listOf(labelId)
+        }
+        fetchBoards()
     }
 
     private fun fetchLabels() = viewModelScope.launch {
@@ -153,21 +158,27 @@ class HomeViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun deactivateBoard(
+    private fun onDeactivateBoard(
         board: BoardWithLabelsAndTasks,
         mode: DeactivateMode,
     ) = viewModelScope.launch {
         with(board) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(state = BoardState.ARCHIVED)))
+                    boardUseCases.updateBoard(copy(board = this.board.copy(
+                        state = BoardState.ARCHIVED,
+                        archivedAt = LocalDateTime.now(),
+                        position = null
+                    )))
                     _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
                 }
                 DeactivateMode.DELETE -> {
                     boardUseCases.updateBoard(
                         copy(
                             board = this.board.copy(
-                                state = BoardState.DELETED, removedAt = LocalDateTime.now()
+                                state = BoardState.DELETED,
+                                removedAt = LocalDateTime.now(),
+                                position = null
                             )
                         )
                     )
@@ -178,7 +189,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun toggleLayout() {
+    private fun onToggleLayout() {
         gridLayout = !gridLayout
         with(preferences.edit()) {
             putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
@@ -186,16 +197,21 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun restoreBoard() = viewModelScope.launch {
+    private fun onRestoreBoard() = viewModelScope.launch {
         recentlyDeactivatedBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(state = BoardState.ACTIVE, removedAt = null))
+                it.copy(board = it.board.copy(
+                    state = BoardState.ACTIVE,
+                    removedAt = null,
+                    archivedAt = null,
+                    position = recentlyDeactivatedBoard!!.board.position
+                ))
             )
             recentlyDeactivatedBoard = null
         }
     }
 
-    private fun showSearchBar(show: Boolean) {
+    private fun onShowSearchBar(show: Boolean) {
         if (!show) {
             searchQueryState = searchQueryState.copy(value = "")
             fetchBoards()

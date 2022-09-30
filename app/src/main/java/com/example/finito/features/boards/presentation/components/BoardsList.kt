@@ -29,7 +29,7 @@ fun BoardsList(
     onLabelClick: (labelId: Int) -> Unit = {},
     onRemoveFiltersClick: () -> Unit = {},
     sortingOptions: List<SortingOption.Common> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.Newest,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     boards: List<BoardWithLabelsAndTasks>,
     onBoardClick: (boardId: Int) -> Unit = {},

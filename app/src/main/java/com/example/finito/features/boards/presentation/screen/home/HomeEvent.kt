@@ -4,7 +4,7 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 
 sealed class HomeEvent {
-    data class SortBoards(val sortingOption: SortingOption.Common) : HomeEvent()
+    data class SortBoards(val sortingOption: SortingOption.Common?) : HomeEvent()
 
     data class SelectFilter(val labelId: Int) : HomeEvent()
 

@@ -4,7 +4,7 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 
 sealed class ArchiveEvent {
-    data class SortBoards(val sortingOption: SortingOption.Common) : ArchiveEvent()
+    data class SortBoards(val sortingOption: SortingOption.Common?) : ArchiveEvent()
 
     data class AddFilter(val labelId: Int) : ArchiveEvent()
 

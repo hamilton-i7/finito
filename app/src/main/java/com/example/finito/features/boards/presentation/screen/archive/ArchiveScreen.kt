@@ -136,7 +136,11 @@ fun ArchiveScreen(
             boards = archiveViewModel.boards,
             onBoardClick = onNavigateToBoardFlow,
             selectedSortingOption = archiveViewModel.boardsOrder,
-            onSortOptionClick = {
+            onSortOptionClick = onSortOptionClick@{
+                if (archiveViewModel.boardsOrder == it) {
+                    archiveViewModel.onEvent(ArchiveEvent.SortBoards(sortingOption = null))
+                    return@onSortOptionClick
+                }
                 archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))
             },
             onCardOptionsClick = {
@@ -174,7 +178,7 @@ private fun ArchiveScreen(
     onLabelClick: (labelId: Int) -> Unit = {},
     onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },

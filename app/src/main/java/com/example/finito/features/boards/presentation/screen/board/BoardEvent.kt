@@ -25,7 +25,7 @@ sealed class BoardEvent {
 
     data class DragItem(val itemId: Int? = null) : BoardEvent()
 
-    object SaveTasksOrder : BoardEvent()
+    data class SaveTasksOrder(val from: Int, val to: Int) : BoardEvent()
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : BoardEvent()
 

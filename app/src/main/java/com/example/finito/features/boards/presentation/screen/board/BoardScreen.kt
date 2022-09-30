@@ -83,9 +83,8 @@ fun BoardScreen(
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
         canDragOver = boardViewModel::canDrag,
-        onDragEnd = onDragEnd@{ from, to ->
-            if (from == to) return@onDragEnd
-            boardViewModel.onEvent(BoardEvent.SaveTasksOrder)
+        onDragEnd = { from, to ->
+            boardViewModel.onEvent(BoardEvent.SaveTasksOrder(from, to))
         }
     )
     val bottomSheetState: ModalBottomSheetState = rememberModalBottomSheetState(

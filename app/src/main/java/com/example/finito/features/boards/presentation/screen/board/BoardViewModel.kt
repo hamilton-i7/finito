@@ -84,6 +84,7 @@ class BoardViewModel @Inject constructor(
         private set
 
     private var currentDraggableTask: TaskWithSubtasks? = null
+    private var formerSubtaskOriginalPosition: Int? = null
 
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -117,7 +118,7 @@ class BoardViewModel @Inject constructor(
                 value = event.name
             )
             BoardEvent.SaveTask -> onSaveTask()
-            is BoardEvent.ReorderTasks -> onReorder(event.to)
+            is BoardEvent.ReorderTasks -> onReorder(event.from, event.to)
             BoardEvent.SaveTasksOrder -> onSaveTasksOrder()
             is BoardEvent.DragItem -> draggingItem = event.itemId
         }
@@ -207,6 +208,7 @@ class BoardViewModel @Inject constructor(
             }
             is Result.Success -> {
                 currentDraggableTask = null
+                formerSubtaskOriginalPosition = null
 
                 if (tasksIntersection.isNotEmpty()) {
                     val taskToDelete = this@BoardViewModel.tasks.first {
@@ -247,7 +249,7 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onReorder(targetPosition: ItemPosition) {
+    private fun onReorder(fromPosition: ItemPosition, targetPosition: ItemPosition) {
         val fromTask = draggableTasks.filterIsInstance<Task>().find { it.taskId == draggingItem }
         val fromSubtask = draggableTasks.filterIsInstance<Subtask>().find {
             it.subtaskId == draggingItem
@@ -256,6 +258,10 @@ class BoardViewModel @Inject constructor(
         currentDraggableTask = tasks.find { it.task.taskId == draggingItem }
 
         if (fromTask != null) {
+            if (formerSubtaskOriginalPosition == targetPosition.index) {
+                reorderFromTask(targetPosition)
+                return
+            }
             if (targetTask != null) {
                 if (targetTask.subtasks.isEmpty()) {
                     // From task to task
@@ -268,16 +274,38 @@ class BoardViewModel @Inject constructor(
             return
         }
         // From subtask
-        val subtask = draggableTasks.filterIsInstance<Subtask>().first {
-            it.subtaskId == fromSubtask!!.subtaskId
+        val draggableSubtasks = draggableTasks.filterIsInstance<Subtask>()
+        val subtask = draggableSubtasks.first { it.subtaskId == fromSubtask!!.subtaskId }
+        val isLastSubtaskInGroup = with(tasks.flatMap { it.subtasks }) {
+            find { it.subtaskId == draggingItem }?.let { foundSubtask ->
+                last { it.taskId == foundSubtask.taskId }.also {
+                    formerSubtaskOriginalPosition = fromPosition.index
+                }.subtaskId == foundSubtask.subtaskId
+            } ?: false
         }
-        val isLastSubtask = with(draggableTasks.filterIsInstance<Subtask>()) {
+        val isEmptyTask = with(tasks.filterUncompleted()) {
+            return@with find { it.task.taskId == targetPosition.key }?.subtasks?.isEmpty() ?: false
+        }
+        val isLastSubtask = with(tasks.filterUncompleted().last()) {
+            if (subtasks.isEmpty()) return@with false
+            return@with subtasks.last().subtaskId == targetPosition.key
+        }
+        val isTargetLastSubtaskInGroup = with(draggableSubtasks) {
             find { it.subtaskId == targetPosition.key }?.let { foundSubtask ->
                 last { it.taskId == foundSubtask.taskId }.subtaskId == foundSubtask.subtaskId
             } ?: false
         }
         val isRelatedTask = subtask.taskId == targetPosition.key
-        if (isLastSubtask || isRelatedTask) {
+
+        if (isLastSubtaskInGroup) {
+            if (isEmptyTask || isLastSubtask || isRelatedTask) {
+                reorderFromSubtaskToOuterTask(targetPosition)
+                return
+            }
+            reorderTasks(targetPosition)
+            return
+        }
+        if (isTargetLastSubtaskInGroup || isRelatedTask) {
             reorderFromSubtaskToOuterTask(targetPosition)
             return
         }
@@ -356,6 +384,10 @@ class BoardViewModel @Inject constructor(
             if (it is Task) it.taskId == targetPosition.key
             else (it as Subtask).subtaskId == targetPosition.key
         }
+        val isTaskWithNoSubtasks = draggableTasks.filterIsInstance<Subtask>().none {
+            if (targetItem is Task) it.taskId == targetItem.taskId else false
+        }
+        val subtask = tasks.flatMap { it.subtasks }.find { it.subtaskId == draggingItem }
         with(draggableTasks.toMutableList()) {
             val newPosition = indexOfFirst {
                 if (it is Task) it.taskId == targetPosition.key
@@ -370,7 +402,11 @@ class BoardViewModel @Inject constructor(
                 if (it is Task) {
                     return@let Subtask(
                         subtaskId = draggingItem!!,
-                        taskId = if (targetItem is Task) targetItem.taskId else (targetItem as Subtask).taskId,
+                        taskId = if (isTaskWithNoSubtasks && subtask != null)
+                            subtask.taskId
+                        else if (targetItem is Task)
+                            targetItem.taskId
+                        else (targetItem as Subtask).taskId,
                         name = it.name,
                         description = it.description,
                         createdAt = it.createdAt,

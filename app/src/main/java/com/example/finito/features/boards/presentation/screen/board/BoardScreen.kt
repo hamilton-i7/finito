@@ -78,8 +78,8 @@ fun BoardScreen(
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val reorderableState = rememberReorderableLazyListState(
-        onMove = { _, to ->
-            boardViewModel.onEvent(BoardEvent.ReorderTasks(to))
+        onMove = { from, to ->
+            boardViewModel.onEvent(BoardEvent.ReorderTasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
         canDragOver = boardViewModel::canDrag,

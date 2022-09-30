@@ -13,6 +13,8 @@ data class Board(
     val name: String,
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(defaultValue = "'ACTIVE'") val state: BoardState = BoardState.ACTIVE,
+    @ColumnInfo(defaultValue = "NULL") val position: Int? = null,
+    @ColumnInfo(name = "archived_at", defaultValue = "NULL") val archivedAt: LocalDateTime? = null,
     @ColumnInfo(name = "removed_at", defaultValue = "NULL") val removedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),

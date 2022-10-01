@@ -57,6 +57,7 @@ class TrashViewModel @Inject constructor(
     }
 
     fun onEvent(event: TrashEvent) {
+        // TODO 01/10/2022: Automatically delete boards that have a week on trash
         when (event) {
             is TrashEvent.DeleteForever -> deleteBoard(event.board)
             TrashEvent.EmptyTrash -> emptyTrash()

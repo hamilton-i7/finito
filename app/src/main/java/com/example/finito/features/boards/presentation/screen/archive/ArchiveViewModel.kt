@@ -201,7 +201,8 @@ class ArchiveViewModel @Inject constructor(
                 it.copy(board = it.board.copy(
                     state = BoardState.ARCHIVED,
                     removedAt = null,
-                    archivedAt = recentlyMovedBoard!!.board.archivedAt
+                    archivedAt = recentlyMovedBoard!!.board.archivedAt,
+                    position = null
                 ))
             )
             recentlyMovedBoard = null

@@ -87,7 +87,11 @@ class TrashViewModel @Inject constructor(
     private fun restoreBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
         with(board) {
             boardUseCases.updateBoard(
-                copy(board = this.board.copy(state = BoardState.ACTIVE, removedAt = null))
+                copy(board = this.board.copy(
+                    state = BoardState.ACTIVE,
+                    removedAt = null,
+                    position = 0
+                ))
             )
             _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_was_restored))
             recentlyRestoredBoard = this
@@ -99,7 +103,8 @@ class TrashViewModel @Inject constructor(
             boardUseCases.updateBoard(
                 it.copy(board = it.board.copy(
                     state = BoardState.DELETED,
-                    removedAt = it.board.removedAt
+                    removedAt = it.board.removedAt,
+                    position = null
                 ))
             )
             recentlyRestoredBoard = null

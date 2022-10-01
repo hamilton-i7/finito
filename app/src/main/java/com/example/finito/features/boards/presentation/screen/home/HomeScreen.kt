@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,8 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -32,6 +36,10 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ReorderableLazyGridState
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -55,6 +63,34 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val hapticFeedback = LocalHapticFeedback.current
+    val listState = rememberLazyListState()
+
+    val reorderableListState = rememberReorderableLazyListState(
+        listState = listState,
+        onMove = { from, to ->
+            // Make sure the target item is visible before switching places
+            if (listState.firstVisibleItemIndex == to.index) {
+                scope.launch { listState.scrollToItem(to.index, scrollOffset = -1) }
+            }
+            homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+        canDragOver = homeViewModel::canDrag,
+        onDragEnd = { from, to ->
+            homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
+        }
+    )
+    val reorderableGridState = rememberReorderableLazyGridState(
+        onMove = { from, to ->
+            homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+        canDragOver = homeViewModel::canDrag,
+        onDragEnd = { from, to ->
+            homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
+        }
+    )
 
     BackHandler {
         if (drawerState.isOpen) {
@@ -141,6 +177,8 @@ fun HomeScreen(
     ) { innerPadding ->
         HomeScreen(
             paddingValues = innerPadding,
+            reorderableListState = reorderableListState,
+            reorderableGridState = reorderableGridState,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,
             labelFilters = homeViewModel.labelFilters,
@@ -153,7 +191,11 @@ fun HomeScreen(
             boards = homeViewModel.boards,
             onBoardClick = onNavigateToBoard,
             selectedSortingOption = homeViewModel.boardsOrder,
-            onSortOptionClick = {
+            onSortOptionClick = onSortOptionClick@{
+                if (homeViewModel.boardsOrder == it){
+                    homeViewModel.onEvent(HomeEvent.SortBoards(sortingOption = null))
+                    return@onSortOptionClick
+                }
                 homeViewModel.onEvent(HomeEvent.SortBoards(it))
             },
             onCardOptionsClick = {
@@ -185,13 +227,20 @@ fun HomeScreen(
 @Composable
 private fun HomeScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
+    reorderableListState: ReorderableLazyListState = rememberReorderableLazyListState(
+        onMove = { _, _ -> }
+    ),
+    reorderableGridState: ReorderableLazyGridState = rememberReorderableLazyGridState(
+        onMove = { _, _ -> }
+    ),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
     onLabelClick: (labelId: Int) -> Unit = {},
     onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
@@ -203,11 +252,25 @@ private fun HomeScreen(
         option: ActiveBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
+    LaunchedEffect(reorderableListState.draggingItemKey) {
+        if (reorderableListState.draggingItemKey == null
+            || selectedSortingOption != null) return@LaunchedEffect
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
+
+    LaunchedEffect(reorderableGridState.draggingItemKey) {
+        if (reorderableGridState.draggingItemKey == null
+            || selectedSortingOption != null) return@LaunchedEffect
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
+
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
+            reorderableGridState = reorderableGridState,
+            reorderableListState = reorderableListState,
             labels = labels,
             labelFilters = labelFilters,
             onLabelClick = onLabelClick,

@@ -57,15 +57,16 @@ class ArchiveViewModel @Inject constructor(
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesModule.TAG.BOARDS_ORDER.name,
-            SortingOption.Common.Default.name
+            null
         )?.let {
             when (it) {
                 SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
-                else -> SortingOption.Common.NameAZ
+                SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
+                else -> null
             }
-        } ?: SortingOption.Common.Default
+        }
     ); private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -91,47 +92,51 @@ class ArchiveViewModel @Inject constructor(
 
     fun onEvent(event: ArchiveEvent) {
         when (event) {
-            is ArchiveEvent.AddFilter -> {
-                val exists = labelFilters.contains(event.labelId)
-                labelFilters = if (exists) {
-                    labelFilters.filter { it != event.labelId }
-                } else {
-                    labelFilters + listOf(event.labelId)
-                }
-                fetchBoards()
-            }
-            ArchiveEvent.RemoveFilters -> {
-                labelFilters = emptyList()
-                fetchBoards()
-            }
-            is ArchiveEvent.SortBoards -> {
-                if (event.sortingOption::class == boardsOrder::class) return
-
-                boardsOrder = event.sortingOption
-                with(preferences.edit()) {
-                    putString(PreferencesModule.TAG.BOARDS_ORDER.name, event.sortingOption.name)
-                    apply()
-                }
-                fetchBoards()
-            }
-            is ArchiveEvent.UnarchiveBoard -> moveBoard(event.board, EditMode.UNARCHIVE)
-            is ArchiveEvent.MoveBoardToTrash -> moveBoard(event.board, EditMode.DELETE)
-            is ArchiveEvent.SearchBoards -> {
-                searchQueryState = searchQueryState.copy(value = event.query)
-
-                searchJob?.cancel()
-                searchJob = viewModelScope.launch {
-                    delay(SEARCH_DELAY_MILLIS)
-                    fetchBoards()
-                }
-            }
-            ArchiveEvent.ToggleLayout -> toggleLayout()
-            ArchiveEvent.RestoreBoard -> restoreBoard()
-            is ArchiveEvent.ShowSearchBar -> {
-                showSearchBar(event.show)
-            }
+            is ArchiveEvent.AddFilter -> onAddFilter(event.labelId)
+            ArchiveEvent.RemoveFilters -> onRemoveFilters()
+            is ArchiveEvent.SortBoards -> onSortBoards(event.sortingOption)
+            is ArchiveEvent.UnarchiveBoard -> onMoveBoard(event.board, EditMode.UNARCHIVE)
+            is ArchiveEvent.MoveBoardToTrash -> onMoveBoard(event.board, EditMode.DELETE)
+            is ArchiveEvent.SearchBoards -> onSearchBoards(event.query)
+            ArchiveEvent.ToggleLayout -> onToggleLayout()
+            ArchiveEvent.RestoreBoard -> onRestoreBoard()
+            is ArchiveEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is ArchiveEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
         }
+    }
+
+    private fun onSearchBoards(query: String) {
+        searchQueryState = searchQueryState.copy(value = query)
+
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DELAY_MILLIS)
+            fetchBoards()
+        }
+    }
+
+    private fun onSortBoards(sortingOption: SortingOption.Common?) {
+        boardsOrder = sortingOption
+        with(preferences.edit()) {
+            putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption?.name)
+            apply()
+        }
+        fetchBoards()
+    }
+
+    private fun onRemoveFilters() {
+        labelFilters = emptyList()
+        fetchBoards()
+    }
+
+    private fun onAddFilter(labelId: Int) {
+        val exists = labelFilters.contains(labelId)
+        labelFilters = if (exists) {
+            labelFilters.filter { it != labelId }
+        } else {
+            labelFilters + listOf(labelId)
+        }
+        fetchBoards()
     }
 
     private fun fetchLabels() = viewModelScope.launch {
@@ -153,21 +158,26 @@ class ArchiveViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun moveBoard(
+    private fun onMoveBoard(
         board: BoardWithLabelsAndTasks,
         mode: EditMode,
     ) = viewModelScope.launch {
         with(board) {
             when (mode) {
                 EditMode.UNARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(state = BoardState.ACTIVE)))
+                    boardUseCases.updateBoard(copy(board = this.board.copy(
+                        state = BoardState.ACTIVE,
+                        archivedAt = null,
+                        position = 0
+                    )))
                     _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_out_of_archive))
                 }
                 EditMode.DELETE -> {
                     boardUseCases.updateBoard(
                         copy(board = this.board.copy(
                             state = BoardState.DELETED,
-                            removedAt = LocalDateTime.now()
+                            removedAt = LocalDateTime.now(),
+                            archivedAt = null
                         ))
                     )
                     _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
@@ -177,7 +187,7 @@ class ArchiveViewModel @Inject constructor(
         }
     }
 
-    private fun toggleLayout() {
+    private fun onToggleLayout() {
         gridLayout = !gridLayout
         with(preferences.edit()) {
             putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
@@ -185,16 +195,21 @@ class ArchiveViewModel @Inject constructor(
         }
     }
 
-    private fun restoreBoard() = viewModelScope.launch {
+    private fun onRestoreBoard() = viewModelScope.launch {
         recentlyMovedBoard?.let {
             boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(state = BoardState.ARCHIVED, removedAt = null))
+                it.copy(board = it.board.copy(
+                    state = BoardState.ARCHIVED,
+                    removedAt = null,
+                    archivedAt = recentlyMovedBoard!!.board.archivedAt,
+                    position = null
+                ))
             )
             recentlyMovedBoard = null
         }
     }
 
-    private fun showSearchBar(show: Boolean) {
+    private fun onShowSearchBar(show: Boolean) {
         if (show == showSearchBar) return
         if (!show) {
             searchQueryState = searchQueryState.copy(value = "")

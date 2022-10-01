@@ -1,6 +1,9 @@
 package com.example.finito.features.boards.domain.repository
 
-import com.example.finito.features.boards.domain.entity.*
+import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
+import com.example.finito.features.boards.domain.entity.DetailedBoard
+import com.example.finito.features.boards.domain.entity.SimpleBoard
 import kotlinx.coroutines.flow.Flow
 
 interface BoardRepository {
@@ -19,7 +22,7 @@ interface BoardRepository {
 
     suspend fun findOne(id: Int): DetailedBoard?
 
-    suspend fun update(board: Board)
+    suspend fun update(vararg boards: Board)
 
     suspend fun remove(vararg boards: Board)
 }

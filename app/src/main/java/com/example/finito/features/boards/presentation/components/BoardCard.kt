@@ -1,5 +1,6 @@
 package com.example.finito.features.boards.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
@@ -26,12 +27,14 @@ fun BoardCard(
     onClick: () -> Unit,
     board: BoardWithLabelsAndTasks,
     modifier: Modifier = Modifier,
+    isDragging: Boolean = false,
     onOptionsClick: () -> Unit = {},
     showMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
     options: List<BoardCardMenuOption> = emptyList(),
     onMenuItemClick: (BoardCardMenuOption) -> Unit = {},
 ) {
+    // FIXME 30/09/2022: Fix total tasks amount to match quantity shown on BoardScreen.kt
     val completedTasksProgress = board.tasks.let {
         if (it.isEmpty()) return@let 0F
 
@@ -42,7 +45,13 @@ fun BoardCard(
 
     Card(
         onClick = onClick,
-        modifier = modifier.testTag(TestTags.BOARD_CARD)
+        border = if (isDragging) BorderStroke(
+            width = 2.dp,
+            color = finitoColors.tertiary
+        ) else null,
+        modifier = Modifier
+            .testTag(TestTags.BOARD_CARD)
+            .then(modifier)
     ) {
         Column(modifier = Modifier.padding(vertical = 16.dp)) {
             Row(
@@ -107,6 +116,18 @@ private fun BoardCardPreview() {
         BoardCard(
             onClick = {},
             board = BoardWithLabelsAndTasks.dummyBoards.random()
+        )
+    }
+}
+
+@ThemePreviews
+@Composable
+private fun BoardCardDraggingPreview() {
+    FinitoTheme {
+        BoardCard(
+            onClick = {},
+            board = BoardWithLabelsAndTasks.dummyBoards.random(),
+            isDragging = true
         )
     }
 }

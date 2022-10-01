@@ -11,7 +11,7 @@ class FindArchivedBoards(
     private val repository: BoardRepository
 ) {
     operator fun invoke(
-        boardOrder: SortingOption.Common = SortingOption.Common.NameAZ,
+        boardOrder: SortingOption.Common? = null,
         searchQuery: String? = null,
         vararg labelIds: Int,
     ): Flow<List<BoardWithLabelsAndTasks>> {
@@ -32,12 +32,13 @@ class FindArchivedBoards(
     }
 
     private fun sortBoards(
-        boardOrder: SortingOption.Common,
+        boardOrder: SortingOption.Common?,
         boards: List<BoardWithLabelsAndTasks>,
     ): List<BoardWithLabelsAndTasks> = when(boardOrder) {
         SortingOption.Common.NameAZ -> boards.sortedBy { it.board.normalizedName }
         SortingOption.Common.NameZA -> boards.sortedByDescending { it.board.normalizedName }
         SortingOption.Common.Newest -> boards.sortedByDescending { it.board.createdAt }
         SortingOption.Common.Oldest -> boards.sortedBy { it.board.createdAt }
+        null -> boards.sortedBy { it.board.archivedAt }
     }
 }

@@ -102,6 +102,7 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
+            is BoardEvent.ToggleSubtaskCompleted -> onToggleSubtaskCompleted(event.subtask)
             BoardEvent.DeleteCompletedTasks -> onDeleteCompletedTasks()
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
@@ -509,6 +510,31 @@ class BoardViewModel @Inject constructor(
         }
     }
 
+    private fun onToggleSubtaskCompleted(subtask: Subtask) = viewModelScope.launch {
+        val completed = !subtask.completed
+        val updatedSubtask = subtask.copy(
+            completed = completed,
+            completedAt = if (completed) LocalDateTime.now() else null,
+        )
+        when (subtaskUseCases.updateSubtask(updatedSubtask)) {
+            is Result.Error -> {
+                _eventFlow.emit(Event.ShowError(
+                    error = R.string.update_task_error
+                ))
+            }
+            is Result.Success -> {
+                fetchBoard()
+                _eventFlow.emit(Event.Snackbar.UndoSubtaskCompletedToggle(
+                    message = if (completed)
+                        R.string.subtask_marked_as_completed
+                    else
+                        R.string.subtask_marked_as_uncompleted,
+                    subtask = subtask
+                ))
+            }
+        }
+    }
+
     private fun onSaveTask() = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
@@ -656,6 +682,11 @@ class BoardViewModel @Inject constructor(
             data class UndoTaskCompletedToggle(
                 @StringRes val message: Int,
                 val task: TaskWithSubtasks
+            ) : Snackbar()
+
+            data class UndoSubtaskCompletedToggle(
+                @StringRes val message: Int,
+                val subtask: Subtask
             ) : Snackbar()
         }
     }

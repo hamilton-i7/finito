@@ -144,4 +144,6 @@
     <string name="delete_completed_urgent_tasks_confirmation">All completed tasks marked as urgent will be deleted</string>
     <string name="delete_completed_today_tasks_confirmation">All completed tasks set for today will be deleted</string>
     <string name="delete_completed_tomorrow_tasks_confirmation">All completed tasks set for tomorrow will be deleted</string>
+    <string name="subtask_marked_as_completed">Subtask marked as completed</string>
+    <string name="subtask_marked_as_uncompleted">Subtask marked as uncompleted</string>
 </resources>

@@ -133,6 +133,11 @@ fun BoardScreen(
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
+                        is BoardViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
+                            showSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(subtask = event.subtask))
+                            }
+                        }
                     }
                 }
                 is BoardViewModel.Event.ShowError -> {
@@ -318,6 +323,9 @@ fun BoardScreen(
                     onToggleTaskCompleted = {
                         boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     },
+                    onToggleSubtaskCompleted = {
+                        boardViewModel.onEvent(BoardEvent.ToggleSubtaskCompleted(it))
+                    },
                     onDragging = {
                         boardViewModel.onEvent(BoardEvent.DragItem(it))
                     }
@@ -494,6 +502,7 @@ private fun BoardScreen(
                                     subtask = it,
                                     isDragging = isDragging,
                                     showDragIndicator = true,
+                                    onCompletedToggle = { onToggleSubtaskCompleted(it) },
                                     modifier = Modifier.detectReorderAfterLongPress(reorderableState)
                                 )
                             }

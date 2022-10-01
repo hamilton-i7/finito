@@ -265,18 +265,16 @@ class BoardViewModel @Inject constructor(
 
         if (fromTask != null) {
             if (originalSubtaskPosition == targetPosition.index) {
-                println("RUNNING HERE")
                 reorderFromTask(targetPosition)
                 return
             }
             if (targetTask != null) {
-                if (targetTask.subtasks.isEmpty()) {
+                if (targetTask.subtasks.filterUncompleted().isEmpty()) {
                     // From task to task
                     reorderTasks(targetPosition)
                     return
                 }
             }
-            println("RUNNING OUT HERE")
             // From task to either task with subtasks or subtask
             reorderFromTask(targetPosition)
             return

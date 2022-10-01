@@ -43,6 +43,7 @@ object BoardModule {
             findOneBoard = FindOneBoard(boardRepository),
             updateBoard = UpdateBoard(boardRepository, boardLabelRepository),
             deleteBoard = DeleteBoard(boardRepository),
+            arrangeBoards = ArrangeBoards(boardRepository)
         )
     }
 }

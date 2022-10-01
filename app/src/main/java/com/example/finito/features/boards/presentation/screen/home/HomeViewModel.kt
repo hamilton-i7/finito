@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -103,6 +104,24 @@ class HomeViewModel @Inject constructor(
             HomeEvent.RestoreBoard -> onRestoreBoard()
             is HomeEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
+            is HomeEvent.ReorderTasks -> onReorder(event.from, event.to)
+            is HomeEvent.SaveTasksOrder -> onSaveTasksOrder(event.from, event.to)
+        }
+    }
+
+    fun canDrag(position: ItemPosition): Boolean = boards.any { it.board.boardId == position.key }
+
+    private fun onSaveTasksOrder(from: Int, to: Int) = viewModelScope.launch {
+        if (from == to) return@launch
+        boardUseCases.arrangeBoards(boards)
+    }
+
+    private fun onReorder(from: ItemPosition, to: ItemPosition) {
+        boards = boards.toMutableList().apply {
+            add(
+                index = indexOfFirst { it.board.boardId == to.key },
+                element = removeAt(indexOfFirst { it.board.boardId == from.key })
+            )
         }
     }
 

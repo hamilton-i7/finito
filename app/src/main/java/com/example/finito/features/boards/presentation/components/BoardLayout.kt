@@ -7,9 +7,19 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
+import org.burnoutcrew.reorderable.ReorderableLazyGridState
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun BoardLayout(
+    reorderableListState: ReorderableLazyListState = rememberReorderableLazyListState(
+    onMove = { _, _ -> }
+    ),
+    reorderableGridState: ReorderableLazyGridState = rememberReorderableLazyGridState(
+        onMove = { _, _ -> }
+    ),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
@@ -28,12 +38,13 @@ fun BoardLayout(
 ) {
     val contentPadding = PaddingValues(
         vertical = 12.dp,
-        horizontal = 16.dp
+        horizontal = 8.dp
     )
 
     if (gridLayout) {
         BoardsGrid(
             contentPadding = contentPadding,
+            reorderableState = reorderableGridState,
             labels = labels,
             labelFilters = labelFilters,
             onLabelClick = onLabelClick,
@@ -52,6 +63,7 @@ fun BoardLayout(
     } else {
         BoardsList(
             contentPadding = contentPadding,
+            reorderableState = reorderableListState,
             labels = labels,
             labelFilters = labelFilters,
             onLabelClick = onLabelClick,

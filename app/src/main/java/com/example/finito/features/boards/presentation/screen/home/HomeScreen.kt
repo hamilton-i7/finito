@@ -12,8 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -32,6 +35,10 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ReorderableLazyGridState
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -55,6 +62,28 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val hapticFeedback = LocalHapticFeedback.current
+
+    val reorderableListState = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+        canDragOver = homeViewModel::canDrag,
+        onDragEnd = { from, to ->
+            homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
+        }
+    )
+    val reorderableGridState = rememberReorderableLazyGridState(
+        onMove = { from, to ->
+            homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        },
+        canDragOver = homeViewModel::canDrag,
+        onDragEnd = { from, to ->
+            homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
+        }
+    )
 
     BackHandler {
         if (drawerState.isOpen) {
@@ -141,6 +170,8 @@ fun HomeScreen(
     ) { innerPadding ->
         HomeScreen(
             paddingValues = innerPadding,
+            reorderableListState = reorderableListState,
+            reorderableGridState = reorderableGridState,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,
             labelFilters = homeViewModel.labelFilters,
@@ -189,6 +220,13 @@ fun HomeScreen(
 @Composable
 private fun HomeScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
+    reorderableListState: ReorderableLazyListState = rememberReorderableLazyListState(
+        onMove = { _, _ -> }
+    ),
+    reorderableGridState: ReorderableLazyGridState = rememberReorderableLazyGridState(
+        onMove = { _, _ -> }
+    ),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
@@ -207,11 +245,23 @@ private fun HomeScreen(
         option: ActiveBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
+    LaunchedEffect(reorderableListState.draggingItemKey) {
+        if (reorderableListState.draggingItemKey == null) return@LaunchedEffect
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
+
+    LaunchedEffect(reorderableGridState.draggingItemKey) {
+        if (reorderableGridState.draggingItemKey == null) return@LaunchedEffect
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
+
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
+            reorderableGridState = reorderableGridState,
+            reorderableListState = reorderableListState,
             labels = labels,
             labelFilters = labelFilters,
             onLabelClick = onLabelClick,

@@ -1,29 +1,28 @@
 package com.example.finito.features.boards.presentation.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.util.ContentTypes
-import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelFilters
+import org.burnoutcrew.reorderable.*
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BoardsList(
     contentPadding: PaddingValues,
+    reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
+        onMove = { _, _ -> }
+    ),
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
     onLabelClick: (labelId: Int) -> Unit = {},
@@ -42,9 +41,8 @@ fun BoardsList(
     LazyColumn(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .testTag(TestTags.BOARDS_LIST)
+        state = reorderableState.listState,
+        modifier = Modifier.reorderable(reorderableState)
     ) {
         if (labels.isNotEmpty()) {
             item(contentType = ContentTypes.LABEL_FILTERS) {
@@ -67,17 +65,24 @@ fun BoardsList(
                 )
             }
         }
-        items(boards, contentType = { ContentTypes.BOARDS }, key = { it.board.boardId }) {
-            BoardCard(
-                onClick = { onBoardClick(it.board.boardId) },
-                board = it,
-                onOptionsClick = { onCardOptionsClick(it.board.boardId) },
-                showMenu = showCardMenu(it.board.boardId),
-                onDismissMenu = { onDismissMenu(it.board.boardId) },
-                options = options,
-                onMenuItemClick = { option -> onMenuItemClick(it, option) },
-                modifier = Modifier.animateItemPlacement(),
-            )
+        items(boards, key = { it.board.boardId }) {
+            ReorderableItem(
+                reorderableState,
+                key = it.board.boardId,
+                orientationLocked = false,
+            ) { isDragging ->
+                BoardCard(
+                    onClick = { onBoardClick(it.board.boardId) },
+                    board = it,
+                    isDragging = isDragging,
+                    onOptionsClick = { onCardOptionsClick(it.board.boardId) },
+                    showMenu = showCardMenu(it.board.boardId),
+                    onDismissMenu = { onDismissMenu(it.board.boardId) },
+                    options = options,
+                    onMenuItemClick = { option -> onMenuItemClick(it, option) },
+                    modifier = Modifier.detectReorderAfterLongPress(reorderableState),
+                )
+            }
         }
     }
 }

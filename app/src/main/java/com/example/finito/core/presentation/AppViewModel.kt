@@ -7,6 +7,8 @@ import com.example.finito.core.domain.Result
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
     private val boardUseCases: BoardUseCases,
     private val taskUseCases: TaskUseCases,
+    private val subtaskUseCases: SubtaskUseCases,
 ) : ViewModel() {
 
     private val _eventFlow = MutableSharedFlow<Event>()
@@ -31,13 +34,14 @@ class AppViewModel @Inject constructor(
         when (event) {
             is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
             is AppEvent.UndoTaskCompletedToggle -> onUndoTaskCompletedToggle(event.task)
+            is AppEvent.UndoSubtaskCompletedToggle -> onUndoSubtaskCompletedToggle(event.subtask)
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
         }
     }
 
     private fun onRecoverTask(task: TaskWithSubtasks) = viewModelScope.launch {
         when (taskUseCases.createTask(task)) {
-            is Result.Error -> TODO()
+            is Result.Error -> TODO(reason = "Implement error scenario")
             is Result.Success -> _eventFlow.emit(Event.RefreshBoard)
         }
     }
@@ -54,6 +58,20 @@ class AppViewModel @Inject constructor(
                     }
                 )
             }
+            is Result.Success -> {
+                _eventFlow.emitAll(
+                    flow {
+                        emit(Event.RefreshBoard)
+                        emit(Event.RefreshTask)
+                    }
+                )
+            }
+        }
+    }
+
+    private fun onUndoSubtaskCompletedToggle(subtask: Subtask) = viewModelScope.launch {
+        when (subtaskUseCases.updateSubtask(subtask)) {
+            is Result.Error -> TODO(reason = "Implement error scenario")
             is Result.Success -> {
                 _eventFlow.emitAll(
                     flow {

@@ -58,16 +58,13 @@ class UpdateBoard(
     }
 
     private suspend fun arrangeBoards(board: Board) {
-        val boards = boardRepository.findActiveBoards().first().filter {
-            it.board.boardId != board.boardId
-        }.map { it.board }
+        val boards = boardRepository.findActiveBoards().first().map { it.board }
         with(boards.toMutableList()) {
             board.position?.let { position ->
-                if (position == lastIndex) {
-                    add(board)
-                } else {
-                    add(position, board)
-                }
+                add(
+                    index = position,
+                    element = removeAt(indexOfFirst { it.boardId == board.boardId })
+                )
             }
             mapIndexed { index, board -> board.copy(position = index) }.let {
                 boardRepository.update(*it.toTypedArray())

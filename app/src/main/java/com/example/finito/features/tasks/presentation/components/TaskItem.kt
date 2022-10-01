@@ -12,7 +12,6 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -53,18 +52,8 @@ fun TaskItem(
     onPriorityClick: () -> Unit = {},
     onBoardNameClick: (() -> Unit)? = null,
     onDateTimeClick: () -> Unit = {},
-    onDragging: () -> Unit = {},
-    onDragEnd: () -> Unit = {},
 ) {
     val tonalElevation by animateDpAsState(targetValue = if (isDragging) 3.dp else 0.dp)
-
-    LaunchedEffect(isDragging) {
-        if (!isDragging) {
-            onDragEnd()
-            return@LaunchedEffect
-        }
-        onDragging()
-    }
 
     Surface(
         tonalElevation = tonalElevation,

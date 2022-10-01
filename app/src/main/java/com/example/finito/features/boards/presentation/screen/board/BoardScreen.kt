@@ -133,6 +133,11 @@ fun BoardScreen(
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
+                        is BoardViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
+                            showSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(subtask = event.subtask))
+                            }
+                        }
                     }
                 }
                 is BoardViewModel.Event.ShowError -> {
@@ -318,6 +323,9 @@ fun BoardScreen(
                     onToggleTaskCompleted = {
                         boardViewModel.onEvent(BoardEvent.ToggleTaskCompleted(it))
                     },
+                    onToggleSubtaskCompleted = {
+                        boardViewModel.onEvent(BoardEvent.ToggleSubtaskCompleted(it))
+                    },
                     onDragging = {
                         boardViewModel.onEvent(BoardEvent.DragItem(it))
                     }
@@ -471,6 +479,7 @@ private fun BoardScreen(
                     }
                     is Subtask -> {
                         val draggingSubtask = reorderableState.draggingItemKey == it.subtaskId
+
                         AnimatedVisibility(
                             visible = reorderableState.draggingItemKey != it.taskId,
                             enter = fadeIn(),
@@ -486,13 +495,14 @@ private fun BoardScreen(
                                 )
                         ) {
                             ReorderableItem(
-                                reorderableState = reorderableState,
+                                state = reorderableState,
                                 key = it.subtaskId,
                             ) { isDragging ->
                                 SubtaskItem(
                                     subtask = it,
                                     isDragging = isDragging,
                                     showDragIndicator = true,
+                                    onCompletedToggle = { onToggleSubtaskCompleted(it) },
                                     modifier = Modifier.detectReorderAfterLongPress(reorderableState)
                                 )
                             }

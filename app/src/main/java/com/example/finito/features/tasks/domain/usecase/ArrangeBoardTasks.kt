@@ -3,6 +3,7 @@ package com.example.finito.features.tasks.domain.usecase
 import com.example.finito.core.domain.ErrorMessages
 import com.example.finito.core.domain.Result
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
@@ -18,6 +19,7 @@ class ArrangeBoardTasks(
     suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>): Result<Unit, String> {
         val uncompletedTasks = tasksWithSubtasks.filterUncompleted()
         val subtasks = uncompletedTasks.flatMap { it.subtasks }.filterUncompleted()
+        val completedSubtasksToUpdate = uncompletedTasks.flatMap { it.subtasks }.filterCompleted()
 
         if (!fromSameBoard(uncompletedTasks.map { it.task })) {
             return Result.Error(message = ErrorMessages.DIFFERENT_TASKS_ORIGIN)
@@ -31,7 +33,10 @@ class ArrangeBoardTasks(
 
                 newTasks.forEach { task -> taskRepository.create(task) }
                 taskRepository.updateMany(*tasksToUpdate)
-            }.also { arrangeSubtasks(subtasks) }
+            }.also {
+                arrangeSubtasks(subtasks)
+                subtaskRepository.updateMany(*completedSubtasksToUpdate.toTypedArray())
+            }
         )
     }
 

@@ -471,6 +471,7 @@ private fun BoardScreen(
                     }
                     is Subtask -> {
                         val draggingSubtask = reorderableState.draggingItemKey == it.subtaskId
+
                         AnimatedVisibility(
                             visible = reorderableState.draggingItemKey != it.taskId,
                             enter = fadeIn(),
@@ -486,7 +487,7 @@ private fun BoardScreen(
                                 )
                         ) {
                             ReorderableItem(
-                                reorderableState = reorderableState,
+                                state = reorderableState,
                                 key = it.subtaskId,
                             ) { isDragging ->
                                 SubtaskItem(

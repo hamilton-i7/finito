@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,9 +64,15 @@ fun HomeScreen(
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val hapticFeedback = LocalHapticFeedback.current
+    val listState = rememberLazyListState()
 
     val reorderableListState = rememberReorderableLazyListState(
+        listState = listState,
         onMove = { from, to ->
+            // Make sure the target item is visible before switching places
+            if (listState.firstVisibleItemIndex == to.index) {
+                scope.launch { listState.scrollToItem(to.index, scrollOffset = -1) }
+            }
             homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },

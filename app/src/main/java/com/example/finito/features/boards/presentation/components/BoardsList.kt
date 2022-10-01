@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.util.ContentTypes
+import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -45,7 +46,7 @@ fun BoardsList(
         modifier = Modifier.reorderable(reorderableState)
     ) {
         if (labels.isNotEmpty()) {
-            item(contentType = ContentTypes.LABEL_FILTERS) {
+            item(contentType = ContentTypes.LABEL_FILTERS, key = LazyListKeys.LABELS) {
                 LabelFilters(
                     labels,
                     selectedLabels = labelFilters,
@@ -56,7 +57,7 @@ fun BoardsList(
             }
         }
         if (sortingOptions.isNotEmpty()) {
-            item(contentType = ContentTypes.SORTING_OPTIONS) {
+            item(contentType = ContentTypes.SORTING_OPTIONS, key = LazyListKeys.SORTING_OPTIONS) {
                 SortingChips(
                     options = sortingOptions,
                     selectedOption = selectedSortingOption,
@@ -65,7 +66,7 @@ fun BoardsList(
                 )
             }
         }
-        items(boards, key = { it.board.boardId }) {
+        items(boards, key = { it.board.boardId }, contentType = { ContentTypes.BOARDS }) {
             ReorderableItem(
                 reorderableState,
                 key = it.board.boardId,

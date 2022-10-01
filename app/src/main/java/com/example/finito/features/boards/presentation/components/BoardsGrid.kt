@@ -76,7 +76,7 @@ fun BoardsGrid(
                 )
             }
         }
-        items(boards, key = { it.board.boardId }) {
+        items(boards, key = { it.board.boardId }, contentType = { ContentTypes.BOARDS }) {
             DefaultReorderableItem(
                 reorderableState,
                 key = it.board.boardId,

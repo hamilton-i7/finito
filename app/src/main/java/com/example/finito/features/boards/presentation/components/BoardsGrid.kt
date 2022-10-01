@@ -47,6 +47,8 @@ fun BoardsGrid(
     onCardOptionsClick: (boardId: Int) -> Unit,
     onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit
 ) {
+    val allowDrag = selectedSortingOption == null
+
     LazyVerticalGrid(
         state = reorderableState.gridState,
         columns = GridCells.Fixed(count = BOARD_COLUMNS),
@@ -92,7 +94,10 @@ fun BoardsGrid(
                     onDismissMenu = { onDismissMenu(it.board.boardId) },
                     options = options,
                     onMenuItemClick = { option -> onMenuItemClick(it, option) },
-                    modifier = Modifier.detectReorderAfterLongPress(reorderableState),
+                    modifier = if (allowDrag)
+                        Modifier.detectReorderAfterLongPress(reorderableState)
+                    else
+                        Modifier,
                 )
             }
         }

@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.util.ContentTypes
-import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -39,6 +38,8 @@ fun BoardsList(
     onCardOptionsClick: (boardId: Int) -> Unit,
     onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit
 ) {
+    val allowDrag = selectedSortingOption == null
+
     LazyColumn(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -46,7 +47,7 @@ fun BoardsList(
         modifier = Modifier.reorderable(reorderableState)
     ) {
         if (labels.isNotEmpty()) {
-            item(contentType = ContentTypes.LABEL_FILTERS, key = LazyListKeys.LABELS) {
+            item(contentType = ContentTypes.LABEL_FILTERS) {
                 LabelFilters(
                     labels,
                     selectedLabels = labelFilters,
@@ -57,7 +58,7 @@ fun BoardsList(
             }
         }
         if (sortingOptions.isNotEmpty()) {
-            item(contentType = ContentTypes.SORTING_OPTIONS, key = LazyListKeys.SORTING_OPTIONS) {
+            item(contentType = ContentTypes.SORTING_OPTIONS) {
                 SortingChips(
                     options = sortingOptions,
                     selectedOption = selectedSortingOption,
@@ -81,7 +82,10 @@ fun BoardsList(
                     onDismissMenu = { onDismissMenu(it.board.boardId) },
                     options = options,
                     onMenuItemClick = { option -> onMenuItemClick(it, option) },
-                    modifier = Modifier.detectReorderAfterLongPress(reorderableState),
+                    modifier = if (allowDrag)
+                        Modifier.detectReorderAfterLongPress(reorderableState)
+                    else
+                        Modifier,
                 )
             }
         }

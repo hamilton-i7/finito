@@ -253,12 +253,14 @@ private fun HomeScreen(
     ) -> Unit = { _, _ ->}
 ) {
     LaunchedEffect(reorderableListState.draggingItemKey) {
-        if (reorderableListState.draggingItemKey == null) return@LaunchedEffect
+        if (reorderableListState.draggingItemKey == null
+            || selectedSortingOption != null) return@LaunchedEffect
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
     LaunchedEffect(reorderableGridState.draggingItemKey) {
-        if (reorderableGridState.draggingItemKey == null) return@LaunchedEffect
+        if (reorderableGridState.draggingItemKey == null
+            || selectedSortingOption != null) return@LaunchedEffect
         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 

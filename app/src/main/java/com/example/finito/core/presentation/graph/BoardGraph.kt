@@ -19,7 +19,7 @@ import com.example.finito.features.boards.presentation.screen.addeditboard.AddEd
 import com.example.finito.features.boards.presentation.screen.board.BoardScreen
 import com.google.accompanist.navigation.animation.composable
 
-const val BOARD_GRAPH_ROUTE = "board_flow/{${Screen.BOARD_ROUTE_ID_ARGUMENT}}" +
+const val BOARD_GRAPH_ROUTE = "board_flow/{${Screen.BOARD_ID_ARGUMENT}}" +
         "?${Screen.BOARD_ROUTE_STATE_ARGUMENT}" +
         "={${Screen.BOARD_ROUTE_STATE_ARGUMENT}}"
 

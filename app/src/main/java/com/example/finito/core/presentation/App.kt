@@ -102,7 +102,7 @@ fun App(
             val route: String = if (staticDrawerRoutes.contains(destination.route)) {
                 destination.route!!
             } else if (destination.route == Screen.Board.route) {
-                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ROUTE_ID_ARGUMENT)}"
+                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ID_ARGUMENT)}"
             } else {
                 "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ROUTE_ARGUMENT)}"
             }

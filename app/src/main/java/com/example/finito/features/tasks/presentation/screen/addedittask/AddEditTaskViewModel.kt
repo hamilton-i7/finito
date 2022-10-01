@@ -79,7 +79,6 @@ class AddEditTaskViewModel @Inject constructor(
         private set
 
     private var subtaskNameStateId = -1
-    private var recentlyToggledCompletedTask: TaskWithSubtasks? = null
 
     init {
         fetchTask()
@@ -131,7 +130,6 @@ class AddEditTaskViewModel @Inject constructor(
     private fun onToggleCompleted() = viewModelScope.launch {
         if (task == null) return@launch
         with(task!!) {
-            recentlyToggledCompletedTask = this
             boardUseCases.findOneBoard(task.boardId).let {
                 if (it is Result.Error) return@launch
                 val board = (it as Result.Success).data
@@ -140,7 +138,7 @@ class AddEditTaskViewModel @Inject constructor(
                 val updatedTask = copy(task = task.copy(
                     completed = completed,
                     completedAt = if (completed) LocalDateTime.now() else null,
-                    boardPosition = if (completed) board.tasks.lastIndex else uncompletedTasksAmount
+                    boardPosition = if (completed) null else uncompletedTasksAmount
                 ))
 
                 when (taskUseCases.updateTask(updatedTask)) {
@@ -290,7 +288,7 @@ class AddEditTaskViewModel @Inject constructor(
     private fun fetchBoards() = viewModelScope.launch {
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@AddEditTaskViewModel.boards = boards
-            val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
+            val boardId = savedStateHandle.get<Int>(Screen.BOARD_ID_ARGUMENT) ?: return@onEach
             if (boardId == -1) return@onEach
 
             boards.first { it.boardId == boardId }.let {
@@ -325,20 +323,7 @@ class AddEditTaskViewModel @Inject constructor(
     
     private suspend fun setupData(taskWithSubtasks: TaskWithSubtasks) {
          this.task = taskWithSubtasks
-        boardUseCases.findOneBoard(taskWithSubtasks.task.boardId).let { result ->
-            when (result) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.find_board_error
-                    ))
-                }
-                is Result.Success -> {
-                    val board = result.data.board
-                    selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
-                    originalRelatedBoard = result.data.board
-                }
-            }
-        }
+        fetchRelatedBoard(taskWithSubtasks.task.boardId)
         nameState = nameState.copy(value = taskWithSubtasks.task.name)
         if (taskWithSubtasks.task.description != null) {
             descriptionState = descriptionState.copy(value = taskWithSubtasks.task.description)
@@ -352,6 +337,23 @@ class AddEditTaskViewModel @Inject constructor(
                 id = it.subtaskId,
                 value = it.name
             )
+        }
+    }
+
+    private suspend fun fetchRelatedBoard(boardId: Int) {
+        boardUseCases.findOneBoard(boardId).let { result ->
+            when (result) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.find_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    val board = result.data.board
+                    selectedBoard = SimpleBoard(boardId = board.boardId, name = board.name)
+                    originalRelatedBoard = result.data.board
+                }
+            }
         }
     }
 

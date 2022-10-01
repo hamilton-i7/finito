@@ -146,4 +146,8 @@
     <string name="delete_completed_tomorrow_tasks_confirmation">All completed tasks set for tomorrow will be deleted</string>
     <string name="subtask_marked_as_completed">Subtask marked as completed</string>
     <string name="subtask_marked_as_uncompleted">Subtask marked as uncompleted</string>
+    <string name="find_subtask_error">There was an error while looking for this subtask</string>
+    <string name="update_subtask_error">There was an error while trying to update this subtask</string>
+    <string name="delete_subtask_error">There was an error while trying to delete this subtask</string>
+    <string name="subtask_deleted">Subtask deleted</string>
 </resources>

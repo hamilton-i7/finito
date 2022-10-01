@@ -52,21 +52,21 @@ fun NavController.navigateToEditBoard(boardId: Int, state: BoardState = BoardSta
 
 fun NavController.navigateToCreateTask(boardId: Int, isUrgent: Boolean = false) {
     val route = "${Screen.CreateTask.prefix}" +
-            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "?${Screen.BOARD_ID_ARGUMENT}=$boardId" +
             "&${Screen.IS_URGENT_ARGUMENT}=$isUrgent"
     navigate(route)
 }
 
 fun NavController.navigateToCreateTask(boardId: Int, date: LocalDate) {
     val route = "${Screen.CreateTask.prefix}" +
-            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "?${Screen.BOARD_ID_ARGUMENT}=$boardId" +
             "&${Screen.DATE_ARGUMENT}=$date"
     navigate(route)
 }
 
 fun NavController.navigateToCreateTask(boardId: Int, taskName: String, isUrgent: Boolean = false) {
     val route = "${Screen.CreateTask.prefix}" +
-            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "?${Screen.BOARD_ID_ARGUMENT}=$boardId" +
             "&${Screen.TASK_NAME_ARGUMENT}=$taskName" +
             "&${Screen.IS_URGENT_ARGUMENT}=$isUrgent"
     navigate(route)
@@ -78,7 +78,7 @@ fun NavController.navigateToCreateTask(
     date: LocalDate,
 ) {
     val route = "${Screen.CreateTask.prefix}" +
-            "?${Screen.BOARD_ROUTE_ID_ARGUMENT}=$boardId" +
+            "?${Screen.BOARD_ID_ARGUMENT}=$boardId" +
             "&${Screen.TASK_NAME_ARGUMENT}=$taskName" +
             "&${Screen.DATE_ARGUMENT}=$date"
     navigate(route)

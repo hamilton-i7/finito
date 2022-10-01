@@ -140,14 +140,16 @@ class BoardViewModel @Inject constructor(
         val wasSubtask = tasks.flatMap { it.subtasks }.any {
             it.subtaskId == draggingItem
         } && draggableTasks.filterIsInstance<Task>().any { it.taskId == draggingItem }
+        var completedRelatedSubtasks = emptyList<Subtask>()
+
+        // Get the ID from the target task when the
+        // dragging item was a task now converted to a Subtask
+        val newTaskId = draggableTasks.filterIsInstance<Subtask>().find {
+            it.subtaskId == draggingItem
+        }?.taskId
 
         if (task != null && task.subtasks.isNotEmpty()) {
             with(draggableTasks.toMutableList()) {
-                // Get the ID from the target task when the
-                // dragging item was a task now converted to a Subtask
-                val newTaskId = filterIsInstance<Subtask>().find {
-                    it.subtaskId == draggingItem
-                }?.taskId
                 val subtasks = draggableTasks.filterIsInstance<Subtask>().filter {
                     it.taskId == draggingItem
                 }.also {
@@ -156,6 +158,11 @@ class BoardViewModel @Inject constructor(
                 }.let {
                     if (newTaskId == null) return@let it
                     // 2. Change related subtasks' taskId to the new task
+                    completedRelatedSubtasks = tasks.flatMap { taskWithSubtasks ->
+                        taskWithSubtasks.subtasks
+                    }.filter { subtask ->
+                        subtask.taskId == draggingItem && subtask.completed
+                    }.map { subtask -> subtask.copy(taskId = newTaskId) }
                     it.map { subtask -> subtask.copy(taskId = newTaskId) }
                 }
 
@@ -196,6 +203,10 @@ class BoardViewModel @Inject constructor(
                         index = indexOf(subtask),
                         element = removeAt(indexOf(subtask)).copy(subtaskId = 0)
                     )
+                }.let { list ->
+                    if (completedRelatedSubtasks.isEmpty() || list.isEmpty()) return@let list
+                    if (list[0].taskId != newTaskId) return@let list
+                    list + completedRelatedSubtasks
                 }
                 add(
                     TaskWithSubtasks(

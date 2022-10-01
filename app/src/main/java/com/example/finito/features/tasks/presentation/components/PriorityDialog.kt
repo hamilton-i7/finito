@@ -2,10 +2,8 @@ package com.example.finito.features.tasks.presentation.components
 
 import android.content.res.Configuration
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,13 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.finito.R
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.presentation.components.FinitoDivider
+import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 
@@ -90,10 +88,16 @@ fun PriorityDialog(
                     Text(text = stringResource(id = R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                FilledTonalButton(onClick = {
-                    onConfirmClick()
-                    onDismiss()
-                }) { Text(text = stringResource(id = R.string.confirm)) }
+                FilledTonalButton(
+                    onClick = {
+                        onConfirmClick()
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = finitoColors.primaryContainer,
+                        contentColor = finitoColors.onPrimaryContainer
+                    )
+                ) { Text(text = stringResource(id = R.string.confirm)) }
             }
         }
     }
@@ -130,23 +134,9 @@ private fun PriorityItem(
     }
 }
 
-@Preview
+@ThemePreviews
 @Composable
 private fun PriorityDialogPreview() {
-    FinitoTheme {
-        Surface {
-            PriorityDialog(
-                onDismiss = {},
-                selectedPriority = Priority.URGENT,
-                onPrioritySelect = {}
-            )
-        }
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun PriorityDialogPreviewDark() {
     FinitoTheme {
         Surface {
             PriorityDialog(

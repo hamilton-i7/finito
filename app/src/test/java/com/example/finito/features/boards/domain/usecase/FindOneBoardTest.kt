@@ -10,12 +10,10 @@ import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
 class FindOneBoardTest {
@@ -41,16 +39,7 @@ class FindOneBoardTest {
             Label(name = "Label name"),
         )
 
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                )
-            )
-        }
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
@@ -78,7 +67,7 @@ class FindOneBoardTest {
     @Test
     fun `Should throw NotFoundException when no board is found`() {
         assertThrows(ResourceException.NotFoundException::class.java) {
-            runTest { findOneBoard(10_000).lastOrNull() }
+            runTest { findOneBoard(10_000) }
         }
     }
 

@@ -1,79 +1,68 @@
 package com.example.finito.core.presentation.components.bars
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.ViewStream
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import com.example.finito.core.presentation.AppViewModel
-import com.example.finito.core.presentation.Screen
-import com.example.finito.core.presentation.util.AnimationDurationConstants
-import com.example.finito.core.presentation.util.BottomBarState
-import com.example.finito.features.boards.presentation.archive.utils.ArchiveScreenDefaults
-import com.example.finito.features.boards.presentation.home.utils.HomeScreenDefaults
+import com.example.finito.R
+import com.example.finito.core.presentation.util.TestTags
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BottomBar(
-    appViewModel: AppViewModel,
-    navController: NavController,
-    currentRoute: String?,
+    @StringRes fabDescription: Int,
+    @StringRes searchDescription: Int,
+    modifier: Modifier = Modifier,
+    gridLayout: Boolean = true,
+    onSearchClick: () -> Unit = {},
+    onChangeLayoutClick: () -> Unit = {},
+    onFabClick: (() -> Unit)? = null
 ) {
-    val bottomBarState: BottomBarState = when (currentRoute) {
-        Screen.Home.route -> {
-            HomeScreenDefaults.rememberBottomBarState(
-                appViewModel = appViewModel,
-                navController = navController,
-            )
-        }
-        Screen.Archive.route -> {
-            ArchiveScreenDefaults.rememberBottomBarState(
-                appViewModel = appViewModel,
-                navController = navController,
-            )
-        }
-        else -> null
-    } ?: return
-
-    AnimatedContent(
-        targetState = appViewModel.showBottomBar,
-        transitionSpec = {
-            slideInVertically(
-                animationSpec = tween(
-                    durationMillis = AnimationDurationConstants.RegularDurationMillis,
-                    delayMillis = AnimationDurationConstants.ShortestDurationMillis
-                ),
-                initialOffsetY = { it / 2 }
-            ) with slideOutVertically(
-                animationSpec = tween(
-                    durationMillis = AnimationDurationConstants.RegularDurationMillis,
-                    delayMillis = AnimationDurationConstants.ShortestDurationMillis
-                ),
-                targetOffsetY = { it / 2 }
-            )
-        }
-    ) { show ->
-        if (!show) return@AnimatedContent
-        BottomAppBar(
-            actions = bottomBarState.actions,
-            floatingActionButton = fab@{
-                if (!bottomBarState.showFab) return@fab
+    BottomAppBar(
+        actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = stringResource(id = searchDescription)
+                )
+            }
+            IconButton(
+                onClick = onChangeLayoutClick,
+                modifier = Modifier.testTag(TestTags.TOGGLE_LAYOUT_BUTTON)
+            ) {
+                if (gridLayout) {
+                    Icon(
+                        imageVector = Icons.Outlined.ViewStream,
+                        contentDescription = stringResource(id = R.string.list_view)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Outlined.GridView,
+                        contentDescription = stringResource(id = R.string.grid_view)
+                    )
+                }
+            }
+        },
+        floatingActionButton = if (onFabClick != null) {
+            {
                 FloatingActionButton(
-                    onClick = bottomBarState.onFabClick,
+                    onClick = onFabClick,
                     containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                     elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
-                        contentDescription = bottomBarState.fabDescription?.let {
-                            stringResource(id = it)
-                        }
+                        contentDescription = stringResource(id = fabDescription)
                     )
                 }
             }
-        )
-    }
+        } else null,
+        modifier = modifier
+    )
 }

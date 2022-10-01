@@ -7,6 +7,7 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -93,7 +94,7 @@ class ArrangeBoardTasksTest {
                 TaskWithSubtasks(task = it)
             }
         }.toMutableList().let {
-            val completedTasks = it.filter { taskWithSubtasks -> taskWithSubtasks.task.completed }
+            val completedTasks = it.filterCompleted()
             it.removeAll(completedTasks)
             it + completedTasks
         }.let { arrangeBoardTasks(it) }

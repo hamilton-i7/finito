@@ -3,9 +3,7 @@ package com.example.finito.features.tasks.data.repository
 import com.example.finito.core.domain.Priority
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
-import com.example.finito.features.tasks.domain.entity.toTask
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -100,11 +98,11 @@ class FakeTaskRepository(
         }
     }
 
-    override suspend fun update(taskUpdate: TaskUpdate) {
-        tasks.find { it.taskId == taskUpdate.taskId }?.let { task ->
+    override suspend fun update(task: Task) {
+        tasks.find { it.taskId == task.taskId }?.let { foundTask ->
             tasks.set(
-                index = tasks.indexOfFirst { it.taskId == taskUpdate.taskId },
-                element = taskUpdate.toTask().copy(boardPosition = task.boardPosition)
+                index = tasks.indexOfFirst { it.taskId == task.taskId },
+                element = task.copy(boardPosition = foundTask.boardPosition)
             )
         }
     }

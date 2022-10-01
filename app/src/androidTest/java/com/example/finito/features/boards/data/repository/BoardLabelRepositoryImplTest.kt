@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,8 +46,9 @@ class BoardLabelRepositoryImplTest {
             db.boardDao.create(
                 Board(
                     name = "Board $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0
+                    state = if (index % 3 == 0) BoardState.ARCHIVED
+                    else if (index % 2 == 0) BoardState.DELETED
+                    else BoardState.ACTIVE
                 )
             )
         }

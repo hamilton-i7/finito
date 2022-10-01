@@ -1,9 +1,6 @@
 package com.example.finito.features.boards.data.repository
 
-import com.example.finito.features.boards.domain.entity.Board
-import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.boards.domain.entity.DetailedBoard
-import com.example.finito.features.boards.domain.entity.SimpleBoard
+import com.example.finito.features.boards.domain.entity.*
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -34,7 +31,7 @@ class FakeBoardRepository(
     override fun findActiveBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
-                boards.filter { !it.deleted && !it.archived }.map { board ->
+                boards.filter { it.state == BoardState.ACTIVE }.map { board ->
                     val refs = boardLabelRepository.findAllByBoardId(board.boardId)
                     val labels = mutableListOf<SimpleLabel>()
                     refs.forEach { ref ->
@@ -50,7 +47,7 @@ class FakeBoardRepository(
 
     override fun findSimpleBoards(): Flow<List<SimpleBoard>> {
         return flow {
-            emit(boards.filter { !it.deleted && !it.archived }.map {
+            emit(boards.filter { it.state == BoardState.ACTIVE }.map {
                 SimpleBoard(
                     boardId = it.boardId,
                     name = it.name
@@ -62,7 +59,7 @@ class FakeBoardRepository(
     override fun findArchivedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
-                boards.filter { it.archived }.map { board ->
+                boards.filter { it.state == BoardState.ARCHIVED }.map { board ->
                     val refs = boardLabelRepository.findAllByBoardId(board.boardId)
                     val labels = mutableListOf<SimpleLabel>()
                     refs.forEach { ref ->
@@ -79,7 +76,7 @@ class FakeBoardRepository(
     override fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>> {
         return flow {
             emit(
-                boards.filter { it.deleted }.map { board ->
+                boards.filter { it.state == BoardState.DELETED }.map { board ->
                     val refs = boardLabelRepository.findAllByBoardId(board.boardId)
                     val labels = mutableListOf<SimpleLabel>()
                     refs.forEach { ref ->
@@ -93,45 +90,38 @@ class FakeBoardRepository(
         }
     }
 
-    override fun findOne(id: Int): Flow<DetailedBoard?> {
-        return flow {
-            val board = boards.find { it.boardId == id } ?: run {
-                emit(null)
-                return@flow
-            }
-            emit(
-                board.let {
-                    DetailedBoard(
-                        board = Board(
+    override suspend fun findOne(id: Int): DetailedBoard? {
+        val board = boards.find { it.boardId == id } ?: return null
+        return board.let {
+            DetailedBoard(
+                board = Board(
+                    boardId = it.boardId,
+                    name = it.name,
+                    createdAt = it.createdAt,
+                ),
+                tasks = listOf(
+                    TaskWithSubtasks(
+                        task = Task(
+                            taskId = 1,
                             boardId = it.boardId,
-                            name = it.name,
-                            createdAt = it.createdAt,
+                            name = "Task name",
+                            boardPosition = 0
                         ),
-                        tasks = listOf(
-                            TaskWithSubtasks(
-                                task = Task(
-                                    taskId = 1,
-                                    boardId = it.boardId,
-                                    name = "Task name",
-                                    boardPosition = 0
-                                ),
-                                subtasks = emptyList(),
-                            ),
-                            TaskWithSubtasks(
-                                task = Task(
-                                    taskId = 2,
-                                    boardId = it.boardId,
-                                    name = "Task name",
-                                    boardPosition = 1
-                                ),
-                                subtasks = listOf(
-                                    Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),
-                                    Subtask(subtaskId = 2, name = "Subtask name", taskId = 2),
-                                ),
-                            ),
-                        )
-                    )
-                }
+                        subtasks = emptyList(),
+                    ),
+                    TaskWithSubtasks(
+                        task = Task(
+                            taskId = 2,
+                            boardId = it.boardId,
+                            name = "Task name",
+                            boardPosition = 1
+                        ),
+                        subtasks = listOf(
+                            Subtask(subtaskId = 1, name = "Subtask name", taskId = 2),
+                            Subtask(subtaskId = 2, name = "Subtask name", taskId = 2),
+                        ),
+                    ),
+                )
             )
         }
     }

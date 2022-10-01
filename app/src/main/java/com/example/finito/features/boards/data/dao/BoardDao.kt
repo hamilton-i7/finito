@@ -7,6 +7,10 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import kotlinx.coroutines.flow.Flow
 
+private const val ACTIVE_BOARD_STATE = "'ACTIVE'"
+private const val ARCHIVED_BOARD_STATE = "'ARCHIVED'"
+private const val DELETED_BOARD_STATE = "'DELETED'"
+
 @Dao
 interface BoardDao {
 
@@ -17,27 +21,27 @@ interface BoardDao {
     suspend fun findAll(): List<Board>
 
     @Transaction
-    @Query("SELECT * FROM boards WHERE archived = 0 AND deleted = 0")
+    @Query("SELECT * FROM boards WHERE state = $ACTIVE_BOARD_STATE")
     fun findActiveBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
-    @Query("SELECT board_id, name, normalized_name FROM boards WHERE archived = 0 AND deleted = 0")
+    @Query("SELECT board_id, name, normalized_name FROM boards WHERE state = $ACTIVE_BOARD_STATE")
     fun findSimpleBoards(): Flow<List<SimpleBoard>>
 
     @Transaction
-    @Query("SELECT * FROM boards WHERE archived = 1")
+    @Query("SELECT * FROM boards WHERE state = $ARCHIVED_BOARD_STATE")
     fun findArchivedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
     @Transaction
-    @Query("SELECT * FROM boards WHERE deleted = 1")
+    @Query("SELECT * FROM boards WHERE state = $DELETED_BOARD_STATE")
     fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM boards WHERE board_id = :id")
-    fun findOne(id: Int): Flow<DetailedBoard?>
+    suspend fun findOne(id: Int): DetailedBoard?
 
     @Update
-    suspend fun update(board: Board)
+    suspend fun update(vararg boards: Board)
 
     @Delete
     suspend fun remove(vararg boards: Board)

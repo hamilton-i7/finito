@@ -1,20 +1,21 @@
 package com.example.finito.core.presentation.components.textfields
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,7 +24,6 @@ fun FinitoTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    textFieldModifier: Modifier = Modifier,
     readOnly: Boolean = false,
     enabled: Boolean = true,
     singleLine: Boolean = true,
@@ -31,44 +31,37 @@ fun FinitoTextField(
     trailingIcon: (@Composable () -> Unit)? = null,
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
-    error: Boolean = false,
-    @StringRes errorFeedback: Int? = null,
     colors: TextFieldColors = FinitoTextFieldDefaults.textFieldColors(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.Sentences,
+        imeAction = ImeAction.Done
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            readOnly = readOnly,
-            label = label,
-            placeholder = placeholder,
-            singleLine = singleLine,
-            enabled = enabled,
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            shape = FinitoTextFieldDefaults.Shape,
-            colors = colors,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                capitalization = KeyboardCapitalization.Sentences
-            ),
-            modifier = textFieldModifier
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        readOnly = readOnly,
+        label = label,
+        placeholder = placeholder,
+        singleLine = singleLine,
+        maxLines = 5,
+        enabled = enabled,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        shape = FinitoTextFieldDefaults.Shape,
+        colors = colors,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        modifier = modifier
+            .then(Modifier
                 .fillMaxWidth()
                 .border(
                     width = 1.dp,
                     color = finitoColors.outline,
                     shape = FinitoTextFieldDefaults.Shape
-                ),
-        )
-        Text(
-            text = if (errorFeedback != null && error) stringResource(id = errorFeedback) else " ",
-            color = finitoColors.error,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(start = 16.dp)
-        )
-    }
+                )),
+    )
 }
 
 object FinitoTextFieldDefaults {
@@ -80,6 +73,8 @@ object FinitoTextFieldDefaults {
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+        unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f),
+        disabledIndicatorColor = Color.Transparent,
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -96,15 +91,14 @@ object FinitoTextFieldDefaults {
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant,
             )
         } else {
-            val disabledAlpha = 0.38f
             TextFieldDefaults.textFieldColors(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 containerColor = finitoColors.surfaceColorAtElevation(1.dp),
                 disabledIndicatorColor = Color.Transparent,
-                disabledTextColor = finitoColors.onSurface.copy(alpha = disabledAlpha),
-                disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
-                disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = disabledAlpha),
+                disabledTextColor = finitoColors.onSurface.copy(alpha = DisabledAlpha),
+                disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
+                disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
             )
         }
     }

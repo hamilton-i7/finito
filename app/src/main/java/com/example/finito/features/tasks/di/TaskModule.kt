@@ -38,9 +38,7 @@ object TaskModule {
             updateTask = UpdateTask(taskRepository, subtaskRepository),
             deleteTask = DeleteTask(taskRepository),
             arrangeBoardTasks = ArrangeBoardTasks(taskRepository, subtaskRepository),
-            arrangeTodayTasks = ArrangeTodayTasks(taskRepository, subtaskRepository),
-            arrangeTomorrowTasks = ArrangeTomorrowTasks(taskRepository, subtaskRepository),
-            arrangeUrgentTasks = ArrangeUrgentTasks(taskRepository, subtaskRepository)
+            toggleTaskCompleted = ToggleTaskCompleted(taskRepository, subtaskRepository),
         )
     }
 }

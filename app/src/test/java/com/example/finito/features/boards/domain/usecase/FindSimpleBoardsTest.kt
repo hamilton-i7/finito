@@ -4,6 +4,7 @@ import com.example.finito.features.boards.data.repository.FakeBoardLabelReposito
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
 class FindSimpleBoardsTest {
@@ -39,17 +39,7 @@ class FindSimpleBoardsTest {
             Label(name = "Label name"),
         )
 
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                )
-            )
-        }
-        dummyBoards.shuffle()
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
         dummyBoards.filter { it.boardId % 3 == 0 }.map {
@@ -63,12 +53,12 @@ class FindSimpleBoardsTest {
     @Test
     fun `Should return active boards when asked`() = runTest {
         val boardIds = findSimpleBoards().first().map { it.boardId }
-        val deletedBoards = dummyBoards.filter { it.deleted }.groupBy { it.boardId }
+        val deletedBoards = dummyBoards.filter { it.state == BoardState.DELETED }.groupBy { it.boardId }
         boardIds.forEach {
             assertThat(deletedBoards[it]).isNull()
         }
 
-        val archivedBoards = dummyBoards.filter { it.archived }.groupBy { it.boardId }
+        val archivedBoards = dummyBoards.filter { it.state == BoardState.ARCHIVED }.groupBy { it.boardId }
         boardIds.forEach {
             assertThat(archivedBoards[it]).isNull()
         }

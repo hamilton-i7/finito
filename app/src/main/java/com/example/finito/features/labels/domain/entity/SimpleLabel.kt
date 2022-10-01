@@ -9,11 +9,6 @@ data class SimpleLabel(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
 ) {
     companion object {
-        val dummyLabels = listOf(
-            SimpleLabel(labelId = 1, name = "School"),
-            SimpleLabel(labelId = 2, name = "Gym"),
-            SimpleLabel(labelId = 3, name = "Work"),
-            SimpleLabel(labelId = 4, name = "Personal"),
-        )
+        val dummyLabels = Label.dummyLabels.map { it.toSimpleLabel() }
     }
 }

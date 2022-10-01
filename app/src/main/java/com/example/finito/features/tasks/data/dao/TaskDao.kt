@@ -3,7 +3,6 @@ package com.example.finito.features.tasks.data.dao
 import androidx.room.*
 import com.example.finito.core.domain.Priority
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.entity.TaskUpdate
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import kotlinx.coroutines.flow.Flow
 
@@ -40,8 +39,8 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE task_id = :id")
     suspend fun findOne(id: Int): TaskWithSubtasks?
 
-    @Update(entity = Task::class)
-    suspend fun update(taskUpdate: TaskUpdate)
+    @Update
+    suspend fun update(task: Task)
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     suspend fun updateMany(vararg tasks: Task)

@@ -3,6 +3,7 @@ package com.example.finito.core.presentation
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.finito.features.boards.domain.entity.BoardState
 
 sealed class Screen(
     val route: String,
@@ -23,34 +24,40 @@ sealed class Screen(
     object Urgent : Screen(route = "urgent")
 
     object Board : Screen(
-        route = "board/{$BOARD_ROUTE_ARGUMENT}",
+        route = "board/{$BOARD_ROUTE_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
         prefix = "board",
-        arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
-    ) {
-        val childRoutes = listOf(
-            TaskDateTime.route,
-            EditBoard.route
+        arguments = listOf(
+            navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = BoardState.ACTIVE.name
+            }
         )
-        val parentRoutes = listOf(
-            Home.route,
-            Archive.route,
-            Trash.route
-        )
-    }
+    )
 
     object CreateBoard : Screen(route = "create_board")
 
     object EditBoard : Screen(
-        route = "edit_board/{$BOARD_ROUTE_ARGUMENT}",
+        route = "edit_board/{$BOARD_ROUTE_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
         prefix = "edit_board",
-        arguments = listOf(navArgument(BOARD_ROUTE_ARGUMENT) { type = NavType.IntType })
+        arguments = listOf(
+            navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
+                type = NavType.StringType
+                nullable = true
+            }
+        )
     )
 
     object Label : Screen(
         route = "label/{$LABEL_ROUTE_ARGUMENT}",
         prefix = "label",
         arguments = listOf(navArgument(LABEL_ROUTE_ARGUMENT) { type = NavType.IntType })
-    )
+    ) {
+        val childRoutes = listOf(Board.route)
+    }
+
+    object CreateLabel : Screen(route = "create_label")
 
     object Archive : Screen(route = "archive") {
         val childRoutes = listOf(Board.route)
@@ -60,15 +67,48 @@ sealed class Screen(
         val childRoutes = listOf(Board.route)
     }
 
-    object TaskDateTime : Screen(
-        route = "task_date_time/{$TASK_ROUTE_ARGUMENT}",
-        prefix = "task_date_time",
-        arguments = listOf(navArgument(TASK_ROUTE_ARGUMENT) { type = NavType.IntType })
+    object CreateTask : Screen(
+        route = "create_task?" +
+                "$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}" +
+                "&$TASK_NAME_ARGUMENT={$TASK_NAME_ARGUMENT}" +
+                "&$DATE_ARGUMENT={$DATE_ARGUMENT}" +
+                "&$IS_URGENT_ARGUMENT={$IS_URGENT_ARGUMENT}",
+        prefix = "create_task",
+        arguments = listOf(
+            navArgument(BOARD_ROUTE_ID_ARGUMENT) {
+                type = NavType.IntType
+                defaultValue = -1
+            },
+            navArgument(TASK_NAME_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = ""
+            },
+            navArgument(DATE_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = ""
+            },
+            navArgument(IS_URGENT_ARGUMENT) {
+                type = NavType.BoolType
+                defaultValue = false
+            }
+        )
+    )
+
+    object EditTask : Screen(
+        route = "edit_task/{$EDIT_TASK_ROUTE_ID_ARGUMENT}",
+        prefix = "edit_task",
+        arguments = listOf(
+            navArgument(EDIT_TASK_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+        )
     )
 
     companion object {
-        const val BOARD_ROUTE_ARGUMENT = "boardId"
+        const val BOARD_ROUTE_ID_ARGUMENT = "boardId"
+        const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
-        const val TASK_ROUTE_ARGUMENT = "taskId"
+        const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
+        const val TASK_NAME_ARGUMENT = "taskName"
+        const val DATE_ARGUMENT = "includeDate"
+        const val IS_URGENT_ARGUMENT = "isUrgent"
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="plural_subtask_indicator">
+        <item quantity="one">+%d subtask</item>
+        <item quantity="other">+%d subtasks</item>
+    </plurals>
+</resources>

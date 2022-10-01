@@ -14,7 +14,13 @@ data class Label(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) {
+    companion object {
+        val dummyLabels  = ('A'..'Z').map {
+            Label(name = "Label $it")
+        }
+    }
+}
 
 fun Label.toSimpleLabel(): SimpleLabel {
     return SimpleLabel(

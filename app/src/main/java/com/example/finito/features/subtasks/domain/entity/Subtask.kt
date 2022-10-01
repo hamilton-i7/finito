@@ -30,7 +30,7 @@ data class Subtask(
     @ColumnInfo(name = "normalized_name") val normalizedName: String = name.normalize(),
     @ColumnInfo(defaultValue = "NULL") val description: String? = null,
     @ColumnInfo(defaultValue = "0") val completed: Boolean = false,
-    @ColumnInfo(defaultValue = "-1") val position: Int = -1,
+    @ColumnInfo(defaultValue = "NULL") val position: Int? = null,
     @ColumnInfo(name = "completed_at", defaultValue = "NULL")
     val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
@@ -49,3 +49,8 @@ data class Subtask(
         }.shuffled()
     }
 }
+
+
+fun List<Subtask>.filterUncompleted(): List<Subtask> = filter { !it.completed }
+
+fun List<Subtask>.filterCompleted(): List<Subtask> = filter { it.completed }

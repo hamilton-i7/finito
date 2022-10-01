@@ -1,23 +1,19 @@
 package com.example.finito.features.labels.domain.usecase
 
-import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.repository.LabelRepository
 
-class DeleteLabel(
-    private val repository: LabelRepository
-) {
-    @Throws(
-        ResourceException.NegativeIdException::class,
-        ResourceException.NotFoundException::class
-    )
-    suspend operator fun invoke(label: Label) {
-        if (!isValidId(label.labelId)) {
-            throw ResourceException.NegativeIdException
-        }
-        repository.findOne(label.labelId) ?: throw ResourceException.NotFoundException
+class DeleteLabel(private val repository: LabelRepository) {
 
-        return repository.remove(label)
+    suspend operator fun invoke(label: Label): Result<Unit, String> {
+        if (!isValidId(label.labelId)) {
+            return Result.Error(ErrorMessages.INVALID_ID)
+        }
+        repository.findOne(label.labelId) ?: return Result.Error(ErrorMessages.NOT_FOUND)
+
+        return Result.Success(data = repository.remove(label))
     }
 }

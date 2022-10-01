@@ -26,7 +26,7 @@ data class BoardWithLabelsAndTasks(
     val tasks: List<CompletedTask> = emptyList()
 ) {
     companion object {
-        val dummyBoards = (0..20).map {
+        val dummyBoards = (0..Board.dummyBoards.lastIndex).map {
             BoardWithLabelsAndTasks(
                 board = Board.dummyBoards[it],
                 labels = SimpleLabel.dummyLabels.takeRandom(),

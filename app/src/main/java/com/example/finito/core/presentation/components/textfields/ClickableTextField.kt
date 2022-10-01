@@ -9,6 +9,7 @@ import androidx.compose.ui.draw.clip
 fun ClickableTextField(
     onClick: () -> Unit,
     value: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
@@ -25,11 +26,11 @@ fun ClickableTextField(
         placeholder = placeholder,
         enabled = false,
         colors = FinitoTextFieldDefaults.clickableTextFieldColors(enabled),
-        textFieldModifier = Modifier
+        modifier = Modifier
             .clip(FinitoTextFieldDefaults.Shape)
             .clickable(
                 onClick = onClick,
                 enabled = enabled
-            ),
+            ).then(modifier),
     )
 }

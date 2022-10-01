@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.repository.TaskRepository
@@ -8,21 +9,21 @@ import com.example.finito.features.tasks.domain.repository.TaskRepository
 class DeleteTask(
     private val taskRepository: TaskRepository
 ) {
-    @Throws(
-        ResourceException.NegativeIdException::class,
-        ResourceException.InvalidStateException::class
-    )
-    suspend operator fun invoke(vararg tasks: Task) {
+
+    suspend operator fun invoke(vararg tasks: Task): Result<Unit, String> {
         if (tasks.any { !isValidId(it.taskId) }) {
-            throw ResourceException.NegativeIdException
+            return Result.Error(message = ErrorMessages.INVALID_ID)
         }
-        return taskRepository.remove(*tasks).also {
-            val tasksToArrange = mutableListOf<Task>()
-            tasks.groupBy { it.boardId }.keys.forEach {
-                tasksToArrange.addAll(taskRepository.findTasksByBoard(it))
+        val formattedTasks = tasks.map { it.copy(boardPosition = null) }
+        return Result.Success(
+            data = taskRepository.remove(*formattedTasks.toTypedArray()).also {
+                val tasksToArrange = mutableListOf<Task>()
+                formattedTasks.groupBy { it.boardId }.keys.forEach {
+                    tasksToArrange.addAll(taskRepository.findTasksByBoard(it))
+                }
+                arrangeTasks(tasksToArrange)
             }
-            arrangeTasks(tasksToArrange)
-        }
+        )
     }
 
     private suspend fun arrangeTasks(tasks: List<Task>) {

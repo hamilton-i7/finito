@@ -1,13 +1,15 @@
 package com.example.finito.features.labels.presentation.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -15,17 +17,32 @@ import com.example.finito.ui.theme.finitoColors
 fun LabelItem(
     label: SimpleLabel,
     selected: Boolean,
+    enabled: Boolean,
     onLabelClick: () -> Unit,
 ) {
+    val textColor = if (enabled) finitoColors.onSurface else finitoColors.onSurface.copy(
+        alpha = DisabledAlpha
+    )
+
     ListItem(
         leadingContent = {
-            Icon(imageVector = Icons.Outlined.Label, contentDescription = null)
+            Icon(
+                imageVector = Icons.Outlined.Label,
+                contentDescription = null,
+                tint = textColor,
+            )
         },
-        headlineText = { Text(text = label.name) },
+        headlineText = {
+            Text(
+                text = label.name,
+                color = textColor,
+            )
+        },
         trailingContent = {
             Checkbox(
                 checked = selected,
-                onCheckedChange = { onLabelClick() },
+                enabled = enabled,
+                onCheckedChange = null,
                 colors = CheckboxDefaults.colors(
                     checkedColor = finitoColors.tertiary
                 )
@@ -33,6 +50,10 @@ fun LabelItem(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onLabelClick)
+            .toggleable(
+                value = selected,
+                role = Role.Checkbox,
+                onValueChange = { onLabelClick() }
+            )
     )
 }

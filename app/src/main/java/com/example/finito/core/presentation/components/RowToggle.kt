@@ -28,13 +28,14 @@ fun RowToggle(
     label: String,
     @StringRes showContentDescription: Int,
     @StringRes hideContentDescription: Int,
+    modifier: Modifier = Modifier
 ) {
     val rotate: Float by animateFloatAsState(if (showContent) 0f else -180f)
     val interactionSource = remember { MutableInteractionSource() }
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,

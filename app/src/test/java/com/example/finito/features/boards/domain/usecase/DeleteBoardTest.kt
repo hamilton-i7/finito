@@ -55,7 +55,7 @@ class DeleteBoardTest {
 
     @Test
     fun `Should throw NotFoundException when board isn't found`() {
-        val board = dummyBoards.random().copy(boardId = dummyBoards.map { it.boardId }.max() + 1)
+        val board = dummyBoards.random().copy(boardId = dummyBoards.maxOf { it.boardId } + 1)
         assertThrows(ResourceException.NotFoundException::class.java) {
             runTest { deleteBoard(board) }
         }

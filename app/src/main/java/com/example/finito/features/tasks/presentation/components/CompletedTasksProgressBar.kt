@@ -1,5 +1,6 @@
 package com.example.finito.features.tasks.presentation.components
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,22 +10,21 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.ui.theme.finitoColors
-import kotlin.math.floor
 
 @Composable
 fun CompletedTasksProgressBar(
-    tasks: List<CompletedTask>,
+    totalTasks: Int,
+    completedTasks: Int,
     modifier: Modifier = Modifier,
 ) {
-    val completedTasksAmount = tasks.filter { it.completed }.size
-    val progress = completedTasksAmount / tasks.size.toFloat()
+    val progress by animateFloatAsState(targetValue = completedTasks / totalTasks.toFloat())
 
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -38,13 +38,15 @@ fun CompletedTasksProgressBar(
                 text = stringResource(id = R.string.tasks_completed),
                 style = MaterialTheme.typography.bodyMedium
             )
-            Text(text = "$completedTasksAmount/${tasks.size}")
+            Text(text = "$completedTasks/$totalTasks")
         }
         LinearProgressIndicator(
             progress = progress,
             trackColor = finitoColors.tertiaryContainer,
             color = finitoColors.onTertiaryContainer,
-            modifier = Modifier.fillMaxWidth().clip(shape = RoundedCornerShape(24.dp))
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(24.dp))
         )
     }
 }

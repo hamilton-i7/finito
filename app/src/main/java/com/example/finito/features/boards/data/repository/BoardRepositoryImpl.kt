@@ -1,7 +1,10 @@
 package com.example.finito.features.boards.data.repository
 
 import com.example.finito.features.boards.data.dao.BoardDao
-import com.example.finito.features.boards.domain.entity.*
+import com.example.finito.features.boards.domain.entity.Board
+import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
+import com.example.finito.features.boards.domain.entity.DetailedBoard
+import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -32,12 +35,12 @@ class BoardRepositoryImpl(
         return dao.findDeletedBoards()
     }
 
-    override fun findOne(id: Int): Flow<DetailedBoard?> {
+    override suspend fun findOne(id: Int): DetailedBoard? {
         return dao.findOne(id)
     }
 
-    override suspend fun update(board: Board) {
-        return dao.update(board)
+    override suspend fun update(vararg board: Board) {
+        return dao.update(*board)
     }
 
     override suspend fun remove(vararg boards: Board) {

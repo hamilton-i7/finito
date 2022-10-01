@@ -8,6 +8,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
@@ -47,8 +48,9 @@ class BoardRepositoryImplTest {
             db.boardDao.create(
                 Board(
                     name = "Board $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0
+                    state = if (index % 3 == 0) BoardState.ARCHIVED
+                    else if (index % 2 == 0) BoardState.DELETED
+                    else BoardState.ACTIVE
                 )
             )
         }
@@ -94,7 +96,7 @@ class BoardRepositoryImplTest {
 
     @Test
     fun should_return_active_boards_when_asked() = runTest {
-        val boardId = dummyBoards.first { !it.deleted && !it.archived }.boardId
+        val boardId = dummyBoards.first { it.state == BoardState.ACTIVE }.boardId
         listOf(
             Task(boardId = boardId, name = "Task name"),
             Task(boardId = boardId, name = "Task name"),
@@ -104,7 +106,7 @@ class BoardRepositoryImplTest {
         val boards = boardRepositoryImpl.findActiveBoards().first()
         assertThat(boards).isNotEmpty()
         // Check if there are only active boards
-        assertThat(boards.all { !it.board.archived && !it.board.deleted }).isTrue()
+        assertThat(boards.all { it.board.state == BoardState.ACTIVE }).isTrue()
         // Check if any board has labels
         assertThat(boards.any { it.labels.isNotEmpty() }).isTrue()
         // Check if any board has tasks
@@ -118,12 +120,12 @@ class BoardRepositoryImplTest {
 
         // Check if there are only active boards
         val boardIds = boards.map { it.boardId }
-        val deletedBoards = dummyBoards.filter { it.deleted }.groupBy { it.boardId }
+        val deletedBoards = dummyBoards.filter { it.state == BoardState.DELETED }.groupBy { it.boardId }
         boardIds.forEach {
             assertThat(deletedBoards[it]).isNull()
         }
 
-        val archivedBoards = dummyBoards.filter { it.archived }.groupBy { it.boardId }
+        val archivedBoards = dummyBoards.filter { it.state == BoardState.ARCHIVED }.groupBy { it.boardId }
         boardIds.forEach {
             assertThat(archivedBoards[it]).isNull()
         }
@@ -133,19 +135,19 @@ class BoardRepositoryImplTest {
     fun should_only_return_archived_boards_when_asked() = runTest {
         val archivedBoards = boardRepositoryImpl.findArchivedBoards().first()
         assertThat(archivedBoards.size).isGreaterThan(0)
-        assertThat(archivedBoards.all { it.board.archived }).isTrue()
+        assertThat(archivedBoards.all { it.board.state == BoardState.ARCHIVED }).isTrue()
     }
 
     @Test
     fun should_only_return_deleted_boards_when_asked() = runTest {
         val deletedBoards = boardRepositoryImpl.findDeletedBoards().first()
         assertThat(deletedBoards.size).isGreaterThan(0)
-        assertThat(deletedBoards.all { it.board.deleted }).isTrue()
+        assertThat(deletedBoards.all { it.board.state == BoardState.DELETED }).isTrue()
     }
 
     @Test
     fun should_return_null_when_not_found() = runTest {
-        val board = boardRepositoryImpl.findOne(10_000).first()
+        val board = boardRepositoryImpl.findOne(10_000)
         assertThat(board).isNull()
     }
 
@@ -170,7 +172,7 @@ class BoardRepositoryImplTest {
             Subtask(taskId = taskIds.random().taskId, name = "Subtask name"),
         ).also { db.subtaskDao.createMany(*it.toTypedArray()) }
 
-        val detailedBoard = boardRepositoryImpl.findOne(board.boardId).first()
+        val detailedBoard = boardRepositoryImpl.findOne(board.boardId)
         assertThat(detailedBoard).isNotNull()
         assertThat(detailedBoard?.tasks).isNotEmpty()
         assertThat(detailedBoard?.tasks?.map { it.subtasks }).isNotEmpty()
@@ -182,16 +184,16 @@ class BoardRepositoryImplTest {
         assertThat(board.name).startsWith("Board")
 
         boardRepositoryImpl.update(board.copy(name = "Updated name"))
-        assertThat(db.boardDao.findOne(board.boardId).first()?.board?.name).isEqualTo("Updated name")
+        assertThat(db.boardDao.findOne(board.boardId)?.board?.name).isEqualTo("Updated name")
     }
 
     @Test
     fun should_remove_board_from_list_when_asked() = runTest {
         val board = dummyBoards.random()
-        assertThat(db.boardDao.findOne(board.boardId).first()).isNotNull()
+        assertThat(db.boardDao.findOne(board.boardId)).isNotNull()
 
         boardRepositoryImpl.remove(board)
-        assertThat(db.boardDao.findOne(board.boardId).first()).isNull()
+        assertThat(db.boardDao.findOne(board.boardId)).isNull()
         assertThat(db.boardDao.findAll().size).isLessThan(dummyBoards.size)
     }
 }

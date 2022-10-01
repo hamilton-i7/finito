@@ -38,7 +38,7 @@ data class Task(
     @ColumnInfo(defaultValue = "NULL") val time: LocalTime? = null,
     @ColumnInfo(defaultValue = "NULL") val reminder: Reminder? = null,
     @ColumnInfo(defaultValue = "NULL") val priority: Priority? = null,
-    @ColumnInfo(name = "board_position", defaultValue = "-1") val boardPosition: Int = -1,
+    @ColumnInfo(name = "board_position", defaultValue = "NULL") val boardPosition: Int? = null,
     @ColumnInfo(name = "completed_at", defaultValue = "NULL")
     val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
@@ -62,8 +62,3 @@ data class Task(
     }
 }
 
-fun Task.toTaskUpdate(): TaskUpdate {
-    return TaskUpdate(
-        taskId, boardId, name, description, completed, date, time, reminder, priority
-    )
-}

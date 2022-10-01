@@ -1,6 +1,5 @@
 
 <resources>
-    <color name="seed">#4A56AF</color>
     <color name="md_theme_light_primary">#4A56AF</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
     <color name="md_theme_light_primaryContainer">#DFE0FF</color>
@@ -27,9 +26,6 @@
     <color name="md_theme_light_inverseOnSurface">#F6EDFF</color>
     <color name="md_theme_light_inverseSurface">#3B1D71</color>
     <color name="md_theme_light_inversePrimary">#BCC2FF</color>
-    <color name="md_theme_light_shadow">#000000</color>
-    <color name="md_theme_light_surfaceTint">#4A56AF</color>
-    <color name="md_theme_light_surfaceTintColor">#4A56AF</color>
     <color name="md_theme_dark_primary">#BCC2FF</color>
     <color name="md_theme_dark_onPrimary">#17247F</color>
     <color name="md_theme_dark_primaryContainer">#313D96</color>
@@ -56,10 +52,4 @@
     <color name="md_theme_dark_inverseOnSurface">#25005A</color>
     <color name="md_theme_dark_inverseSurface">#EADDFF</color>
     <color name="md_theme_dark_inversePrimary">#4A56AF</color>
-    <color name="md_theme_dark_shadow">#000000</color>
-    <color name="md_theme_dark_surfaceTint">#BCC2FF</color>
-    <color name="md_theme_dark_surfaceTintColor">#BCC2FF</color>
-    <color name="Lowpriority">#D3E4FF</color>
-    <color name="Mediumpriority">#E7EA3C</color>
-    <color name="Urgentpriority">#FFDAD4</color>
 </resources>

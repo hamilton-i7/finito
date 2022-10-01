@@ -11,18 +11,21 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.TestTags
+import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SortingChips(
-    options: List<SortingOption>,
+fun <T: SortingOption> SortingChips(
+    options: List<T>,
+    selectedOption: T?,
     modifier: Modifier = Modifier,
-    selectedOption: SortingOption,
-    onOptionClick: (SortingOption) -> Unit = {}
+    onOptionClick: (T) -> Unit = {}
 ) {
     Column(
         modifier = modifier,
@@ -34,7 +37,7 @@ fun SortingChips(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { option ->
-                val selected = option.label == selectedOption.label
+                val selected = option.label == selectedOption?.label
                 FilterChip(
                     selected = selected,
                     onClick = { onOptionClick(option) },
@@ -48,9 +51,15 @@ fun SortingChips(
                         }
                     } else null,
                     label = { Text(stringResource(id = option.label)) },
-                    modifier = Modifier.animateContentSize(
-                        animationSpec = tween(durationMillis = 100)
-                    )
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = finitoColors.primaryContainer,
+                        selectedLabelColor = finitoColors.onPrimaryContainer,
+                        selectedLeadingIconColor = finitoColors.onPrimaryContainer
+                    ),
+                    modifier = Modifier
+                        .animateContentSize(
+                            animationSpec = tween(durationMillis = 100)
+                        ).testTag(TestTags.SORTING_CHIP)
                 )
             }
         }

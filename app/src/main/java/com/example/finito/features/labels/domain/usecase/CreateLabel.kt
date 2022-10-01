@@ -3,7 +3,6 @@ package com.example.finito.features.labels.domain.usecase
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.repository.LabelRepository
-import kotlin.jvm.Throws
 
 class CreateLabel(
     private val repository: LabelRepository
@@ -14,6 +13,6 @@ class CreateLabel(
         if (label.name.isBlank()) {
             throw ResourceException.EmptyException
         }
-        return repository.create(label)
+        return repository.create(label.copy(name = label.name.trim()))
     }
 }

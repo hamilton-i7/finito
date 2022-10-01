@@ -11,12 +11,10 @@ import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @ExperimentalCoroutinesApi
 class UpdateBoardTest {
@@ -40,16 +38,7 @@ class UpdateBoardTest {
             Label(name = "Label name"),
         )
 
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 5 == 0,
-                    deleted = index % 7 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong())
-                )
-            )
-        }
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
@@ -106,21 +95,6 @@ class UpdateBoardTest {
     }
 
     @Test
-    fun `Should throw InvalidStateException when board state is invalid`() {
-        assertThrows(ResourceException.InvalidStateException::class.java) {
-            runTest {
-                val board = BoardWithLabelsAndTasks(
-                    board = fakeBoardRepository.findActiveBoards().first().random().board.copy(
-                        archived = true,
-                        deleted = true
-                    )
-                )
-                updateBoard(board)
-            }
-        }
-    }
-
-    @Test
     fun `Should throw NotFoundException when no board is found`() {
         assertThrows(ResourceException.NotFoundException::class.java) {
             runTest {
@@ -138,13 +112,13 @@ class UpdateBoardTest {
     fun `Should update board when it's found and its state is valid`() = runTest {
         val board = fakeBoardRepository.findActiveBoards().first().random().board
         assertThat(
-            fakeBoardRepository.findOne(board.boardId).lastOrNull()?.board?.normalizedName
+            fakeBoardRepository.findOne(board.boardId)?.board?.normalizedName
         ).startsWith("board")
 
         updateBoard(
             BoardWithLabelsAndTasks(board = board.copy(name = "Updated board"))
         )
-        assertThat(fakeBoardRepository.findOne(board.boardId).lastOrNull()?.board?.name)
+        assertThat(fakeBoardRepository.findOne(board.boardId)?.board?.name)
             .isEqualTo("Updated board")
     }
 

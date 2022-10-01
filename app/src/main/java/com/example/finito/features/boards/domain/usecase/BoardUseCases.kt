@@ -9,4 +9,5 @@ data class BoardUseCases(
     val findOneBoard: FindOneBoard,
     val updateBoard: UpdateBoard,
     val deleteBoard: DeleteBoard,
+    val arrangeBoards: ArrangeBoards
 )

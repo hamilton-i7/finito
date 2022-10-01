@@ -5,6 +5,8 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
+const val DisabledAlpha = 0.38f
+
 // Primary
 val Liberty = Color(0xFF4A56AF)
 val PaleLavender = Color(0xFFDDE0FF)

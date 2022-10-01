@@ -1,35 +1,38 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.repository.TaskRepository
 
 class ArrangeBoardTasks(
     private val taskRepository: TaskRepository,
     private val subtaskRepository: SubtaskRepository
 ) {
-    @Throws(ResourceException.InvalidStateException::class)
-    suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>) {
-        val tasks = tasksWithSubtasks.map { it.task }
-        val subtasks = tasksWithSubtasks.flatMap { it.subtasks }
 
-        if (!fromSameBoard(tasks)) {
-            throw ResourceException.InvalidStateException(
-                message = "All tasks must come from the same board"
-            )
+    suspend operator fun invoke(tasksWithSubtasks: List<TaskWithSubtasks>): Result<Unit, String> {
+        val uncompletedTasks = tasksWithSubtasks.filterUncompleted()
+        val subtasks = uncompletedTasks.flatMap { it.subtasks }.filterUncompleted()
+
+        if (!fromSameBoard(uncompletedTasks.map { it.task })) {
+            return Result.Error(message = ErrorMessages.DIFFERENT_TASKS_ORIGIN)
         }
-        if (!fromSameTask(subtasks)) {
-            throw ResourceException.InvalidStateException(
-                message = "All subtasks must come from the same task"
-            )
-        }
-        tasksWithSubtasks.mapIndexed { index, taskWithSubtasks ->
-            taskWithSubtasks.task.copy(boardPosition = index)
-        }.toTypedArray().let { taskRepository.updateMany(*it) }
-        arrangeSubtasks(subtasks)
+        return Result.Success(
+            data = uncompletedTasks.mapIndexed { index, task ->
+                task.task.copy(boardPosition = index)
+            }.toTypedArray().let {
+                val newTasks = it.filter { task -> task.taskId == 0 }
+                val tasksToUpdate = it.filter { task -> task.taskId != 0 }.toTypedArray()
+
+                newTasks.forEach { task -> taskRepository.create(task) }
+                taskRepository.updateMany(*tasksToUpdate)
+            }.also { arrangeSubtasks(subtasks) }
+        )
     }
 
     private fun fromSameBoard(tasks: List<Task>): Boolean {
@@ -39,19 +42,18 @@ class ArrangeBoardTasks(
         return tasks.all { it.boardId == boardId }
     }
 
-    private fun fromSameTask(subtasks: List<Subtask>): Boolean {
-        if (subtasks.isEmpty()) return true
-
-        val taskId = subtasks[0].taskId
-        return subtasks.all { it.taskId == taskId }
-    }
-
     private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {
+        if (subtasks.isEmpty()) return
         val positionsMap = mutableMapOf<Int, Int>()
         subtasks.map {
             positionsMap[it.taskId] =
                 if (positionsMap[it.taskId] == null) 0 else positionsMap[it.taskId]!! + 1
             it.copy(position = positionsMap[it.taskId]!!)
-        }.let { subtaskRepository.updateMany(*it.toTypedArray()) }
+        }.let {
+            val newSubtasks = it.filter { subtask -> subtask.subtaskId == 0 }
+            val subtasksToUpdate = it.filter { subtask -> subtask.subtaskId != 0 }
+            subtaskRepository.createMany(*newSubtasks.toTypedArray())
+            subtaskRepository.updateMany(*subtasksToUpdate.toTypedArray())
+        }
     }
 }

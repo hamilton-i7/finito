@@ -4,6 +4,7 @@ import com.example.finito.features.boards.data.repository.FakeBoardLabelReposito
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardLabelCrossRef
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.labels.domain.entity.Label
 import com.google.common.truth.Truth.assertThat
@@ -39,28 +40,7 @@ class FindDeletedBoardsTest {
             Label(name = "Label name"),
         )
 
-        val timestamps = listOf(
-            LocalDateTime.now(),
-            LocalDateTime.now().plusYears(2),
-            LocalDateTime.now().plusHours(1),
-            LocalDateTime.now().plusHours(2),
-            LocalDateTime.now().minusMonths(1),
-            LocalDateTime.now().plusWeeks(2),
-            LocalDateTime.now().minusDays(2),
-            LocalDateTime.now().plusMinutes(2),
-        )
-
-        ('A'..'Z').forEachIndexed { index, c ->
-            dummyBoards.add(
-                Board(
-                    name = if (index % 2 == 0) "Board $c" else "bÓäRd $c",
-                    archived = index % 3 == 0,
-                    deleted = index % 2 == 0,
-                    createdAt = LocalDateTime.now().plusMinutes(index.toLong()),
-                    removedAt = if (index % 2 == 0) timestamps.random() else null
-                )
-            )
-        }
+        dummyBoards.addAll(Board.dummyBoards)
         dummyBoards.shuffle()
         dummyBoards.forEach { fakeBoardRepository.create(it) }
         dummyLabels.forEach { fakeLabelRepository.create(it) }
@@ -73,9 +53,9 @@ class FindDeletedBoardsTest {
     }
 
     @Test
-    fun `Should return deleted boards only when asked`() = runTest {
+    fun `Should return deleted boards only`() = runTest {
         val boards = findDeletedBoards().first()
-        assertThat(boards.all { it.board.deleted }).isTrue()
+        assertThat(boards.all { it.board.state == BoardState.DELETED }).isTrue()
     }
 
     @Test

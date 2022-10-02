@@ -150,4 +150,6 @@
     <string name="update_subtask_error">There was an error while trying to update this subtask</string>
     <string name="delete_subtask_error">There was an error while trying to delete this subtask</string>
     <string name="subtask_deleted">Subtask deleted</string>
+    <string name="edit_subtask">Edit subtask</string>
+    <string name="delete_subtask">Delete subtask</string>
 </resources>

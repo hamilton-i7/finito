@@ -12,4 +12,8 @@ sealed class AppEvent {
     data class UndoSubtaskCompletedToggle(val subtask: Subtask) : AppEvent()
 
     data class RecoverTask(val task: TaskWithSubtasks) : AppEvent()
+
+    data class RecoverSubtask(val subtask: Subtask) : AppEvent()
+
+    object RefreshBoard : AppEvent()
 }

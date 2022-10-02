@@ -578,11 +578,11 @@ private fun AddEditTaskScreen(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .animateItemPlacement()
-                ) { validName ->
+                ) { isValidName ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Button(
                             onClick = onAddEditButtonClick,
-                            enabled = validName,
+                            enabled = isValidName,
                             modifier = Modifier
                                 .widthIn(max = 350.dp)
                                 .fillMaxWidth()

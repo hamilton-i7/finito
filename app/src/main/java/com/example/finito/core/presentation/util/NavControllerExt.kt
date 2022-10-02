@@ -88,3 +88,8 @@ fun NavController.navigateToEditTask(taskId: Int) {
     val route = "${Screen.EditTask.prefix}/${taskId}"
     navigate(route)
 }
+
+fun NavController.navigateToEditSubtask(boardId: Int, subtaskId: Int) {
+    val route = "${Screen.EditSubtask.prefix}/${subtaskId}?${Screen.BOARD_ID_ARGUMENT}=$boardId"
+    navigate(route)
+}

@@ -69,6 +69,7 @@ fun BoardScreen(
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
+    onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
     val detailedBoard = boardViewModel.board
 
@@ -149,11 +150,10 @@ fun BoardScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collect { event ->
-            if (event !is AppViewModel.Event.RefreshBoard) return@collect
-            boardViewModel.onEvent(BoardEvent.RefreshBoard)
-        }
+    LaunchedEffect(appViewModel.event) {
+        if (appViewModel.event != AppViewModel.Event.RefreshBoard) return@LaunchedEffect
+        boardViewModel.onEvent(BoardEvent.RefreshBoard)
+        appViewModel.onClearEvent()
     }
 
     LaunchedEffect(bottomSheetState.isVisible) {
@@ -312,6 +312,9 @@ fun BoardScreen(
                         boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
                     },
                     onTaskClick = { onNavigateToEditTask(it.taskId) },
+                    onSubtaskClick = {
+                        onNavigateToEditSubtask(detailedBoard!!.board.boardId, it.subtaskId)
+                    },
                     onPriorityClick = {
                         boardViewModel.onEvent(BoardEvent.ShowDialog(
                             type = BoardEvent.DialogType.Priority(it)
@@ -502,6 +505,7 @@ private fun BoardScreen(
                                     subtask = it,
                                     isDragging = isDragging,
                                     showDragIndicator = true,
+                                    onSubtaskClick = { onSubtaskClick(it) },
                                     onCompletedToggle = { onToggleSubtaskCompleted(it) },
                                     modifier = Modifier.detectReorderAfterLongPress(reorderableState)
                                 )

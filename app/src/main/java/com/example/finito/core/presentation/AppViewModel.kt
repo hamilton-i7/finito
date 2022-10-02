@@ -1,5 +1,8 @@
 package com.example.finito.core.presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.domain.ErrorMessages
@@ -30,12 +33,28 @@ class AppViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    var event by mutableStateOf<Event?>(null)
+        private set
+
     fun onEvent(event: AppEvent) {
         when (event) {
             is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
             is AppEvent.UndoTaskCompletedToggle -> onUndoTaskCompletedToggle(event.task)
             is AppEvent.UndoSubtaskCompletedToggle -> onUndoSubtaskCompletedToggle(event.subtask)
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
+            is AppEvent.RecoverSubtask -> onRecoverSubtask(event.subtask)
+            AppEvent.RefreshBoard -> this.event = Event.RefreshBoard
+        }
+    }
+
+    fun onClearEvent() {
+        event = null
+    }
+
+    private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
+        when (subtaskUseCases.createSubtask(subtask)) {
+            is Result.Error -> TODO(reason = "Implement error scenario")
+            is Result.Success -> _eventFlow.emit(Event.RefreshBoard)
         }
     }
 
@@ -99,5 +118,7 @@ class AppViewModel @Inject constructor(
         object RefreshBoard : Event()
 
         object RefreshTask : Event()
+
+        object RefreshSubtask : Event()
     }
 }

@@ -28,6 +28,7 @@ import com.example.finito.features.boards.presentation.screen.home.HomeScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
 import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
+import com.example.finito.features.subtasks.presentation.screen.editsubtask.EditSubtaskScreen
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskScreen
 import com.example.finito.features.tasks.presentation.screen.today.TodayScreen
 import com.example.finito.features.tasks.presentation.screen.tomorrow.TomorrowScreen
@@ -438,6 +439,20 @@ fun App(
                         onNavigateToBoard = { boardId, boardState ->
                             navController.navigateToBoard(boardId, boardState)
                         },
+                        onShowSnackbar = onShowSnackbar
+                    )
+                }
+
+                composable(
+                    route = Screen.EditSubtask.route,
+                    arguments = Screen.EditSubtask.arguments,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition
+                ) {
+                    EditSubtaskScreen(
+                        appViewModel = appViewModel,
+                        previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
+                        onNavigateBack = { navController.navigateUp() },
                         onShowSnackbar = onShowSnackbar
                     )
                 }

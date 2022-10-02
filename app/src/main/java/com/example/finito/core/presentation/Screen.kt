@@ -102,6 +102,18 @@ sealed class Screen(
         )
     )
 
+    object EditSubtask : Screen(
+        route = "edit_subtask/{$SUBTASK_ID_ARGUMENT}?$BOARD_ID_ARGUMENT={$BOARD_ID_ARGUMENT}",
+        prefix = "edit_subtask",
+        arguments = listOf(
+            navArgument(SUBTASK_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ID_ARGUMENT) {
+                type = NavType.IntType
+                defaultValue = -1
+            }
+        )
+    )
+
     companion object {
         const val BOARD_ID_ARGUMENT = "boardId"
         const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"

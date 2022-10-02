@@ -106,7 +106,7 @@ class EditSubtaskViewModel @Inject constructor(
                                         R.string.subtask_marked_as_uncompleted,
                                     subtask = this@with
                                 ))
-                                emit(Event.NavigateBack)
+                                emit(Event.SubtaskUpdated)
                             }
                         )
                     }
@@ -131,7 +131,7 @@ class EditSubtaskViewModel @Inject constructor(
                                 message = R.string.subtask_deleted,
                                 subtask = this@with
                             ))
-                            emit(Event.NavigateBack)
+                            emit(Event.SubtaskUpdated)
                         }
                     )
                 }
@@ -166,7 +166,7 @@ class EditSubtaskViewModel @Inject constructor(
                                 error = R.string.update_subtask_error
                             ))
                         }
-                        is Result.Success -> _eventFlow.emit(Event.NavigateBack)
+                        is Result.Success -> _eventFlow.emit(Event.SubtaskUpdated)
                     }
                 }
                 return@launch
@@ -179,7 +179,7 @@ class EditSubtaskViewModel @Inject constructor(
                     is Result.Error -> _eventFlow.emit(Event.ShowError(
                         error = R.string.update_subtask_error
                     ))
-                    is Result.Success -> _eventFlow.emit(Event.NavigateBack)
+                    is Result.Success -> _eventFlow.emit(Event.SubtaskUpdated)
                 }
             }
         }
@@ -211,6 +211,8 @@ class EditSubtaskViewModel @Inject constructor(
 
     private suspend fun fetchRelatedBoard() {
         savedStateHandle.get<Int>(Screen.BOARD_ID_ARGUMENT)?.let { boardId ->
+            if (boardId == -1) return
+
             when (val result = boardUseCases.findOneBoard(boardId)) {
                 is Result.Error -> {
                     _eventFlow.emit(Event.ShowError(
@@ -239,7 +241,7 @@ class EditSubtaskViewModel @Inject constructor(
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
 
-        object NavigateBack : Event()
+        object SubtaskUpdated : Event()
 
         sealed class Snackbar : Event() {
             data class UndoSubtaskChange(

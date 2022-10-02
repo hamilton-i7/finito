@@ -46,6 +46,17 @@ import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import kotlinx.coroutines.launch
 
+private fun handleBackPressToBoardScreen(
+    previousRoute: String,
+    appViewModel: AppViewModel,
+    onNavigateBack: () -> Unit,
+) {
+    if (previousRoute == Screen.Board.route) {
+        appViewModel.onEvent(AppEvent.RefreshBoard)
+    }
+    onNavigateBack()
+}
+
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EditSubtaskScreen(
@@ -77,17 +88,14 @@ fun EditSubtaskScreen(
             scope.launch { bottomSheetState.hide() }
             return@BackHandler
         }
-        onNavigateBack()
+        handleBackPressToBoardScreen(previousRoute, appViewModel, onNavigateBack)
     }
 
     LaunchedEffect(Unit) {
         editSubtaskViewModel.eventFlow.collect { event ->
             when (event) {
                 is EditSubtaskViewModel.Event.SubtaskUpdated -> {
-                    if (previousRoute == Screen.Board.route) {
-                        appViewModel.onEvent(AppEvent.RefreshBoard)
-                    }
-                    onNavigateBack()
+                    handleBackPressToBoardScreen(previousRoute, appViewModel, onNavigateBack)
                 }
                 is EditSubtaskViewModel.Event.ShowError -> {
                     editSubtaskViewModel.onEvent(EditSubtaskEvent.ShowDialog(
@@ -117,8 +125,8 @@ fun EditSubtaskScreen(
     }
 
     LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collect { event ->
-            if (event !is AppViewModel.Event.RefreshSubtask) return@collect
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshSubtask) return@collect
             editSubtaskViewModel.onEvent(EditSubtaskEvent.RefreshSubtask)
         }
     }
@@ -142,7 +150,9 @@ fun EditSubtaskScreen(
             topBar = {
                 EditSubtaskTopBar(
                     subtaskCompleted = editSubtaskViewModel.subtask?.completed ?: false,
-                    onNavigationIconClick = onNavigateBack,
+                    onNavigationIconClick = {
+                        handleBackPressToBoardScreen(previousRoute, appViewModel, onNavigateBack)
+                    },
                     onToggleTaskCompleted = {
                         editSubtaskViewModel.onEvent(EditSubtaskEvent.ToggleCompleted)
                     },

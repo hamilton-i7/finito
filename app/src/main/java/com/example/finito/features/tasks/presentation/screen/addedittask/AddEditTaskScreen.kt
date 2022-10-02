@@ -166,8 +166,8 @@ fun AddEditTaskScreen(
     }
 
     LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collect { event ->
-            if (event !is AppViewModel.Event.RefreshTask) return@collect
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshTask) return@collect
             addEditTaskViewModel.onEvent(AddEditTaskEvent.RefreshTask)
         }
     }

@@ -13,6 +13,7 @@ import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -44,12 +45,10 @@ class AppViewModel @Inject constructor(
         }
     }
 
-    fun onClearEvent() {
-        _event.value = null
-    }
-
-    private fun onRefreshBoard() {
+    private fun onRefreshBoard() = viewModelScope.launch {
         _event.value = Event.RefreshBoard
+        delay(100)
+        _event.value = null
     }
 
     private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
@@ -73,6 +72,8 @@ class AppViewModel @Inject constructor(
             taskUseCases.createTask(task)
         }
         _event.value = Event.RefreshBoard
+        delay(100)
+        _event.value = Event.RefreshTask
     }
 
     private fun onUndoSubtaskCompletedToggle(subtask: Subtask) = viewModelScope.launch {
@@ -82,6 +83,8 @@ class AppViewModel @Inject constructor(
             subtaskUseCases.createSubtask(subtask)
         }
         _event.value = Event.RefreshBoard
+        delay(100)
+        _event.value = Event.RefreshSubtask
     }
 
     private fun onUndoBoardChange(originalBoard: DetailedBoard) = viewModelScope.launch {

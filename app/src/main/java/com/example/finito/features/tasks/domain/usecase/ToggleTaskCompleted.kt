@@ -74,11 +74,11 @@ class ToggleTaskCompleted(
 
     private suspend fun markSubtasksAsCompleted(subtasks: List<Subtask>) {
         subtaskRepository.updateMany(
-            *subtasks.map {
-                it.copy(
+            *subtasks.mapIndexed { index, subtask ->
+                subtask.copy(
                     position = null,
                     completed = true,
-                    completedAt = LocalDateTime.now()
+                    completedAt = subtask.completedAt ?: LocalDateTime.now().plusSeconds(index.toLong())
                 )
             }.toTypedArray()
         )

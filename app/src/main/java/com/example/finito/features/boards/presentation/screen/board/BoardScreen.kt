@@ -72,7 +72,6 @@ fun BoardScreen(
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
     val detailedBoard = boardViewModel.board
-    val appEvents by appViewModel.event.collectAsState(initial = null)
 
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -152,10 +151,11 @@ fun BoardScreen(
         }
     }
 
-    LaunchedEffect(appEvents) {
-        if (appEvents != AppViewModel.Event.RefreshBoard) return@LaunchedEffect
-        boardViewModel.onEvent(BoardEvent.RefreshBoard)
-        appViewModel.onClearEvent()
+    LaunchedEffect(Unit) {
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshBoard) return@collect
+            boardViewModel.onEvent(BoardEvent.RefreshBoard)
+        }
     }
 
     LaunchedEffect(bottomSheetState.isVisible) {

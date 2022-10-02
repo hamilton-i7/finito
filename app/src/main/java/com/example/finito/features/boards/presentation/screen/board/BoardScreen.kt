@@ -147,6 +147,8 @@ fun BoardScreen(
                         type = BoardEvent.DialogType.Error(message = event.error)
                     ))
                 }
+                BoardViewModel.Event.NavigateBack -> onNavigateBack()
+                BoardViewModel.Event.NavigateHome -> onNavigateToHome()
             }
         }
     }
@@ -219,7 +221,6 @@ fun BoardScreen(
                                     when (it as ArchivedBoardScreenMenuOption) {
                                         ArchivedBoardScreenMenuOption.DeleteBoard -> {
                                             boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                            onNavigateBack()
                                         }
                                         ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
                                             boardViewModel.onEvent(BoardEvent.ShowDialog(
@@ -234,7 +235,6 @@ fun BoardScreen(
                                         }
                                         ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
                                             boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                            onNavigateBack()
                                         }
                                     }
                                 }
@@ -253,7 +253,6 @@ fun BoardScreen(
                                         }
                                         DeletedBoardScreenMenuOption.RestoreBoard -> {
                                             boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                            onNavigateBack()
                                         }
                                     }
                                 }
@@ -261,11 +260,9 @@ fun BoardScreen(
                                     when (it as ActiveBoardScreenOption) {
                                         ActiveBoardScreenOption.ArchiveBoard -> {
                                             boardViewModel.onEvent(BoardEvent.ArchiveBoard)
-                                            onNavigateToHome()
                                         }
                                         ActiveBoardScreenOption.DeleteBoard -> {
                                             boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                            onNavigateToHome()
                                         }
                                         ActiveBoardScreenOption.DeleteCompletedTasks -> {
                                             boardViewModel.onEvent(BoardEvent.ShowDialog(
@@ -516,81 +513,85 @@ private fun BoardScreen(
                     }
                 }
             }
-            if (completedTasksAmount != 0) {
-                item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
+            item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
+                AnimatedVisibility(
+                    visible = completedTasksAmount != 0,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier.animateItemPlacement()
+                ) {
                     RowToggle(
                         showContent = showCompletedTasks,
                         onShowContentToggle = onToggleShowCompletedTasks,
                         label = stringResource(id = R.string.completed, completedTasksAmount),
                         showContentDescription = R.string.show_completed_tasks,
                         hideContentDescription = R.string.hide_completed_tasks,
-                        modifier = Modifier.animateItemPlacement()
                     )
                 }
-                tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
-                    item(key = "${task.taskId} GHOST") {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            TaskItem(
-                                task = task,
-                                ghostVariant = true,
-                                onTaskClick = { onTaskClick(task) },
-                            )
-                        }
-                    }
-                    items(
-                        items = subtasks,
-                        key = { "${it.subtaskId} GHOST COMPLETED" }
+            }
+            tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
+                item(key = "${task.taskId} GHOST") {
+                    AnimatedVisibility(
+                        visible = showCompletedTasks && completedTasksAmount != 0,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.animateItemPlacement()
                     ) {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            SubtaskItem(
-                                subtask = it,
-                                onSubtaskClick = { onSubtaskClick(it) },
-                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                            )
-                        }
+                        TaskItem(
+                            task = task,
+                            ghostVariant = true,
+                            onTaskClick = { onTaskClick(task) },
+                        )
                     }
                 }
-                completedTasks.forEach {
-                    item(key = "${it.task.taskId} COMPLETED") {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            TaskItem(
-                                task = it.task,
-                                onCompletedToggle = { onToggleTaskCompleted(it) },
-                                onTaskClick = { onTaskClick(it.task) },
-                            )
-                        }
-                    }
-                    items(
-                        items = it.subtasks,
-                        key = { subtask -> "${subtask.subtaskId} COMPLETED" }
+                items(
+                    items = subtasks,
+                    key = { "${it.subtaskId} GHOST COMPLETED" }
+                ) {
+                    AnimatedVisibility(
+                        visible = showCompletedTasks && completedTasksAmount != 0,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.animateItemPlacement()
                     ) {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            SubtaskItem(
-                                subtask = it,
-                                onSubtaskClick = { onSubtaskClick(it) },
-                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                            )
-                        }
+                        SubtaskItem(
+                            subtask = it,
+                            onSubtaskClick = { onSubtaskClick(it) },
+                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                        )
+                    }
+                }
+            }
+            completedTasks.forEach {
+                item(key = "${it.task.taskId} COMPLETED") {
+                    AnimatedVisibility(
+                        visible = showCompletedTasks && completedTasksAmount != 0,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.animateItemPlacement()
+                    ) {
+                        TaskItem(
+                            task = it.task,
+                            onCompletedToggle = { onToggleTaskCompleted(it) },
+                            onTaskClick = { onTaskClick(it.task) },
+                        )
+                    }
+                }
+                items(
+                    items = it.subtasks,
+                    key = { subtask -> "${subtask.subtaskId} COMPLETED" }
+                ) {
+                    AnimatedVisibility(
+                        visible = showCompletedTasks && completedTasksAmount != 0,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.animateItemPlacement()
+                    ) {
+                        SubtaskItem(
+                            subtask = it,
+                            onSubtaskClick = { onSubtaskClick(it) },
+                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                        )
                     }
                 }
             }

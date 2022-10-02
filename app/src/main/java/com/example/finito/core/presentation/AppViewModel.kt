@@ -14,9 +14,7 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,9 +25,6 @@ class AppViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
     private val subtaskUseCases: SubtaskUseCases,
 ) : ViewModel() {
-
-    private val _eventFlow = MutableSharedFlow<Event>()
-    val eventFlow = _eventFlow.asSharedFlow()
 
     private val _event = MutableStateFlow<Event?>(null)
     val event = _event.asStateFlow()
@@ -54,14 +49,14 @@ class AppViewModel @Inject constructor(
     private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
         when (subtaskUseCases.createSubtask(subtask)) {
             is Result.Error -> TODO(reason = "Implement error scenario")
-            is Result.Success -> _eventFlow.emit(Event.RefreshBoard)
+            is Result.Success -> _event.emit(Event.RefreshBoard)
         }
     }
 
     private fun onRecoverTask(task: TaskWithSubtasks) = viewModelScope.launch {
         when (taskUseCases.createTask(task)) {
             is Result.Error -> TODO(reason = "Implement error scenario")
-            is Result.Success -> _eventFlow.emit(Event.RefreshBoard)
+            is Result.Success -> _event.emit(Event.RefreshBoard)
         }
     }
 
@@ -85,6 +80,8 @@ class AppViewModel @Inject constructor(
         _event.value = Event.RefreshBoard
         delay(100)
         _event.value = Event.RefreshSubtask
+        delay(100)
+        _event.value = Event.RefreshTask
     }
 
     private fun onUndoBoardChange(originalBoard: DetailedBoard) = viewModelScope.launch {

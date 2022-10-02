@@ -26,6 +26,7 @@ import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.*
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -99,7 +100,7 @@ class BoardViewModel @Inject constructor(
         when (event) {
             BoardEvent.ArchiveBoard -> onDeactivateBoard(DeactivateMode.ARCHIVE)
             BoardEvent.DeleteBoard -> onDeactivateBoard(DeactivateMode.DELETE)
-            BoardEvent.RestoreBoard -> restoreBoard()
+            BoardEvent.RestoreBoard -> onRestoreBoard()
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
@@ -643,18 +644,29 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun restoreBoard() = viewModelScope.launch {
-        board?.let {
+    private fun onRestoreBoard() = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
             val restoredBoard = BoardWithLabelsAndTasks(
-                board = it.board.copy(state = BoardState.ACTIVE, removedAt = null),
-                labels = it.labels,
-                tasks = it.tasks.map { task -> CompletedTask(completed = task.task.completed) }
+                board = board.copy(state = BoardState.ACTIVE, removedAt = null),
+                labels = labels,
+                tasks = tasks.map { task -> CompletedTask(completed = task.task.completed) }
             )
-            boardUseCases.updateBoard(restoredBoard)
-            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                message = R.string.board_was_restored,
-                board = it
-            ))
+            when (boardUseCases.updateBoard(restoredBoard)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.update_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                        message = R.string.board_was_restored,
+                        board = this
+                    ))
+                    delay(100)
+                    _eventFlow.emit(Event.NavigateBack)
+                }
+            }
         }
     }
 
@@ -663,29 +675,59 @@ class BoardViewModel @Inject constructor(
         with(board!!) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    BoardWithLabelsAndTasks(
-                        board = board.copy(state = BoardState.ARCHIVED, removedAt = null),
-                        labels = labels,
-                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-                    ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                        message = R.string.board_archived,
-                        board = this,
-                    ))
-                }
-                DeactivateMode.DELETE -> {
-                    BoardWithLabelsAndTasks(
+                    val updatedBoard = BoardWithLabelsAndTasks(
                         board = board.copy(
-                            state = BoardState.DELETED,
-                            removedAt = LocalDateTime.now()
+                            state = BoardState.ARCHIVED,
+                            removedAt = null,
+                            position = null
                         ),
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-                    ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                        message = R.string.board_moved_to_trash,
-                        board = this@with
-                    ))
+                    )
+                    when(boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.update_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                                message = R.string.board_archived,
+                                board = this,
+                            ))
+                            delay(100)
+                            _eventFlow.emit(Event.NavigateHome)
+                        }
+                    }
+                }
+                DeactivateMode.DELETE -> {
+                    val updatedBoard = BoardWithLabelsAndTasks(
+                        board = board.copy(
+                            state = BoardState.DELETED,
+                            removedAt = LocalDateTime.now(),
+                            position = null
+                        ),
+                        labels = labels,
+                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                    )
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.update_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                                message = R.string.board_moved_to_trash,
+                                board = this@with
+                            ))
+                            delay(100)
+                            _eventFlow.emit(
+                                if (boardState == BoardState.ACTIVE) Event.NavigateHome
+                                else Event.NavigateBack
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -693,6 +735,10 @@ class BoardViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
+
+        object NavigateHome : Event()
+
+        object NavigateBack : Event()
 
         sealed class Snackbar : Event() {
             data class UndoBoardChange(

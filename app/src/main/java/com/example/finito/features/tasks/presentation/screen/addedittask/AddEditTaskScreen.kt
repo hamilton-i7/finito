@@ -175,7 +175,7 @@ fun AddEditTaskScreen(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = bottomSheetCorners, topEnd = bottomSheetCorners),
-        sheetBackgroundColor = finitoColors.surface,
+        sheetBackgroundColor = finitoColors.surfaceColorAtElevation(1.dp),
         sheetContent = {
             BoardsListSheetContent(
                 boards = addEditTaskViewModel.boards,

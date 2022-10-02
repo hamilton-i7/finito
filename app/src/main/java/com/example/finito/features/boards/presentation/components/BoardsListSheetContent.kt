@@ -27,7 +27,7 @@ fun BoardsListSheetContent(
     onBoardClick: (SimpleBoard) -> Unit = {},
     state: LazyListState = rememberLazyListState(),
 ) {
-    Surface(tonalElevation = 3.dp) {
+    Surface(tonalElevation = 1.dp) {
         LazyColumn(
             state = state,
             modifier = Modifier.systemBarsPadding(),

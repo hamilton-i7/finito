@@ -474,7 +474,6 @@ private fun BoardScreen(
                                 onDateTimeClick = { onDateTimeClick(it) },
                                 showDragIndicator = true,
                                 modifier = Modifier
-                                    .animateItemPlacement()
                                     .detectReorderAfterLongPress(reorderableState)
                             )
                         }

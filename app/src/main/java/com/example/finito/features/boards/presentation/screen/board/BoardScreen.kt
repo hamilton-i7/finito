@@ -512,85 +512,81 @@ private fun BoardScreen(
                     }
                 }
             }
-            item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
-                AnimatedVisibility(
-                    visible = completedTasksAmount != 0,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier.animateItemPlacement()
-                ) {
+            if (completedTasksAmount != 0) {
+                item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
                     RowToggle(
                         showContent = showCompletedTasks,
                         onShowContentToggle = onToggleShowCompletedTasks,
                         label = stringResource(id = R.string.completed, completedTasksAmount),
                         showContentDescription = R.string.show_completed_tasks,
                         hideContentDescription = R.string.hide_completed_tasks,
+                        modifier = Modifier.animateItemPlacement()
                     )
                 }
-            }
-            tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
-                item(key = "${task.taskId} GHOST") {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks && completedTasksAmount != 0,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier.animateItemPlacement()
+                tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
+                    item(key = "${task.taskId} GHOST") {
+                        AnimatedVisibility(
+                            visible = showCompletedTasks,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.animateItemPlacement()
+                        ) {
+                            TaskItem(
+                                task = task,
+                                ghostVariant = true,
+                                onTaskClick = { onTaskClick(task) },
+                            )
+                        }
+                    }
+                    items(
+                        items = subtasks,
+                        key = { "${it.subtaskId} GHOST COMPLETED" }
                     ) {
-                        TaskItem(
-                            task = task,
-                            ghostVariant = true,
-                            onTaskClick = { onTaskClick(task) },
-                        )
+                        AnimatedVisibility(
+                            visible = showCompletedTasks,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.animateItemPlacement()
+                        ) {
+                            SubtaskItem(
+                                subtask = it,
+                                onSubtaskClick = { onSubtaskClick(it) },
+                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                            )
+                        }
                     }
                 }
-                items(
-                    items = subtasks,
-                    key = { "${it.subtaskId} GHOST COMPLETED" }
-                ) {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks && completedTasksAmount != 0,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        SubtaskItem(
-                            subtask = it,
-                            onSubtaskClick = { onSubtaskClick(it) },
-                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                        )
+                completedTasks.forEach {
+                    item(key = "${it.task.taskId} COMPLETED") {
+                        AnimatedVisibility(
+                            visible = showCompletedTasks,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.animateItemPlacement()
+                        ) {
+                            TaskItem(
+                                task = it.task,
+                                onCompletedToggle = { onToggleTaskCompleted(it) },
+                                onTaskClick = { onTaskClick(it.task) },
+                            )
+                        }
                     }
-                }
-            }
-            completedTasks.forEach {
-                item(key = "${it.task.taskId} COMPLETED") {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks && completedTasksAmount != 0,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier.animateItemPlacement()
+                    items(
+                        items = it.subtasks,
+                        key = { subtask -> "${subtask.subtaskId} COMPLETED" }
                     ) {
-                        TaskItem(
-                            task = it.task,
-                            onCompletedToggle = { onToggleTaskCompleted(it) },
-                            onTaskClick = { onTaskClick(it.task) },
-                        )
-                    }
-                }
-                items(
-                    items = it.subtasks,
-                    key = { subtask -> "${subtask.subtaskId} COMPLETED" }
-                ) {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks && completedTasksAmount != 0,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        SubtaskItem(
-                            subtask = it,
-                            onSubtaskClick = { onSubtaskClick(it) },
-                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                        )
+                        AnimatedVisibility(
+                            visible = showCompletedTasks,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.animateItemPlacement()
+                        ) {
+                            SubtaskItem(
+                                subtask = it,
+                                onSubtaskClick = { onSubtaskClick(it) },
+                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                            )
+                        }
                     }
                 }
             }

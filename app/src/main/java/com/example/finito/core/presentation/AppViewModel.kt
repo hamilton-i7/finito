@@ -1,8 +1,5 @@
 package com.example.finito.core.presentation
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.core.domain.ErrorMessages
@@ -17,9 +14,9 @@ import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,8 +30,8 @@ class AppViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    var event by mutableStateOf<Event?>(null)
-        private set
+    private val _event = MutableStateFlow<Event?>(null)
+    val event = _event.asStateFlow()
 
     fun onEvent(event: AppEvent) {
         when (event) {
@@ -43,12 +40,16 @@ class AppViewModel @Inject constructor(
             is AppEvent.UndoSubtaskCompletedToggle -> onUndoSubtaskCompletedToggle(event.subtask)
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
             is AppEvent.RecoverSubtask -> onRecoverSubtask(event.subtask)
-            AppEvent.RefreshBoard -> this.event = Event.RefreshBoard
+            AppEvent.RefreshBoard -> onRefreshBoard()
         }
     }
 
     fun onClearEvent() {
-        event = null
+        _event.value = null
+    }
+
+    private fun onRefreshBoard() {
+        _event.value = Event.RefreshBoard
     }
 
     private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
@@ -66,40 +67,21 @@ class AppViewModel @Inject constructor(
     }
 
     private fun onUndoTaskCompletedToggle(task: TaskWithSubtasks) = viewModelScope.launch {
-        when (val result = taskUseCases.toggleTaskCompleted(task, undoingToggle = true)) {
-            is Result.Error -> {
-                if (result.message != ErrorMessages.NOT_FOUND) return@launch
-                taskUseCases.createTask(task)
-                _eventFlow.emitAll(
-                    flow {
-                        emit(Event.RefreshBoard)
-                        emit(Event.RefreshTask)
-                    }
-                )
-            }
-            is Result.Success -> {
-                _eventFlow.emitAll(
-                    flow {
-                        emit(Event.RefreshBoard)
-                        emit(Event.RefreshTask)
-                    }
-                )
-            }
+        val result = taskUseCases.toggleTaskCompleted(task, undoingToggle = true)
+        if (result is Result.Error) {
+            if (result.message != ErrorMessages.NOT_FOUND) return@launch
+            taskUseCases.createTask(task)
         }
+        _event.value = Event.RefreshBoard
     }
 
     private fun onUndoSubtaskCompletedToggle(subtask: Subtask) = viewModelScope.launch {
-        when (subtaskUseCases.updateSubtask(subtask)) {
-            is Result.Error -> TODO(reason = "Implement error scenario")
-            is Result.Success -> {
-                _eventFlow.emitAll(
-                    flow {
-                        emit(Event.RefreshBoard)
-                        emit(Event.RefreshTask)
-                    }
-                )
-            }
+        val result = subtaskUseCases.updateSubtask(subtask)
+        if (result is Result.Error) {
+            if (result.message != ErrorMessages.NOT_FOUND) return@launch
+            subtaskUseCases.createSubtask(subtask)
         }
+        _event.value = Event.RefreshBoard
     }
 
     private fun onUndoBoardChange(originalBoard: DetailedBoard) = viewModelScope.launch {

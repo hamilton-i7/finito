@@ -72,6 +72,7 @@ fun BoardScreen(
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
     val detailedBoard = boardViewModel.board
+    val appEvents by appViewModel.event.collectAsState(initial = null)
 
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -97,6 +98,7 @@ fun BoardScreen(
         derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
     }
     val noCompletedTasks = boardViewModel.tasks.none { it.task.completed }
+            && boardViewModel.tasks.flatMap { it.subtasks }.none { it.completed }
     val disabledMenuOptions = when (boardViewModel.boardState) {
         BoardState.ACTIVE -> listOf(ActiveBoardScreenOption.DeleteCompletedTasks)
         BoardState.ARCHIVED -> listOf(ArchivedBoardScreenMenuOption.DeleteCompletedTasks)
@@ -150,8 +152,8 @@ fun BoardScreen(
         }
     }
 
-    LaunchedEffect(appViewModel.event) {
-        if (appViewModel.event != AppViewModel.Event.RefreshBoard) return@LaunchedEffect
+    LaunchedEffect(appEvents) {
+        if (appEvents != AppViewModel.Event.RefreshBoard) return@LaunchedEffect
         boardViewModel.onEvent(BoardEvent.RefreshBoard)
         appViewModel.onClearEvent()
     }

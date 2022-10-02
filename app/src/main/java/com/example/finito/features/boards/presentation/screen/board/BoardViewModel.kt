@@ -20,6 +20,7 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.*
@@ -479,18 +480,27 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onDeleteCompletedTasks() = viewModelScope.launch {
-        if (board == null) return@launch
-        with(board!!) {
-            val completedTasks = tasks.filterCompleted().map { it.task }
-            when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.delete_completed_tasks_error
-                    ))
-                }
-                is Result.Success -> fetchBoard()
-            }
+    private fun onDeleteCompletedTasks() {
+        deleteCompletedTasks()
+        deleteCompletedSubtasks()
+        fetchBoard()
+    }
+
+    private fun deleteCompletedTasks() = viewModelScope.launch {
+        val completedTasks = tasks.filterCompleted().map { it.task }
+        if (taskUseCases.deleteTask(*completedTasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_tasks_error
+            ))
+        }
+    }
+
+    private fun deleteCompletedSubtasks() = viewModelScope.launch {
+        val completedSubtasks = tasks.flatMap { it.subtasks }.filterCompleted()
+        if (subtaskUseCases.deleteSubtask(*completedSubtasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_subtasks_error
+            ))
         }
     }
 

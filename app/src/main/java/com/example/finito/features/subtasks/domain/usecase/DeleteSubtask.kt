@@ -10,13 +10,29 @@ class DeleteSubtask(
     private val repository: SubtaskRepository
 ) {
 
-    suspend operator fun invoke(subtask: Subtask): Result<Unit, String> {
-        if (!isValidId(subtask.subtaskId)) {
+    suspend operator fun invoke(vararg subtasks: Subtask): Result<Unit, String> {
+        if (subtasks.none { isValidId(it.subtaskId) }) {
             return Result.Error(message = ErrorMessages.INVALID_ID)
         }
-        repository.findOne(subtask.subtaskId) ?: return Result.Error(message = ErrorMessages.NOT_FOUND)
         return Result.Success(
-            data = repository.removeMany(subtask)
+            data = repository.removeMany(*subtasks).also {
+                with(mutableListOf<Subtask>()) {
+                    subtasks.groupBy { it.taskId }.keys.forEach {
+                        addAll(repository.findAllByTaskId(it))
+                    }
+                    arrangeSubtasks(subtasks = this)
+                }
+            }
         )
+    }
+
+    private suspend fun arrangeSubtasks(subtasks: List<Subtask>) {
+        with(mutableMapOf<Int, Int>()) {
+            subtasks.map {
+                this[it.taskId] =
+                    if (this[it.taskId] == null) 0 else this[it.taskId]!! + 1
+                it.copy(position = this[it.taskId])
+            }.let { repository.updateMany(*it.toTypedArray()) }
+        }
     }
 }

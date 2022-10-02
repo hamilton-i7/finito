@@ -118,7 +118,7 @@ class EditSubtaskViewModel @Inject constructor(
     private fun onDeleteSubtask() = viewModelScope.launch {
         if (subtask == null) return@launch
         with(subtask!!) {
-            when (subtaskUseCases.deleteSubtask(subtask = this)) {
+            when (subtaskUseCases.deleteSubtask(this)) {
                 is Result.Error -> {
                     _eventFlow.emit(Event.ShowError(
                         error = R.string.delete_subtask_error
@@ -143,7 +143,7 @@ class EditSubtaskViewModel @Inject constructor(
         if (subtask == null) return@launch
         with(subtask!!) {
             if (originalRelatedBoard!!.boardId != selectedBoard!!.boardId) {
-                subtaskUseCases.deleteSubtask(subtask = this)
+                subtaskUseCases.deleteSubtask( this)
                 boardUseCases.findOneBoard(selectedBoard!!.boardId).let {
                     if (it is Result.Error) return@launch
                     val board = (it as Result.Success).data

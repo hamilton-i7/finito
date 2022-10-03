@@ -114,7 +114,8 @@ fun EditSubtaskScreen(
                         is EditSubtaskViewModel.Event.Snackbar.UndoSubtaskChange -> {
                             onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(
-                                    subtask = event.subtask
+                                    subtask = event.subtask,
+                                    task = event.task
                                 ))
                             }
                         }

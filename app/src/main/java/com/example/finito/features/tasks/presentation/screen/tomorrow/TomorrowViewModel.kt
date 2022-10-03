@@ -210,7 +210,8 @@ class TomorrowViewModel @Inject constructor(
                         R.string.subtask_marked_as_completed
                     else
                         R.string.subtask_marked_as_uncompleted,
-                    subtask = subtask
+                    subtask = subtask,
+                    task = tasks.first { it.task.taskId == subtask.taskId }.task
                 ))
             }
         }
@@ -318,7 +319,8 @@ class TomorrowViewModel @Inject constructor(
 
             data class UndoSubtaskCompletedToggle(
                 @StringRes val message: Int,
-                val subtask: Subtask
+                val subtask: Subtask,
+                val task: Task
             ) : Snackbar()
         }
     }

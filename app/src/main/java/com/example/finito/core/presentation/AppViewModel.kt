@@ -10,6 +10,7 @@ import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.CompletedTask
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,7 +34,7 @@ class AppViewModel @Inject constructor(
         when (event) {
             is AppEvent.UndoBoardChange -> onUndoBoardChange(event.board)
             is AppEvent.UndoTaskCompletedToggle -> onUndoTaskCompletedToggle(event.task)
-            is AppEvent.UndoSubtaskCompletedToggle -> onUndoSubtaskCompletedToggle(event.subtask)
+            is AppEvent.UndoSubtaskCompletedToggle -> onUndoSubtaskCompletedToggle(event.subtask, event.task)
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
             is AppEvent.RecoverSubtask -> onRecoverSubtask(event.subtask)
             AppEvent.RefreshBoard -> onRefreshBoard()
@@ -72,19 +72,15 @@ class AppViewModel @Inject constructor(
         _event.value = Event.RefreshTask
     }
 
-    private fun onUndoSubtaskCompletedToggle(subtask: Subtask) = viewModelScope.launch {
+    private fun onUndoSubtaskCompletedToggle(
+        subtask: Subtask,
+        task: Task,
+    ) = viewModelScope.launch {
         val result = subtaskUseCases.updateSubtask(subtask).also {
             // Change related task completed state to its previous state
             if (!subtask.completed) return@also
-
-            val result = taskUseCases.findOneTask(subtask.taskId)
-            if (result !is Result.Success) return@also
-            if (result.data.task.completed) return@also
-
-            taskUseCases.updateTask(result.data.task.copy(
-                completed = true,
-                completedAt = LocalDateTime.now()
-            ))
+            if (!task.completed) return@also
+            taskUseCases.updateTask(task)
         }
         if (result is Result.Error) {
             if (result.message != ErrorMessages.NOT_FOUND) return@launch

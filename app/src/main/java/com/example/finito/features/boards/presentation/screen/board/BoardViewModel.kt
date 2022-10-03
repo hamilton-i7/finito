@@ -546,12 +546,14 @@ class BoardViewModel @Inject constructor(
             }
             is Result.Success -> {
                 fetchBoard()
+                val relatedTask = board!!.tasks.first { it.task.taskId == subtask.taskId }
                 _eventFlow.emit(Event.Snackbar.UndoSubtaskCompletedToggle(
                     message = if (completed)
                         R.string.subtask_marked_as_completed
                     else
                         R.string.subtask_marked_as_uncompleted,
-                    subtask = subtask
+                    subtask = subtask,
+                    task = relatedTask.task
                 ))
             }
         }
@@ -753,7 +755,8 @@ class BoardViewModel @Inject constructor(
 
             data class UndoSubtaskCompletedToggle(
                 @StringRes val message: Int,
-                val subtask: Subtask
+                val subtask: Subtask,
+                val task: Task
             ) : Snackbar()
         }
     }

@@ -137,7 +137,10 @@ fun TodayScreen(
                 }
                 is TodayViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
                     onShowSnackbar(event.message, R.string.undo) {
-                        appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(subtask = event.subtask))
+                        appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(
+                            subtask = event.subtask,
+                            task = event.task
+                        ))
                     }
                 }
             }

@@ -42,8 +42,7 @@ class EditSubtaskViewModel @Inject constructor(
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
         private set
 
-    var originalRelatedBoard: Board? = null
-        private set
+    private var originalRelatedBoard: Board? = null
 
     var nameState by mutableStateOf(TextFieldState())
         private set
@@ -104,7 +103,8 @@ class EditSubtaskViewModel @Inject constructor(
                                         R.string.subtask_marked_as_completed
                                     else
                                         R.string.subtask_marked_as_uncompleted,
-                                    subtask = this@with
+                                    subtask = this@with,
+                                    task = task.task
                                 ))
                                 emit(Event.SubtaskUpdated)
                             }
@@ -247,6 +247,7 @@ class EditSubtaskViewModel @Inject constructor(
             data class UndoSubtaskChange(
                 @StringRes val message: Int,
                 val subtask: Subtask,
+                val task: Task,
             ) : Snackbar()
 
             data class RecoverSubtask(

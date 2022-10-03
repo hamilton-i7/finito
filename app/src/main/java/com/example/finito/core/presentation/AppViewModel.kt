@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -72,7 +73,19 @@ class AppViewModel @Inject constructor(
     }
 
     private fun onUndoSubtaskCompletedToggle(subtask: Subtask) = viewModelScope.launch {
-        val result = subtaskUseCases.updateSubtask(subtask)
+        val result = subtaskUseCases.updateSubtask(subtask).also {
+            // Change related task completed state to its previous state
+            if (!subtask.completed) return@also
+
+            val result = taskUseCases.findOneTask(subtask.taskId)
+            if (result !is Result.Success) return@also
+            if (result.data.task.completed) return@also
+
+            taskUseCases.updateTask(result.data.task.copy(
+                completed = true,
+                completedAt = LocalDateTime.now()
+            ))
+        }
         if (result is Result.Error) {
             if (result.message != ErrorMessages.NOT_FOUND) return@launch
             subtaskUseCases.createSubtask(subtask)

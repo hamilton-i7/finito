@@ -11,7 +11,7 @@ class DeleteSubtask(
 ) {
 
     suspend operator fun invoke(vararg subtasks: Subtask): Result<Unit, String> {
-        if (subtasks.none { isValidId(it.subtaskId) }) {
+        if (subtasks.any { !isValidId(it.subtaskId) }) {
             return Result.Error(message = ErrorMessages.INVALID_ID)
         }
         return Result.Success(

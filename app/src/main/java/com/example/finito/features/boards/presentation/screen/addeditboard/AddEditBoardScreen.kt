@@ -211,7 +211,7 @@ private fun AddEditBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     createMode: Boolean = true,
     isDeleted: Boolean = false,
-    nameState: TextFieldState = TextFieldState(),
+    nameState: TextFieldState = TextFieldState.Default,
     showLabels: Boolean = true,
     onShowLabelsChange: () -> Unit = {},
     labels: List<SimpleLabel> = emptyList(),
@@ -311,7 +311,7 @@ private fun AddEditBoardScreenPreview() {
     FinitoTheme {
         Surface {
             AddEditBoardScreen(
-                nameState = TextFieldState(),
+                nameState = TextFieldState.Default,
                 labels = SimpleLabel.dummyLabels.take(6),
                 selectedLabels = selectedLabels
             )

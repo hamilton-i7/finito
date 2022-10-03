@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
     var showSearchBar by mutableStateOf(false)
         private set
 
-    var searchQueryState by mutableStateOf(TextFieldState())
+    var searchQueryState by mutableStateOf(TextFieldState.Default)
         private set
 
     private var searchJob: Job? = null

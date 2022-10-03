@@ -3,7 +3,7 @@ package com.example.finito.features.tasks.presentation.screen.addedittask
 import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
-import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
@@ -28,7 +28,7 @@ sealed class AddEditTaskEvent {
 
     object CreateSubtask : AddEditTaskEvent()
 
-    data class RemoveSubtask(val state: TextFieldState) : AddEditTaskEvent()
+    data class RemoveSubtask(val state: SubtaskTextField) : AddEditTaskEvent()
 
     data class ReorderSubtasks(val from: ItemPosition, val to: ItemPosition) : AddEditTaskEvent()
 

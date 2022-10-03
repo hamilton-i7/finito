@@ -12,6 +12,7 @@ import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
@@ -42,10 +43,10 @@ class AddEditTaskViewModel @Inject constructor(
     var boards by mutableStateOf<List<SimpleBoard>>(emptyList())
         private set
 
-    var nameState by mutableStateOf(TextFieldState())
+    var nameState by mutableStateOf(TextFieldState.Default)
         private set
 
-    var descriptionState by mutableStateOf(TextFieldState())
+    var descriptionState by mutableStateOf(TextFieldState.Default)
         private set
 
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
@@ -66,7 +67,7 @@ class AddEditTaskViewModel @Inject constructor(
     var dialogType by mutableStateOf<AddEditTaskEvent.DialogType?>(null)
         private set
 
-    var subtaskNameStates by mutableStateOf<List<TextFieldState>>(emptyList())
+    var subtaskNameStates by mutableStateOf<List<SubtaskTextField>>(emptyList())
         private set
 
     var showReminders by mutableStateOf(false)
@@ -100,7 +101,7 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ChangePriority -> selectedPriority = event.priority
             is AddEditTaskEvent.ChangeReminder -> selectedReminder = event.reminder
             AddEditTaskEvent.CreateSubtask -> onCreateSubtask()
-            is AddEditTaskEvent.RemoveSubtask -> onRemoveTask(event.state)
+            is AddEditTaskEvent.RemoveSubtask -> onRemoveSubtask(event.state)
             AddEditTaskEvent.CreateTask -> onCreateTask()
             AddEditTaskEvent.EditTask -> onEditTask()
             AddEditTaskEvent.DeleteTask -> onDeleteTask()
@@ -263,10 +264,10 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun onCreateSubtask() {
-        subtaskNameStates = subtaskNameStates + listOf(TextFieldState(id = ++subtaskNameStateId))
+        subtaskNameStates = subtaskNameStates + listOf(SubtaskTextField(id = ++subtaskNameStateId))
     }
 
-    private fun onRemoveTask(state: TextFieldState) {
+    private fun onRemoveSubtask(state: SubtaskTextField) {
         subtaskNameStates = subtaskNameStates.filter { it.id != state.id }
     }
 
@@ -333,9 +334,10 @@ class AddEditTaskViewModel @Inject constructor(
         selectedReminder = taskWithSubtasks.task.reminder
         selectedPriority = taskWithSubtasks.task.priority
         subtaskNameStates = taskWithSubtasks.subtasks.map {
-            TextFieldState(
+            SubtaskTextField(
                 id = it.subtaskId,
-                value = it.name
+                value = it.name,
+                completed = it.completed
             )
         }
     }

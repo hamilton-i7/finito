@@ -23,7 +23,7 @@ fun EditLabelDialog(
     onDismissClick: () -> Unit,
     onConfirmClick: () -> Unit,
 ) {
-    val (_, name, onNameChange) = nameState
+    val (name, onNameChange) = nameState
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -72,7 +72,7 @@ private fun EditLabelDialogPreview() {
     FinitoTheme {
         Surface {
             EditLabelDialog(
-                nameState = TextFieldState(),
+                nameState = TextFieldState.Default,
                 onDismiss = {},
                 onDismissClick = {},
                 onConfirmClick = {}

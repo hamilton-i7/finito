@@ -200,8 +200,8 @@ private fun EditSubtaskScreen(
     selectedBoardName: String = "",
     showBoardsMenu: Boolean = false,
     onBoardIndicatorClick: () -> Unit = {},
-    nameState: TextFieldState = TextFieldState(),
-    descriptionState: TextFieldState = TextFieldState(),
+    nameState: TextFieldState = TextFieldState.Default,
+    descriptionState: TextFieldState = TextFieldState.Default,
     onEditButtonClick: () -> Unit = {},
 ) {
     Surface(

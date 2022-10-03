@@ -68,7 +68,7 @@ class BoardViewModel @Inject constructor(
     var selectedTask by mutableStateOf<Task?>(null)
         private set
 
-    var newTaskNameState by mutableStateOf(TextFieldState())
+    var newTaskNameState by mutableStateOf(TextFieldState.Default)
         private set
 
     var selectedPriority by mutableStateOf<Priority?>(null)

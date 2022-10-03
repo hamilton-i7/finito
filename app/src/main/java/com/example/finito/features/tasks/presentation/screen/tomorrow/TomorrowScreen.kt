@@ -41,7 +41,9 @@ import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.components.bars.SmallTopBarWithMenu
-import com.example.finito.core.presentation.util.AnimationDurationConstants
+import com.example.finito.core.presentation.util.AnimationDurationConstants.LongDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.RegularDurationMillis
+import com.example.finito.core.presentation.util.AnimationDurationConstants.ShortestDurationMillis
 import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.calculateDp
 import com.example.finito.core.presentation.util.menu.TomorrowScreenMenuOption
@@ -101,7 +103,8 @@ fun TomorrowScreen(
     }
 
     var creatingTask by rememberSaveable { mutableStateOf(false) }
-    val noCompletedTasks = tomorrowViewModel.tasks.filterCompleted().isEmpty()
+    val noCompletedTasks = tomorrowViewModel.tasks.none { it.task.completed }
+            && tomorrowViewModel.tasks.flatMap { it.subtasks }.none { it.completed }
     val disabledMenuOptions = listOf(TomorrowScreenMenuOption.DeleteCompleted)
 
     BackHandler {
@@ -493,12 +496,12 @@ private fun TomorrowScreen(
                         visible = showCompletedTasks,
                         enter = fadeIn(
                             animationSpec = tween(
-                                durationMillis = AnimationDurationConstants.LongDurationMillis,
-                                delayMillis = AnimationDurationConstants.ShortestDurationMillis
+                                durationMillis = LongDurationMillis,
+                                delayMillis = ShortestDurationMillis
                             )
                         ),
                         exit = fadeOut(
-                            animationSpec = tween(durationMillis = AnimationDurationConstants.RegularDurationMillis)
+                            animationSpec = tween(durationMillis = RegularDurationMillis)
                         ),
                         modifier = Modifier.animateItemPlacement()
                     ) {
@@ -518,12 +521,12 @@ private fun TomorrowScreen(
                         visible = showCompletedTasks,
                         enter = fadeIn(
                             animationSpec = tween(
-                                durationMillis = AnimationDurationConstants.LongDurationMillis,
-                                delayMillis = AnimationDurationConstants.ShortestDurationMillis
+                                durationMillis = LongDurationMillis,
+                                delayMillis = ShortestDurationMillis
                             )
                         ),
                         exit = fadeOut(
-                            animationSpec = tween(durationMillis = AnimationDurationConstants.RegularDurationMillis)
+                            animationSpec = tween(durationMillis = RegularDurationMillis)
                         ),
                         modifier = Modifier.animateItemPlacement()
                     ) {
@@ -541,12 +544,12 @@ private fun TomorrowScreen(
                         visible = showCompletedTasks,
                         enter = fadeIn(
                             animationSpec = tween(
-                                durationMillis = AnimationDurationConstants.LongDurationMillis,
-                                delayMillis = AnimationDurationConstants.ShortestDurationMillis
+                                durationMillis = LongDurationMillis,
+                                delayMillis = ShortestDurationMillis
                             )
                         ),
                         exit = fadeOut(
-                            animationSpec = tween(durationMillis = AnimationDurationConstants.RegularDurationMillis)
+                            animationSpec = tween(durationMillis = RegularDurationMillis)
                         ),
                         modifier = Modifier.animateItemPlacement()
                     ) {
@@ -567,12 +570,12 @@ private fun TomorrowScreen(
                         visible = showCompletedTasks,
                         enter = fadeIn(
                             animationSpec = tween(
-                                durationMillis = AnimationDurationConstants.LongDurationMillis,
-                                delayMillis = AnimationDurationConstants.ShortestDurationMillis
+                                durationMillis = LongDurationMillis,
+                                delayMillis = ShortestDurationMillis
                             )
                         ),
                         exit = fadeOut(
-                            animationSpec = tween(durationMillis = AnimationDurationConstants.RegularDurationMillis)
+                            animationSpec = tween(durationMillis = RegularDurationMillis)
                         ),
                         modifier = Modifier.animateItemPlacement()
                     ) {

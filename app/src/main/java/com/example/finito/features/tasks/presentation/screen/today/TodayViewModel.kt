@@ -16,6 +16,7 @@ import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -259,15 +260,27 @@ class TodayViewModel @Inject constructor(
         }
     }
 
-    private fun onDeleteCompletedTasks() = viewModelScope.launch {
+    private fun onDeleteCompletedTasks() {
+        deleteCompletedTasks()
+        deleteCompletedSubtasks()
+    }
+
+    private fun deleteCompletedTasks() = viewModelScope.launch {
         val completedTasks = tasks.filterCompleted().map { it.task }
-        when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
-            is Result.Error -> {
-                _eventFlow.emit(Event.ShowError(
-                    error = R.string.delete_completed_tasks_error
-                ))
-            }
-            is Result.Success -> Unit
+        if (taskUseCases.deleteTask(*completedTasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_tasks_error
+            ))
+        }
+    }
+
+
+    private fun deleteCompletedSubtasks() = viewModelScope.launch {
+        val completedSubtasks = tasks.flatMap { it.subtasks }.filterCompleted()
+        if (subtaskUseCases.deleteSubtask(*completedSubtasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_subtasks_error
+            ))
         }
     }
 

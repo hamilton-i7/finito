@@ -103,7 +103,8 @@ fun TodayScreen(
     }
 
     var creatingTask by rememberSaveable { mutableStateOf(false) }
-    val noCompletedTasks = todayViewModel.tasks.filterCompleted().isEmpty()
+    val noCompletedTasks = todayViewModel.tasks.none { it.task.completed }
+            && todayViewModel.tasks.flatMap { it.subtasks }.none { it.completed }
     val disabledMenuOptions = listOf(TodayScreenMenuOption.DeleteCompleted)
 
     BackHandler {

@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TabOption
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -61,11 +63,13 @@ fun UrgentTabsContent(
     tasks: Map<LocalDate?, List<TaskWithSubtasks>> = emptyMap(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
-    onTaskClick: (TaskWithSubtasks) -> Unit = {},
-    onPriorityClick: (TaskWithSubtasks) -> Unit = {},
-    onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
+    onTaskClick: (Task) -> Unit = {},
+    onPriorityClick: (Task) -> Unit = {},
+    onDateTimeClick: (Task) -> Unit = {},
     onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
-    onBoardNameClick: (TaskWithSubtasks) -> Unit = {},
+    onBoardNameClick: (Task) -> Unit = {},
+    onSubtaskClick: (Subtask) -> Unit = {},
+    onToggleSubtaskCompleted: (Subtask) -> Unit = {},
 ) {
     HorizontalPager(
         count = tabOptions.size,
@@ -84,7 +88,9 @@ fun UrgentTabsContent(
                 onPriorityClick = onPriorityClick,
                 onDateTimeClick = onDateTimeClick,
                 onToggleTaskCompleted = onToggleTaskCompleted,
-                onBoardNameClick = onBoardNameClick
+                onBoardNameClick = onBoardNameClick,
+                onSubtaskClick = onSubtaskClick,
+                onToggleSubtaskCompleted = onToggleSubtaskCompleted
             )
             1 -> UrgentTasksWithoutDate(
                 listState = listStates.getOrElse(1) { rememberLazyListState() },
@@ -95,7 +101,9 @@ fun UrgentTabsContent(
                 onTaskClick = onTaskClick,
                 onPriorityClick = onPriorityClick,
                 onDateTimeClick = onDateTimeClick,
-                onToggleTaskCompleted = onToggleTaskCompleted
+                onToggleTaskCompleted = onToggleTaskCompleted,
+                onSubtaskClick = onSubtaskClick,
+                onToggleSubtaskCompleted = onToggleSubtaskCompleted
             )
         }
     }

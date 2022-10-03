@@ -61,7 +61,7 @@ import org.burnoutcrew.reorderable.*
 fun BoardScreen(
     drawerState: DrawerState,
     appViewModel: AppViewModel,
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     boardViewModel: BoardViewModel = hiltViewModel(),
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
@@ -126,17 +126,17 @@ fun BoardScreen(
                 is BoardViewModel.Event.Snackbar -> {
                     when (event) {
                         is BoardViewModel.Event.Snackbar.UndoBoardChange -> {
-                            showSnackbar(event.message, R.string.undo) {
+                            onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                             }
                         }
                         is BoardViewModel.Event.Snackbar.UndoTaskCompletedToggle -> {
-                            showSnackbar(event.message, R.string.undo) {
+                            onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
                         is BoardViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
-                            showSnackbar(event.message, R.string.undo) {
+                            onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(subtask = event.subtask))
                             }
                         }

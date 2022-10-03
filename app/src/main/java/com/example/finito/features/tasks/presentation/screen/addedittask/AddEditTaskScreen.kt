@@ -36,7 +36,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
@@ -523,7 +522,11 @@ private fun AddEditTaskScreen(
                 contentType = { _, _ -> ContentTypes.SUBTASK_TEXT_FIELDS }
             ) { index, textFieldState ->
                 val focusRequest = remember { FocusRequester() }
-                var textStyle by remember { mutableStateOf(TextStyle.Default) }
+                val defaultTextStyle = MaterialTheme.typography.bodyLarge
+                val completedTextStyle = defaultTextStyle.copy(
+                    textDecoration = TextDecoration.LineThrough
+                )
+                var textStyle by remember { mutableStateOf(defaultTextStyle) }
 
                 // TODO: 22/09/2022: Fix offset when closing the IME while dragging
                 ReorderableItem(reorderableState, key = textFieldState.id) { isDragging ->
@@ -545,8 +548,8 @@ private fun AddEditTaskScreen(
                         textFieldModifier = Modifier
                             .focusRequester(focusRequest)
                             .onFocusChanged {
-                                textStyle = if (it.isFocused || !textFieldState.completed) TextStyle.Default
-                                else TextStyle(textDecoration = TextDecoration.LineThrough)
+                                textStyle = if (it.isFocused || !textFieldState.completed) defaultTextStyle
+                                else completedTextStyle
                             }
                             .onKeyEvent { event ->
                                 if (event.key != Key.Backspace) return@onKeyEvent false

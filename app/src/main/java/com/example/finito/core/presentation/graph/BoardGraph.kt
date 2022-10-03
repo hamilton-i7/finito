@@ -65,7 +65,7 @@ fun NavGraphBuilder.boardGraph(
             BoardScreen(
                 drawerState = drawerState,
                 appViewModel = appViewModel,
-                showSnackbar = onShowSnackbar,
+                onShowSnackbar = onShowSnackbar,
                 previousRoute = navController.previousBackStackEntry?.destination?.route,
                 onNavigateToHome = { navController.navigateToHome() },
                 onNavigateBack = { navController.navigateUp() },

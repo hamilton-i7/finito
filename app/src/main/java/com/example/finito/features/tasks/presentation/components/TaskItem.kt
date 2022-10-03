@@ -135,7 +135,10 @@ fun TaskItem(
                                     label = {
                                         Text(
                                             text = boardName,
-                                            color = finitoColors.primary
+                                            color = if (ghostVariant)
+                                                finitoColors.outline.copy(alpha = DisabledAlpha)
+                                            else
+                                                finitoColors.primary
                                         )
                                     },
                                     enabled = !task.completed && !ghostVariant,

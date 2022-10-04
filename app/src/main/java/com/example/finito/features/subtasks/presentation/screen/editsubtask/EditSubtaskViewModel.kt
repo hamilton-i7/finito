@@ -20,7 +20,11 @@ import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -42,7 +46,8 @@ class EditSubtaskViewModel @Inject constructor(
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
         private set
 
-    private var originalRelatedBoard: Board? = null
+    var originalRelatedBoard: Board? = null
+        private set
 
     var nameState by mutableStateOf(TextFieldState())
         private set
@@ -91,23 +96,23 @@ class EditSubtaskViewModel @Inject constructor(
                 )
                 when (subtaskUseCases.updateSubtask(updatedSubtask)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
-                            error = R.string.update_subtask_error
-                        ))
+                        fireEvents(
+                            Event.ShowError(
+                                error = R.string.update_subtask_error
+                            )
+                        )
                     }
                     is Result.Success -> {
-                        _eventFlow.emitAll(
-                            flow {
-                                emit(Event.Snackbar.UndoSubtaskChange(
-                                    message = if (completed)
-                                        R.string.subtask_marked_as_completed
-                                    else
-                                        R.string.subtask_marked_as_uncompleted,
-                                    subtask = this@with,
-                                    task = task.task
-                                ))
-                                emit(Event.SubtaskUpdated)
-                            }
+                        fireEvents(
+                            Event.Snackbar.SubtaskStateChanged(
+                                message = if (completed)
+                                    R.string.subtask_marked_as_completed
+                                else
+                                    R.string.subtask_marked_as_uncompleted,
+                                subtask = this@with,
+                                task = task.task
+                            ),
+                            Event.NavigateBack
                         )
                     }
                 }
@@ -120,19 +125,16 @@ class EditSubtaskViewModel @Inject constructor(
         with(subtask!!) {
             when (subtaskUseCases.deleteSubtask(this)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.delete_subtask_error
-                    ))
+                    fireEvents(
+                        Event.ShowError(
+                            error = R.string.delete_subtask_error
+                        )
+                    )
                 }
                 is Result.Success -> {
-                    _eventFlow.emitAll(
-                        flow {
-                            emit(Event.Snackbar.RecoverSubtask(
-                                message = R.string.subtask_deleted,
-                                subtask = this@with
-                            ))
-                            emit(Event.SubtaskUpdated)
-                        }
+                    fireEvents(
+                        Event.Snackbar.SubtaskDeleted(subtask = this),
+                        Event.NavigateBack
                     )
                 }
             }
@@ -162,11 +164,13 @@ class EditSubtaskViewModel @Inject constructor(
 
                     when (taskUseCases.createTask(taskFromSubtask)) {
                         is Result.Error -> {
-                            _eventFlow.emit(Event.ShowError(
-                                error = R.string.update_subtask_error
-                            ))
+                            fireEvents(
+                                Event.ShowError(
+                                    error = R.string.update_subtask_error
+                                )
+                            )
                         }
-                        is Result.Success -> _eventFlow.emit(Event.SubtaskUpdated)
+                        is Result.Success -> fireEvents(Event.NavigateBack)
                     }
                 }
                 return@launch
@@ -176,10 +180,12 @@ class EditSubtaskViewModel @Inject constructor(
                 description = descriptionState.value.ifBlank { null }
             ).let {
                 when (subtaskUseCases.updateSubtask(it)) {
-                    is Result.Error -> _eventFlow.emit(Event.ShowError(
-                        error = R.string.update_subtask_error
-                    ))
-                    is Result.Success -> _eventFlow.emit(Event.SubtaskUpdated)
+                    is Result.Error -> {
+                        fireEvents(Event.ShowError(
+                            error = R.string.update_subtask_error
+                        ))
+                    }
+                    is Result.Success -> fireEvents(Event.NavigateBack)
                 }
             }
         }
@@ -190,9 +196,11 @@ class EditSubtaskViewModel @Inject constructor(
             viewModelScope.launch {
                 when (val result = subtaskUseCases.findOneSubtask(subtaskId)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
-                            error = R.string.find_subtask_error
-                        ))
+                        fireEvents(
+                            Event.ShowError(
+                                error = R.string.find_subtask_error
+                            )
+                        )
                     }
                     is Result.Success -> setupData(result.data)
                 }
@@ -215,7 +223,7 @@ class EditSubtaskViewModel @Inject constructor(
 
             when (val result = boardUseCases.findOneBoard(boardId)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
+                    fireEvents(Event.ShowError(
                         error = R.string.find_board_error
                     ))
                 }
@@ -238,22 +246,29 @@ class EditSubtaskViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
+
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
 
-        object SubtaskUpdated : Event()
+        object NavigateBack : Event()
 
-        sealed class Snackbar : Event() {
-            data class UndoSubtaskChange(
-                @StringRes val message: Int,
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class SubtaskStateChanged(
+                @StringRes message: Int,
                 val subtask: Subtask,
                 val task: Task,
-            ) : Snackbar()
+            ) : Snackbar(message)
 
-            data class RecoverSubtask(
-                @StringRes val message: Int,
-                val subtask: Subtask,
-            ) : Snackbar()
+            class SubtaskDeleted(val subtask: Subtask) : Snackbar(message = R.string.subtask_deleted)
         }
     }
 }

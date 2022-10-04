@@ -35,11 +35,12 @@ class CreateSubtask(private val repository: SubtaskRepository) {
     }
 
     private suspend fun arrangeSubtasks(subtask: Subtask): Subtask {
-        val subtasks = repository.findAllByTaskId(subtask.taskId) + listOf(subtask)
-        val arrangedSubtasks = subtasks.moveElement(subtasks.lastIndex, subtask.position!!).mapIndexed { index, it ->
-            it.copy(position = index)
-        }.toTypedArray()
+        val subtasks = repository.findAllByTaskId(subtask.subtaskId).filterUncompleted() + listOf(subtask)
+        val arrangedSubtasks = subtasks.moveElement(
+            start = subtasks.lastIndex,
+            end = subtask.position!!
+        ).mapIndexed { index, it -> it.copy(position = index) }.toTypedArray()
         repository.updateMany(*arrangedSubtasks)
-        return arrangedSubtasks.first { it.taskId == subtask.taskId }
+        return arrangedSubtasks.first { it.subtaskId == subtask.subtaskId }
     }
 }

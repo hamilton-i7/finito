@@ -42,8 +42,13 @@ class CreateTask(
     }
 
     private suspend fun arrangeSameBoard(task: Task): Task {
-        val tasks = taskRepository.findTasksByBoard(task.boardId) + listOf(task)
-        val arrangedTasks = tasks.moveElement(tasks.lastIndex, task.boardPosition!!).mapIndexed { index, it ->
+        val tasks = taskRepository.findTasksByBoard(task.boardId).filter {
+            !it.completed
+        } + listOf(task)
+        val arrangedTasks = tasks.moveElement(
+            start = tasks.lastIndex,
+            end = task.boardPosition!!
+        ).mapIndexed { index, it ->
             it.copy(boardPosition = index)
         }.toTypedArray()
         taskRepository.updateMany(*arrangedTasks)

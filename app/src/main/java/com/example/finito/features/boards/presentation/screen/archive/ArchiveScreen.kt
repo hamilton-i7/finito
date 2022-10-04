@@ -15,6 +15,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -22,6 +24,7 @@ import com.example.finito.core.presentation.util.menu.ArchivedBoardCardMenuOptio
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
+import com.example.finito.features.boards.presentation.screen.archive.components.ArchiveDialogs
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
@@ -33,7 +36,8 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun ArchiveScreen(
-    drawerState: DrawerState,
+    appViewModel: AppViewModel,
+    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     archiveViewModel: ArchiveViewModel = hiltViewModel(),
     finishActivity: () -> Unit = {},
@@ -58,9 +62,14 @@ fun ArchiveScreen(
     LaunchedEffect(Unit) {
         archiveViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is ArchiveViewModel.Event.ShowSnackbar -> {
-                    onShowSnackbar(event.message, R.string.undo) {
-                        archiveViewModel.onEvent(ArchiveEvent.RestoreBoard)
+                is ArchiveViewModel.Event.ShowError -> {
+                    archiveViewModel.onEvent(ArchiveEvent.ShowDialog(
+                        type = ArchiveEvent.DialogType.Error(message = event.error)
+                    ))
+                }
+                is ArchiveViewModel.Event.Snackbar.BoardStateChanged -> {
+                    onShowSnackbar(event.message, event.actionLabel) {
+                        appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                     }
                 }
             }
@@ -122,6 +131,8 @@ fun ArchiveScreen(
                 simpleTopBarScrollBehavior.nestedScrollConnection
         )
     ) { innerPadding ->
+        ArchiveDialogs(archiveViewModel)
+
         ArchiveScreen(
             paddingValues = innerPadding,
             gridLayout = archiveViewModel.gridLayout,

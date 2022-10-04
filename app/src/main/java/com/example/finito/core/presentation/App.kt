@@ -322,6 +322,7 @@ fun App(
                     }
                 ) {
                     ArchiveScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,

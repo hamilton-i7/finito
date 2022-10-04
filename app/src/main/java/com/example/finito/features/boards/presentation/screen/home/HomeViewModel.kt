@@ -230,7 +230,7 @@ class HomeViewModel @Inject constructor(
                         is Result.Success -> {
                             fireEvents(
                                 Event.Snackbar.BoardStateChanged(
-                                    message = R.string.board_archived,
+                                    message = R.string.board_moved_to_trash,
                                     board = this,
                                 )
                             )

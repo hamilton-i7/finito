@@ -84,17 +84,19 @@ class AddEditBoardViewModel @Inject constructor(
             is AddEditBoardEvent.ShowDialog -> dialogType = event.type
             AddEditBoardEvent.AlertNotEditable -> onAlertNotEditable()
             AddEditBoardEvent.UndoRestore -> onUndoRestore()
-            AddEditBoardEvent.RefreshBoard -> {
-                fetchBoard()
-                fetchBoardState()
-            }
+            AddEditBoardEvent.RefreshBoard -> fetchBoard()
         }
     }
 
     private fun onAlertNotEditable() = viewModelScope.launch {
         with(board!!) {
             val restoredBoard = BoardWithLabelsAndTasks(
-                board = board.copy(state = BoardState.ACTIVE, removedAt = null, archivedAt = null),
+                board = board.copy(
+                    state = BoardState.ACTIVE,
+                    removedAt = null,
+                    archivedAt = null,
+                    position = 0
+                ),
                 labels = labels,
                 tasks = tasks.map { task -> task.toCompletedTask() }
             )
@@ -198,7 +200,7 @@ class AddEditBoardViewModel @Inject constructor(
                     )
                     val events = mutableListOf<Event>(
                         Event.Snackbar.BoardStateChanged(
-                            message = R.string.board_was_restored,
+                            message = R.string.board_moved_to_trash,
                             board = originalBoard
                         )
                     ).apply {
@@ -258,10 +260,10 @@ class AddEditBoardViewModel @Inject constructor(
                         ))
                     }
                     is Result.Success -> {
-                        println(result.data.board)
                         board = result.data
                         nameState = TextFieldState(value = result.data.board.name)
                         selectedLabels = result.data.labels
+                        boardState = result.data.board.state
                     }
                 }
             }

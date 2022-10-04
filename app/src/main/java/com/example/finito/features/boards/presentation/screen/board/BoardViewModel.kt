@@ -167,7 +167,7 @@ class BoardViewModel @Inject constructor(
                 labels = labels,
                 tasks = tasks.map { task -> task.toCompletedTask() }
             )
-            _eventFlow.emit(Event.Snackbar.UneditableBoard(board = restoredBoard))
+            fireEvents(Event.Snackbar.UneditableBoard(board = restoredBoard))
         }
     }
 
@@ -180,7 +180,7 @@ class BoardViewModel @Inject constructor(
             )
             when (boardUseCases.updateBoard(updatedBoard)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
+                    fireEvents(Event.ShowError(
                         error = R.string.update_board_error
                     ))
                 }
@@ -302,7 +302,7 @@ class BoardViewModel @Inject constructor(
         }
         when (taskUseCases.arrangeBoardTasks(tasks)) {
             is Result.Error -> {
-                _eventFlow.emit(Event.ShowError(
+                fireEvents(Event.ShowError(
                     error = R.string.arrange_tasks_error
                 ))
             }
@@ -570,7 +570,7 @@ class BoardViewModel @Inject constructor(
     private fun deleteCompletedTasks() = viewModelScope.launch {
         val completedTasks = tasks.filterCompleted().map { it.task }
         if (taskUseCases.deleteTask(*completedTasks.toTypedArray()) is Result.Error) {
-            _eventFlow.emit(Event.ShowError(
+            fireEvents(Event.ShowError(
                 error = R.string.delete_completed_tasks_error
             ))
         }
@@ -579,7 +579,7 @@ class BoardViewModel @Inject constructor(
     private fun deleteCompletedSubtasks() = viewModelScope.launch {
         val completedSubtasks = tasks.flatMap { it.subtasks }.filterCompleted()
         if (subtaskUseCases.deleteSubtask(*completedSubtasks.toTypedArray()) is Result.Error) {
-            _eventFlow.emit(Event.ShowError(
+            fireEvents(Event.ShowError(
                 error = R.string.delete_completed_subtasks_error
             ))
         }
@@ -595,13 +595,13 @@ class BoardViewModel @Inject constructor(
         )
         when (taskUseCases.toggleTaskCompleted(updatedTask)) {
             is Result.Error -> {
-                _eventFlow.emit(Event.ShowError(
+                fireEvents(Event.ShowError(
                     error = R.string.update_task_error
                 ))
             }
             is Result.Success -> {
                 fetchBoard()
-                _eventFlow.emit(Event.Snackbar.TaskCompletedStateChanged(
+                fireEvents(Event.Snackbar.TaskCompletedStateChanged(
                     message = if (completed)
                         R.string.task_marked_as_completed
                     else
@@ -620,14 +620,14 @@ class BoardViewModel @Inject constructor(
         )
         when (subtaskUseCases.updateSubtask(updatedSubtask)) {
             is Result.Error -> {
-                _eventFlow.emit(Event.ShowError(
+                fireEvents(Event.ShowError(
                     error = R.string.update_task_error
                 ))
             }
             is Result.Success -> {
                 fetchBoard()
                 val relatedTask = board!!.tasks.first { it.task.taskId == subtask.taskId }
-                _eventFlow.emit(Event.Snackbar.SubtaskCompletedStateChanged(
+                fireEvents(Event.Snackbar.SubtaskCompletedStateChanged(
                     message = if (completed)
                         R.string.subtask_marked_as_completed
                     else
@@ -650,7 +650,7 @@ class BoardViewModel @Inject constructor(
             ).let {
                 when (taskUseCases.createTask(it)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.create_task_error
                         ))
                     }
@@ -702,7 +702,7 @@ class BoardViewModel @Inject constructor(
              viewModelScope.launch {
                  when (val result = boardUseCases.findOneBoard(boardId)) {
                      is Result.Error -> {
-                         _eventFlow.emit(Event.ShowError(
+                         fireEvents(Event.ShowError(
                              error = R.string.find_board_error
                          ))
                      }
@@ -746,7 +746,7 @@ class BoardViewModel @Inject constructor(
             )
             when (boardUseCases.updateBoard(restoredBoard)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
+                    fireEvents(Event.ShowError(
                         error = R.string.update_board_error
                     ))
                 }
@@ -756,14 +756,16 @@ class BoardViewModel @Inject constructor(
                         labels = labels,
                         tasks = tasks.map { it.toCompletedTask() }
                     )
+                    val events = mutableListOf<Event>()
 
                     if (showSnackbar) {
-                        _eventFlow.emit(Event.Snackbar.BoardStateChanged(
+                        events.add(Event.Snackbar.BoardStateChanged(
                             message = R.string.board_was_restored,
                             board = originalBoard
                         ))
                     }
-                    _eventFlow.emit(Event.NavigateBack)
+                    events.add(Event.NavigateBack)
+                    fireEvents(*events.toTypedArray())
                 }
             }
         }
@@ -790,17 +792,18 @@ class BoardViewModel @Inject constructor(
                     )
                     when(boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
-                            _eventFlow.emit(Event.ShowError(
+                            fireEvents(Event.ShowError(
                                 error = R.string.update_board_error
                             ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.Snackbar.BoardStateChanged(
-                                message = R.string.board_archived,
-                                board = originalBoard,
-                            ))
-                            delay(100)
-                            _eventFlow.emit(Event.NavigateHome)
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_archived,
+                                    board = originalBoard,
+                                ),
+                                Event.NavigateHome
+                            )
                         }
                     }
                 }
@@ -816,17 +819,16 @@ class BoardViewModel @Inject constructor(
                     )
                     when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
-                            _eventFlow.emit(Event.ShowError(
+                            fireEvents(Event.ShowError(
                                 error = R.string.update_board_error
                             ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.Snackbar.BoardStateChanged(
-                                message = R.string.board_moved_to_trash,
-                                board = originalBoard
-                            ))
-                            delay(100)
-                            _eventFlow.emit(
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_moved_to_trash,
+                                    board = originalBoard
+                                ),
                                 if (boardState == BoardState.ACTIVE) Event.NavigateHome
                                 else Event.NavigateBack
                             )
@@ -834,6 +836,14 @@ class BoardViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+
         }
     }
 

@@ -38,23 +38,8 @@ class AppViewModel @Inject constructor(
             is AppEvent.RecoverTask -> onRecoverTask(event.task)
             is AppEvent.RecoverSubtask -> onRecoverSubtask(event.subtask)
             AppEvent.RefreshBoard -> onRefreshBoard()
-            is AppEvent.RestoreUneditableBoard -> onRestoreUneditableBoard(event.board)
+            is AppEvent.RestoreUneditableBoard -> onUndoBoardChange(event.board)
         }
-    }
-
-    private fun onRestoreUneditableBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
-        when (boardUseCases.updateBoard(board)) {
-            is Result.Error -> {
-                fireEvents(Event.ShowError(
-                    error = R.string.update_board_error
-                ))
-            }
-            is Result.Success -> onRefreshBoard()
-        }
-    }
-
-    private fun onRefreshBoard() = viewModelScope.launch {
-        fireEvents(Event.RefreshBoard)
     }
 
     private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
@@ -99,9 +84,17 @@ class AppViewModel @Inject constructor(
 
     private fun onUndoBoardChange(originalBoard: BoardWithLabelsAndTasks) = viewModelScope.launch {
         when (boardUseCases.updateBoard(originalBoard)) {
-            is Result.Error -> TODO()
+            is Result.Error -> {
+                fireEvents(Event.ShowError(
+                    error = R.string.update_board_error
+                ))
+            }
             is Result.Success -> onRefreshBoard()
         }
+    }
+
+    private fun onRefreshBoard() = viewModelScope.launch {
+        fireEvents(Event.RefreshBoard)
     }
 
     private suspend fun fireEvents(vararg events: Event) {

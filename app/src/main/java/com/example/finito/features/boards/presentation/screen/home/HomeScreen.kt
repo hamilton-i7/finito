@@ -269,6 +269,7 @@ private fun HomeScreen(
         .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
+            allowDrag = selectedSortingOption == null,
             reorderableGridState = reorderableGridState,
             reorderableListState = reorderableListState,
             labels = labels,

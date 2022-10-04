@@ -200,8 +200,8 @@ private fun ArchiveScreen(
             onLabelClick = onLabelClick,
             onRemoveFiltersClick = onRemoveFiltersClick,
             boards = boards,
-            selectedSortingOption = selectedSortingOption,
             sortingOptions = commonSortingOptions,
+            selectedSortingOption = selectedSortingOption,
             onSortOptionClick = onSortOptionClick,
             onBoardClick = onBoardClick,
             showCardMenu = showCardMenu,
@@ -210,7 +210,7 @@ private fun ArchiveScreen(
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
                 onMenuItemClick(boardId, option as ArchivedBoardCardMenuOption)
-            }
+            },
         )
     }
 }

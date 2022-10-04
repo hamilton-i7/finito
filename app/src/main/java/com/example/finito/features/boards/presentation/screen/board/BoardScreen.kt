@@ -61,7 +61,7 @@ import org.burnoutcrew.reorderable.*
 fun BoardScreen(
     drawerState: DrawerState,
     appViewModel: AppViewModel,
-    showSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     boardViewModel: BoardViewModel = hiltViewModel(),
     previousRoute: String? = null,
     onNavigateToHome: () -> Unit = {},
@@ -69,6 +69,7 @@ fun BoardScreen(
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
+    onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
     val detailedBoard = boardViewModel.board
 
@@ -96,6 +97,7 @@ fun BoardScreen(
         derivedStateOf { reorderableState.listState.firstVisibleItemIndex == 0 }
     }
     val noCompletedTasks = boardViewModel.tasks.none { it.task.completed }
+            && boardViewModel.tasks.flatMap { it.subtasks }.none { it.completed }
     val disabledMenuOptions = when (boardViewModel.boardState) {
         BoardState.ACTIVE -> listOf(ActiveBoardScreenOption.DeleteCompletedTasks)
         BoardState.ARCHIVED -> listOf(ArchivedBoardScreenMenuOption.DeleteCompletedTasks)
@@ -124,18 +126,21 @@ fun BoardScreen(
                 is BoardViewModel.Event.Snackbar -> {
                     when (event) {
                         is BoardViewModel.Event.Snackbar.UndoBoardChange -> {
-                            showSnackbar(event.message, R.string.undo) {
+                            onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                             }
                         }
                         is BoardViewModel.Event.Snackbar.UndoTaskCompletedToggle -> {
-                            showSnackbar(event.message, R.string.undo) {
+                            onShowSnackbar(event.message, R.string.undo) {
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
                         is BoardViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
-                            showSnackbar(event.message, R.string.undo) {
-                                appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(subtask = event.subtask))
+                            onShowSnackbar(event.message, R.string.undo) {
+                                appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(
+                                    subtask = event.subtask,
+                                    task = event.task
+                                ))
                             }
                         }
                     }
@@ -145,13 +150,15 @@ fun BoardScreen(
                         type = BoardEvent.DialogType.Error(message = event.error)
                     ))
                 }
+                BoardViewModel.Event.NavigateBack -> onNavigateBack()
+                BoardViewModel.Event.NavigateHome -> onNavigateToHome()
             }
         }
     }
 
     LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collect { event ->
-            if (event !is AppViewModel.Event.RefreshBoard) return@collect
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshBoard) return@collect
             boardViewModel.onEvent(BoardEvent.RefreshBoard)
         }
     }
@@ -217,7 +224,6 @@ fun BoardScreen(
                                     when (it as ArchivedBoardScreenMenuOption) {
                                         ArchivedBoardScreenMenuOption.DeleteBoard -> {
                                             boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                            onNavigateBack()
                                         }
                                         ArchivedBoardScreenMenuOption.DeleteCompletedTasks -> {
                                             boardViewModel.onEvent(BoardEvent.ShowDialog(
@@ -232,7 +238,6 @@ fun BoardScreen(
                                         }
                                         ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
                                             boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                            onNavigateBack()
                                         }
                                     }
                                 }
@@ -251,7 +256,6 @@ fun BoardScreen(
                                         }
                                         DeletedBoardScreenMenuOption.RestoreBoard -> {
                                             boardViewModel.onEvent(BoardEvent.RestoreBoard)
-                                            onNavigateBack()
                                         }
                                     }
                                 }
@@ -259,11 +263,9 @@ fun BoardScreen(
                                     when (it as ActiveBoardScreenOption) {
                                         ActiveBoardScreenOption.ArchiveBoard -> {
                                             boardViewModel.onEvent(BoardEvent.ArchiveBoard)
-                                            onNavigateToHome()
                                         }
                                         ActiveBoardScreenOption.DeleteBoard -> {
                                             boardViewModel.onEvent(BoardEvent.DeleteBoard)
-                                            onNavigateToHome()
                                         }
                                         ActiveBoardScreenOption.DeleteCompletedTasks -> {
                                             boardViewModel.onEvent(BoardEvent.ShowDialog(
@@ -312,6 +314,9 @@ fun BoardScreen(
                         boardViewModel.onEvent(BoardEvent.ToggleCompletedTasksVisibility)
                     },
                     onTaskClick = { onNavigateToEditTask(it.taskId) },
+                    onSubtaskClick = {
+                        onNavigateToEditSubtask(detailedBoard!!.board.boardId, it.subtaskId)
+                    },
                     onPriorityClick = {
                         boardViewModel.onEvent(BoardEvent.ShowDialog(
                             type = BoardEvent.DialogType.Priority(it)
@@ -472,7 +477,6 @@ private fun BoardScreen(
                                 onDateTimeClick = { onDateTimeClick(it) },
                                 showDragIndicator = true,
                                 modifier = Modifier
-                                    .animateItemPlacement()
                                     .detectReorderAfterLongPress(reorderableState)
                             )
                         }
@@ -502,6 +506,7 @@ private fun BoardScreen(
                                     subtask = it,
                                     isDragging = isDragging,
                                     showDragIndicator = true,
+                                    onSubtaskClick = { onSubtaskClick(it) },
                                     onCompletedToggle = { onToggleSubtaskCompleted(it) },
                                     modifier = Modifier.detectReorderAfterLongPress(reorderableState)
                                 )

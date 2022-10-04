@@ -26,8 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.*
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
@@ -39,6 +38,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -166,8 +166,8 @@ fun AddEditTaskScreen(
     }
 
     LaunchedEffect(Unit) {
-        appViewModel.eventFlow.collect { event ->
-            if (event !is AppViewModel.Event.RefreshTask) return@collect
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshTask) return@collect
             addEditTaskViewModel.onEvent(AddEditTaskEvent.RefreshTask)
         }
     }
@@ -175,7 +175,7 @@ fun AddEditTaskScreen(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetShape = RoundedCornerShape(topStart = bottomSheetCorners, topEnd = bottomSheetCorners),
-        sheetBackgroundColor = finitoColors.surface,
+        sheetBackgroundColor = finitoColors.surfaceColorAtElevation(1.dp),
         sheetContent = {
             BoardsListSheetContent(
                 boards = addEditTaskViewModel.boards,
@@ -353,8 +353,8 @@ private fun AddEditTaskScreen(
     selectedBoardName: String = "",
     showBoardsMenu: Boolean = false,
     onBoardIndicatorClick: () -> Unit = {},
-    nameState: TextFieldState = TextFieldState(),
-    descriptionState: TextFieldState = TextFieldState(),
+    nameState: TextFieldState = TextFieldState.Default,
+    descriptionState: TextFieldState = TextFieldState.Default,
     date: LocalDate? = null,
     onDateClick: () -> Unit = {},
     onDateRemove: () -> Unit = {},
@@ -368,10 +368,10 @@ private fun AddEditTaskScreen(
     onReminderOptionClick: (TaskReminderOption) -> Unit = {},
     priority: Priority? = null,
     onPriorityClick: (Priority) -> Unit = {},
-    subtaskTextFields: List<TextFieldState> = emptyList(),
+    subtaskTextFields: List<SubtaskTextField> = emptyList(),
     onCreateSubtask: () -> Unit = {},
-    onRemoveSubtask: (TextFieldState) -> Unit = {},
-    onRemoveSubtaskByKeyPress: (position: Int, TextFieldState) -> Unit = {_, _ -> },
+    onRemoveSubtask: (SubtaskTextField) -> Unit = {},
+    onRemoveSubtaskByKeyPress: (position: Int, SubtaskTextField) -> Unit = {_, _ -> },
     onNextSubtask: (position: Int) -> Unit = {},
     onAddEditButtonClick: () -> Unit = {},
 ) {
@@ -521,6 +521,13 @@ private fun AddEditTaskScreen(
                 key = { _, state -> state.id },
                 contentType = { _, _ -> ContentTypes.SUBTASK_TEXT_FIELDS }
             ) { index, textFieldState ->
+                val focusRequest = remember { FocusRequester() }
+                val defaultTextStyle = MaterialTheme.typography.bodyLarge
+                val completedTextStyle = defaultTextStyle.copy(
+                    textDecoration = TextDecoration.LineThrough
+                )
+                var textStyle by remember { mutableStateOf(defaultTextStyle) }
+
                 // TODO: 22/09/2022: Fix offset when closing the IME while dragging
                 ReorderableItem(reorderableState, key = textFieldState.id) { isDragging ->
                     SubtaskTextFieldItem(
@@ -528,6 +535,7 @@ private fun AddEditTaskScreen(
                         reorderableState = reorderableState,
                         hapticFeedback = hapticFeedback,
                         focusManager = focusManager,
+                        textStyle = textStyle,
                         isDragging = isDragging,
                         onRemoveSubtask = { onRemoveSubtask(textFieldState) },
                         keyboardOptions = KeyboardOptions(
@@ -537,12 +545,15 @@ private fun AddEditTaskScreen(
                         keyboardActions = KeyboardActions(
                             onNext = { onNextSubtask(index) }
                         ),
-                        modifier = Modifier.animateItemPlacement(),
                         textFieldModifier = Modifier
+                            .focusRequester(focusRequest)
+                            .onFocusChanged {
+                                textStyle = if (it.isFocused || !textFieldState.completed) defaultTextStyle
+                                else completedTextStyle
+                            }
                             .onKeyEvent { event ->
                                 if (event.key != Key.Backspace) return@onKeyEvent false
                                 if (textFieldState.value.isNotEmpty()) return@onKeyEvent false
-
                                 onRemoveSubtaskByKeyPress(index, textFieldState)
                                 true
                             }
@@ -578,11 +589,11 @@ private fun AddEditTaskScreen(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .animateItemPlacement()
-                ) { validName ->
+                ) { isValidName ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Button(
                             onClick = onAddEditButtonClick,
-                            enabled = validName,
+                            enabled = isValidName,
                             modifier = Modifier
                                 .widthIn(max = 350.dp)
                                 .fillMaxWidth()
@@ -611,9 +622,9 @@ private fun AddEditTaskScreenPreview() {
             AddEditTaskScreen(
                 selectedBoardName = "Board name",
                 subtaskTextFields = listOf(
-                    TextFieldState(id = 1, value = "Subtask 1"),
-                    TextFieldState(id = 2, value = "Subtask 2"),
-                    TextFieldState(id = 3),
+                    SubtaskTextField(id = 1, value = "Subtask 1"),
+                    SubtaskTextField(id = 2, value = "Subtask 2"),
+                    SubtaskTextField(id = 3),
                 )
             )
         }

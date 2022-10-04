@@ -15,6 +15,9 @@ import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
+import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.entity.filterCompleted
@@ -35,6 +38,7 @@ import javax.inject.Inject
 class TomorrowViewModel @Inject constructor(
     private val taskUseCases: TaskUseCases,
     private val boardUseCases: BoardUseCases,
+    private val subtaskUseCases: SubtaskUseCases,
     private val preferences: SharedPreferences
 ) : ViewModel() {
 
@@ -122,6 +126,7 @@ class TomorrowViewModel @Inject constructor(
             is TomorrowEvent.SortByPriority -> onSortByPriority(event.option)
             TomorrowEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is TomorrowEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
+            is TomorrowEvent.ToggleSubtaskCompleted -> onToggleSubtaskCompleted(event.subtask)
             TomorrowEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
             is TomorrowEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
             TomorrowEvent.DismissBottomSheet -> onDismissBottomSheet()
@@ -137,14 +142,14 @@ class TomorrowViewModel @Inject constructor(
         bottomSheetContent = content
         if (content !is TomorrowEvent.BottomSheetContent.BoardsList) return
         selectedBoard = content.task?.let { task ->
-            boards.first { it.boardId == task.task.boardId }
+            boards.first { it.boardId == task.boardId }
         } ?: selectedBoard
     }
 
     private fun onShowDialog(type: TomorrowEvent.DialogType?) {
         dialogType = type
         selectedPriority = if (type is TomorrowEvent.DialogType.Priority) {
-            type.task.task.priority
+            type.task.priority
         } else null
     }
 
@@ -170,7 +175,7 @@ class TomorrowViewModel @Inject constructor(
                 completedAt = if (completed) LocalDateTime.now() else null
             )
         )
-        when (taskUseCases.updateTask(updatedTask)) {
+        when (taskUseCases.toggleTaskCompleted(updatedTask)) {
             is Result.Error -> {
                 _eventFlow.emit(Event.ShowError(
                     error = R.string.update_task_error
@@ -188,6 +193,31 @@ class TomorrowViewModel @Inject constructor(
         }
     }
 
+    private fun onToggleSubtaskCompleted(subtask: Subtask) = viewModelScope.launch {
+        val completed = !subtask.completed
+        val updatedSubtask = subtask.copy(
+            completed = completed,
+            completedAt = if (completed) LocalDateTime.now() else null,
+        )
+        when (subtaskUseCases.updateSubtask(updatedSubtask)) {
+            is Result.Error -> {
+                _eventFlow.emit(Event.ShowError(
+                    error = R.string.update_task_error
+                ))
+            }
+            is Result.Success -> {
+                _eventFlow.emit(Event.Snackbar.UndoSubtaskCompletedToggle(
+                    message = if (completed)
+                        R.string.subtask_marked_as_completed
+                    else
+                        R.string.subtask_marked_as_uncompleted,
+                    subtask = subtask,
+                    task = tasks.first { it.task.taskId == subtask.taskId }.task
+                ))
+            }
+        }
+    }
+
     private fun onShowCompletedTasksChange() {
         showCompletedTasks = !showCompletedTasks
         with(preferences.edit()) {
@@ -196,10 +226,10 @@ class TomorrowViewModel @Inject constructor(
         }
     }
 
-    private fun onShowTaskDateTimeFullDialog(task: TaskWithSubtasks?) {
-        selectedTask = task?.task
-        selectedDate = task?.task?.date
-        selectedTime = task?.task?.time
+    private fun onShowTaskDateTimeFullDialog(task: Task?) {
+        selectedTask = task
+        selectedDate = task?.date
+        selectedTime = task?.time
     }
 
     private fun onSaveTaskDateTimeChanges() = viewModelScope.launch {
@@ -230,37 +260,45 @@ class TomorrowViewModel @Inject constructor(
         }
     }
 
-    private fun onDeleteCompletedTasks() = viewModelScope.launch {
+    private fun onDeleteCompletedTasks() {
+        deleteCompletedTasks()
+        deleteCompletedSubtasks()
+    }
+
+    private fun deleteCompletedTasks() = viewModelScope.launch {
         val completedTasks = tasks.filterCompleted().map { it.task }
-        when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
-            is Result.Error -> {
-                _eventFlow.emit(Event.ShowError(
-                    error = R.string.delete_completed_tasks_error
-                ))
-            }
-            is Result.Success -> Unit
+        if (taskUseCases.deleteTask(*completedTasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_tasks_error
+            ))
         }
     }
 
-    private fun onChangeTaskPriorityConfirm(task: TaskWithSubtasks) = viewModelScope.launch {
-        if (task.task.priority == selectedPriority) return@launch
-        val updatedTask = task.copy(
-            task = task.task.copy(priority = selectedPriority)
-        )
+
+    private fun deleteCompletedSubtasks() = viewModelScope.launch {
+        val completedSubtasks = tasks.flatMap { it.subtasks }.filterCompleted()
+        if (subtaskUseCases.deleteSubtask(*completedSubtasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_subtasks_error
+            ))
+        }
+    }
+
+    private fun onChangeTaskPriorityConfirm(task: Task) = viewModelScope.launch {
+        if (task.priority == selectedPriority) return@launch
+        val updatedTask = task.copy(priority = selectedPriority)
         taskUseCases.updateTask(updatedTask)
     }
 
     private fun onChangeBoard(
         board: SimpleBoard,
-        task: TaskWithSubtasks?,
+        task: Task?,
     ) = viewModelScope.launch {
         if (task == null) {
             selectedBoard = board
             return@launch
         }
-        val updatedTask = task.copy(
-            task = task.task.copy(boardId = board.boardId)
-        )
+        val updatedTask = task.copy(boardId = board.boardId)
         taskUseCases.updateTask(updatedTask)
     }
 
@@ -290,6 +328,12 @@ class TomorrowViewModel @Inject constructor(
             data class UndoTaskChange(
                 @StringRes val message: Int,
                 val task: TaskWithSubtasks
+            ) : Snackbar()
+
+            data class UndoSubtaskCompletedToggle(
+                @StringRes val message: Int,
+                val subtask: Subtask,
+                val task: Task
             ) : Snackbar()
         }
     }

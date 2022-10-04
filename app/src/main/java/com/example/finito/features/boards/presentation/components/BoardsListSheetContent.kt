@@ -27,39 +27,41 @@ fun BoardsListSheetContent(
     onBoardClick: (SimpleBoard) -> Unit = {},
     state: LazyListState = rememberLazyListState(),
 ) {
-    LazyColumn(
-        state = state,
-        modifier = Modifier.systemBarsPadding(),
-    ) {
-        item {
-            Text(
-                text = stringResource(id = R.string.move_to),
-                style = MaterialTheme.typography.bodySmall,
-                color = finitoColors.outline,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
-        items(boards) { board ->
-            val selected = board.boardId == selectedBoard?.boardId
-            ListItem(
-                headlineText = {
-                    Text(
-                        text = board.name,
-                        color = if (selected) finitoColors.primary else finitoColors.onSurface
-                    )
-                },
-                trailingContent = trailingContent@{
-                    if (!selected) return@trailingContent
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = stringResource(id = R.string.selected),
-                        tint = finitoColors.primary
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onBoardClick(board) }
-            )
+    Surface(tonalElevation = 1.dp) {
+        LazyColumn(
+            state = state,
+            modifier = Modifier.systemBarsPadding(),
+        ) {
+            item {
+                Text(
+                    text = stringResource(id = R.string.move_to),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = finitoColors.outline,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+            items(boards) { board ->
+                val selected = board.boardId == selectedBoard?.boardId
+                ListItem(
+                    headlineText = {
+                        Text(
+                            text = board.name,
+                            color = if (selected) finitoColors.primary else finitoColors.onSurface
+                        )
+                    },
+                    trailingContent = trailingContent@{
+                        if (!selected) return@trailingContent
+                        Icon(
+                            imageVector = Icons.Outlined.Check,
+                            contentDescription = stringResource(id = R.string.selected),
+                            tint = finitoColors.primary
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onBoardClick(board) }
+                )
+            }
         }
     }
 }

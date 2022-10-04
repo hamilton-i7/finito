@@ -5,6 +5,8 @@ import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.isValidId
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.repository.BoardRepository
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
+import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.domain.entity.filterUncompleted
 
@@ -23,11 +25,27 @@ class FindOneBoard(
                         val uncompletedTasks = tasks.filterUncompleted().sortedBy {
                             it.task.boardPosition
                         }.let { list ->
-                            list.map { it.copy(
-                                subtasks = it.subtasks.sortedBy { subtask -> subtask.position }
-                            ) }
+                            list.map {
+                                val uncompletedSubtasks = it.subtasks
+                                    .filterUncompleted()
+                                    .sortedBy { subtask -> subtask.position }
+                                val completedSubtasks = it.subtasks
+                                    .filterCompleted()
+                                    .sortedBy { subtask -> subtask.completedAt }
+                                it.copy(
+                                    subtasks = uncompletedSubtasks + completedSubtasks
+                                )
+                            }
                         }
-                        val completedTasks = tasks.filterCompleted().sortedBy { it.task.completedAt }
+                        val completedTasks = tasks.filterCompleted().sortedBy {
+                            it.task.completedAt
+                        }.let { list ->
+                            list.map {
+                                it.copy(
+                                    subtasks = it.subtasks.sortedBy { subtask -> subtask.completedAt }
+                                )
+                            }
+                        }
                         uncompletedTasks + completedTasks
                     }
                 )

@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.domain.entity.SimpleBoard
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import java.time.LocalDate
 import java.time.LocalTime
@@ -15,11 +17,13 @@ sealed class TodayEvent {
 
     data class ToggleTaskCompleted(val task: TaskWithSubtasks) : TodayEvent()
 
+    data class ToggleSubtaskCompleted(val subtask: Subtask) : TodayEvent()
+
     data class SortByPriority(val option: SortingOption.Priority?) : TodayEvent()
 
     data class ShowDialog(val type: DialogType? = null) : TodayEvent()
 
-    data class ShowTaskDateTimeFullDialog(val task: TaskWithSubtasks?) : TodayEvent()
+    data class ShowTaskDateTimeFullDialog(val task: Task?) : TodayEvent()
 
     data class ChangeDate(val date: LocalDate? = null) : TodayEvent()
 
@@ -29,9 +33,9 @@ sealed class TodayEvent {
 
     data class ChangeTaskPriority(val priority: Priority?) : TodayEvent()
 
-    data class ChangeTaskPriorityConfirm(val task: TaskWithSubtasks) : TodayEvent()
+    data class ChangeTaskPriorityConfirm(val task: Task) : TodayEvent()
 
-    data class ChangeBoard(val board: SimpleBoard, val task: TaskWithSubtasks? = null) : TodayEvent()
+    data class ChangeBoard(val board: SimpleBoard, val task: Task? = null) : TodayEvent()
 
     object ResetBottomSheetContent : TodayEvent()
 
@@ -48,7 +52,7 @@ sealed class TodayEvent {
     sealed class DialogType {
         object DeleteCompleted : DialogType()
 
-        data class Priority(val task: TaskWithSubtasks) : DialogType()
+        data class Priority(val task: Task) : DialogType()
 
         object TaskDate : DialogType()
 
@@ -60,7 +64,7 @@ sealed class TodayEvent {
     }
 
     sealed class BottomSheetContent {
-        data class BoardsList(val task: TaskWithSubtasks? = null) : BottomSheetContent()
+        data class BoardsList(val task: Task? = null) : BottomSheetContent()
 
         object NewTask : BottomSheetContent()
     }

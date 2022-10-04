@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DragIndicator
@@ -21,22 +22,24 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.components.textfields.BasicTextField
-import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.ui.theme.finitoColors
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 
 @Composable
 fun SubtaskTextFieldItem(
-    state: TextFieldState,
+    state: SubtaskTextField,
     reorderableState: ReorderableLazyListState,
     modifier: Modifier = Modifier,
     textFieldModifier: Modifier = Modifier,
+    textStyle: TextStyle = LocalTextStyle.current,
     onRemoveSubtask: () -> Unit = {},
     focusManager: FocusManager = LocalFocusManager.current,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
@@ -71,7 +74,7 @@ fun SubtaskTextFieldItem(
             )
         }
         BasicTextField(
-            state = state,
+            state = state.toTextFieldState(),
             placeholder = R.string.enter_subtask_name,
             trailingIcon = {
                 IconButton(onClick = onRemoveSubtask) {
@@ -81,6 +84,7 @@ fun SubtaskTextFieldItem(
                     )
                 }
             },
+            textStyle = textStyle,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             modifier = textFieldModifier

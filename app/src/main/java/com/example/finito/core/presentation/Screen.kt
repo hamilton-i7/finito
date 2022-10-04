@@ -24,10 +24,10 @@ sealed class Screen(
     object Urgent : Screen(route = "urgent")
 
     object Board : Screen(
-        route = "board/{$BOARD_ROUTE_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
+        route = "board/{$BOARD_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
         prefix = "board",
         arguments = listOf(
-            navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ID_ARGUMENT) { type = NavType.IntType },
             navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
                 type = NavType.StringType
                 defaultValue = BoardState.ACTIVE.name
@@ -38,10 +38,10 @@ sealed class Screen(
     object CreateBoard : Screen(route = "create_board")
 
     object EditBoard : Screen(
-        route = "edit_board/{$BOARD_ROUTE_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
+        route = "edit_board/{$BOARD_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
         prefix = "edit_board",
         arguments = listOf(
-            navArgument(BOARD_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ID_ARGUMENT) { type = NavType.IntType },
             navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
                 type = NavType.StringType
                 nullable = true
@@ -69,13 +69,13 @@ sealed class Screen(
 
     object CreateTask : Screen(
         route = "create_task?" +
-                "$BOARD_ROUTE_ID_ARGUMENT={$BOARD_ROUTE_ID_ARGUMENT}" +
+                "$BOARD_ID_ARGUMENT={$BOARD_ID_ARGUMENT}" +
                 "&$TASK_NAME_ARGUMENT={$TASK_NAME_ARGUMENT}" +
                 "&$DATE_ARGUMENT={$DATE_ARGUMENT}" +
                 "&$IS_URGENT_ARGUMENT={$IS_URGENT_ARGUMENT}",
         prefix = "create_task",
         arguments = listOf(
-            navArgument(BOARD_ROUTE_ID_ARGUMENT) {
+            navArgument(BOARD_ID_ARGUMENT) {
                 type = NavType.IntType
                 defaultValue = -1
             },
@@ -102,13 +102,26 @@ sealed class Screen(
         )
     )
 
+    object EditSubtask : Screen(
+        route = "edit_subtask/{$SUBTASK_ID_ARGUMENT}?$BOARD_ID_ARGUMENT={$BOARD_ID_ARGUMENT}",
+        prefix = "edit_subtask",
+        arguments = listOf(
+            navArgument(SUBTASK_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(BOARD_ID_ARGUMENT) {
+                type = NavType.IntType
+                defaultValue = -1
+            }
+        )
+    )
+
     companion object {
-        const val BOARD_ROUTE_ID_ARGUMENT = "boardId"
+        const val BOARD_ID_ARGUMENT = "boardId"
         const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
         const val LABEL_ROUTE_ARGUMENT = "labelId"
         const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
         const val TASK_NAME_ARGUMENT = "taskName"
         const val DATE_ARGUMENT = "includeDate"
         const val IS_URGENT_ARGUMENT = "isUrgent"
+        const val SUBTASK_ID_ARGUMENT = "subtaskId"
     }
 }

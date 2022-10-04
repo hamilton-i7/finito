@@ -20,11 +20,13 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
 import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.*
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -66,7 +68,7 @@ class BoardViewModel @Inject constructor(
     var selectedTask by mutableStateOf<Task?>(null)
         private set
 
-    var newTaskNameState by mutableStateOf(TextFieldState())
+    var newTaskNameState by mutableStateOf(TextFieldState.Default)
         private set
 
     var selectedPriority by mutableStateOf<Priority?>(null)
@@ -98,7 +100,7 @@ class BoardViewModel @Inject constructor(
         when (event) {
             BoardEvent.ArchiveBoard -> onDeactivateBoard(DeactivateMode.ARCHIVE)
             BoardEvent.DeleteBoard -> onDeactivateBoard(DeactivateMode.DELETE)
-            BoardEvent.RestoreBoard -> restoreBoard()
+            BoardEvent.RestoreBoard -> onRestoreBoard()
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
@@ -479,18 +481,27 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun onDeleteCompletedTasks() = viewModelScope.launch {
-        if (board == null) return@launch
-        with(board!!) {
-            val completedTasks = tasks.filterCompleted().map { it.task }
-            when (taskUseCases.deleteTask(*completedTasks.toTypedArray())) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.delete_completed_tasks_error
-                    ))
-                }
-                is Result.Success -> fetchBoard()
-            }
+    private fun onDeleteCompletedTasks() {
+        deleteCompletedTasks()
+        deleteCompletedSubtasks()
+        fetchBoard()
+    }
+
+    private fun deleteCompletedTasks() = viewModelScope.launch {
+        val completedTasks = tasks.filterCompleted().map { it.task }
+        if (taskUseCases.deleteTask(*completedTasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_tasks_error
+            ))
+        }
+    }
+
+    private fun deleteCompletedSubtasks() = viewModelScope.launch {
+        val completedSubtasks = tasks.flatMap { it.subtasks }.filterCompleted()
+        if (subtaskUseCases.deleteSubtask(*completedSubtasks.toTypedArray()) is Result.Error) {
+            _eventFlow.emit(Event.ShowError(
+                error = R.string.delete_completed_subtasks_error
+            ))
         }
     }
 
@@ -535,12 +546,14 @@ class BoardViewModel @Inject constructor(
             }
             is Result.Success -> {
                 fetchBoard()
+                val relatedTask = board!!.tasks.first { it.task.taskId == subtask.taskId }
                 _eventFlow.emit(Event.Snackbar.UndoSubtaskCompletedToggle(
                     message = if (completed)
                         R.string.subtask_marked_as_completed
                     else
                         R.string.subtask_marked_as_uncompleted,
-                    subtask = subtask
+                    subtask = subtask,
+                    task = relatedTask.task
                 ))
             }
         }
@@ -605,7 +618,7 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun fetchBoard() {
-        savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT)?.let { boardId ->
+        savedStateHandle.get<Int>(Screen.BOARD_ID_ARGUMENT)?.let { boardId ->
              viewModelScope.launch {
                  when (val result = boardUseCases.findOneBoard(boardId)) {
                      is Result.Error -> {
@@ -633,18 +646,29 @@ class BoardViewModel @Inject constructor(
         }
     }
 
-    private fun restoreBoard() = viewModelScope.launch {
-        board?.let {
+    private fun onRestoreBoard() = viewModelScope.launch {
+        if (board == null) return@launch
+        with(board!!) {
             val restoredBoard = BoardWithLabelsAndTasks(
-                board = it.board.copy(state = BoardState.ACTIVE, removedAt = null),
-                labels = it.labels,
-                tasks = it.tasks.map { task -> CompletedTask(completed = task.task.completed) }
+                board = board.copy(state = BoardState.ACTIVE, removedAt = null),
+                labels = labels,
+                tasks = tasks.map { task -> CompletedTask(completed = task.task.completed) }
             )
-            boardUseCases.updateBoard(restoredBoard)
-            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                message = R.string.board_was_restored,
-                board = it
-            ))
+            when (boardUseCases.updateBoard(restoredBoard)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.update_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                        message = R.string.board_was_restored,
+                        board = this
+                    ))
+                    delay(100)
+                    _eventFlow.emit(Event.NavigateBack)
+                }
+            }
         }
     }
 
@@ -653,29 +677,59 @@ class BoardViewModel @Inject constructor(
         with(board!!) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    BoardWithLabelsAndTasks(
-                        board = board.copy(state = BoardState.ARCHIVED, removedAt = null),
-                        labels = labels,
-                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-                    ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                        message = R.string.board_archived,
-                        board = this,
-                    ))
-                }
-                DeactivateMode.DELETE -> {
-                    BoardWithLabelsAndTasks(
+                    val updatedBoard = BoardWithLabelsAndTasks(
                         board = board.copy(
-                            state = BoardState.DELETED,
-                            removedAt = LocalDateTime.now()
+                            state = BoardState.ARCHIVED,
+                            removedAt = null,
+                            position = null
                         ),
                         labels = labels,
                         tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-                    ).let { boardUseCases.updateBoard(it) }
-                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                        message = R.string.board_moved_to_trash,
-                        board = this@with
-                    ))
+                    )
+                    when(boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.update_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                                message = R.string.board_archived,
+                                board = this,
+                            ))
+                            delay(100)
+                            _eventFlow.emit(Event.NavigateHome)
+                        }
+                    }
+                }
+                DeactivateMode.DELETE -> {
+                    val updatedBoard = BoardWithLabelsAndTasks(
+                        board = board.copy(
+                            state = BoardState.DELETED,
+                            removedAt = LocalDateTime.now(),
+                            position = null
+                        ),
+                        labels = labels,
+                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                    )
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            _eventFlow.emit(Event.ShowError(
+                                error = R.string.update_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                                message = R.string.board_moved_to_trash,
+                                board = this@with
+                            ))
+                            delay(100)
+                            _eventFlow.emit(
+                                if (boardState == BoardState.ACTIVE) Event.NavigateHome
+                                else Event.NavigateBack
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -683,6 +737,10 @@ class BoardViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
+
+        object NavigateHome : Event()
+
+        object NavigateBack : Event()
 
         sealed class Snackbar : Event() {
             data class UndoBoardChange(
@@ -697,7 +755,8 @@ class BoardViewModel @Inject constructor(
 
             data class UndoSubtaskCompletedToggle(
                 @StringRes val message: Int,
-                val subtask: Subtask
+                val subtask: Subtask,
+                val task: Task
             ) : Snackbar()
         }
     }

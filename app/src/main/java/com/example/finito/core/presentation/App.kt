@@ -28,6 +28,7 @@ import com.example.finito.features.boards.presentation.screen.home.HomeScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
 import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
+import com.example.finito.features.subtasks.presentation.screen.editsubtask.EditSubtaskScreen
 import com.example.finito.features.tasks.presentation.screen.addedittask.AddEditTaskScreen
 import com.example.finito.features.tasks.presentation.screen.today.TodayScreen
 import com.example.finito.features.tasks.presentation.screen.tomorrow.TomorrowScreen
@@ -102,7 +103,7 @@ fun App(
             val route: String = if (staticDrawerRoutes.contains(destination.route)) {
                 destination.route!!
             } else if (destination.route == Screen.Board.route) {
-                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ROUTE_ID_ARGUMENT)}"
+                "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ID_ARGUMENT)}"
             } else {
                 "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ROUTE_ARGUMENT)}"
             }
@@ -181,7 +182,8 @@ fun App(
                     route = Screen.Today.route,
                     enterTransition = {
                         when(initialState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenPopEnterTransition()
                             }
                             else -> peerScreenEnterTransition()
@@ -189,7 +191,8 @@ fun App(
                     },
                     exitTransition = {
                         when(targetState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenExitTransition()
                             }
                             else -> peerScreenExitTransition()
@@ -208,6 +211,9 @@ fun App(
                         onNavigateToEditTask = { taskId ->
                             navController.navigateToEditTask(taskId)
                         },
+                        onNavigateToEditSubtask = { boardId, subtaskId ->
+                            navController.navigateToEditSubtask(boardId, subtaskId)
+                        },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
                     )
@@ -217,7 +223,8 @@ fun App(
                     route = Screen.Tomorrow.route,
                     enterTransition = {
                         when(initialState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenPopEnterTransition()
                             }
                             else -> peerScreenEnterTransition()
@@ -225,7 +232,8 @@ fun App(
                     },
                     exitTransition = {
                         when(targetState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenExitTransition()
                             }
                             else -> peerScreenExitTransition()
@@ -244,6 +252,9 @@ fun App(
                         onNavigateToEditTask = { taskId ->
                             navController.navigateToEditTask(taskId)
                         },
+                        onNavigateToEditSubtask = { boardId, subtaskId ->
+                            navController.navigateToEditSubtask(boardId, subtaskId)
+                        },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
                     )
@@ -253,7 +264,8 @@ fun App(
                     route = Screen.Urgent.route,
                     enterTransition = {
                         when(initialState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenPopEnterTransition()
                             }
                             else -> peerScreenEnterTransition()
@@ -261,7 +273,8 @@ fun App(
                     },
                     exitTransition = {
                         when(targetState.destination.route) {
-                            Screen.CreateTask.route, Screen.EditTask.route -> {
+                            Screen.CreateTask.route, Screen.EditTask.route,
+                            Screen.EditSubtask.route -> {
                                 childScreenExitTransition()
                             }
                             else -> peerScreenExitTransition()
@@ -278,6 +291,9 @@ fun App(
                         },
                         onNavigateToEditTask = { taskId ->
                             navController.navigateToEditTask(taskId)
+                        },
+                        onNavigateToEditSubtask = { boardId, subtaskId ->
+                            navController.navigateToEditSubtask(boardId, subtaskId)
                         },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
@@ -438,6 +454,20 @@ fun App(
                         onNavigateToBoard = { boardId, boardState ->
                             navController.navigateToBoard(boardId, boardState)
                         },
+                        onShowSnackbar = onShowSnackbar
+                    )
+                }
+
+                composable(
+                    route = Screen.EditSubtask.route,
+                    arguments = Screen.EditSubtask.arguments,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition
+                ) {
+                    EditSubtaskScreen(
+                        appViewModel = appViewModel,
+                        previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
+                        onNavigateBack = { navController.navigateUp() },
                         onShowSnackbar = onShowSnackbar
                     )
                 }

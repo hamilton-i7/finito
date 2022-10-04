@@ -35,8 +35,9 @@ import com.example.finito.core.presentation.util.calculateDp
 import com.example.finito.core.presentation.util.menu.UrgentScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
+import com.example.finito.features.subtasks.domain.entity.Subtask
+import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
-import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.presentation.components.NewTaskSheetContent
 import com.example.finito.features.tasks.presentation.components.TaskDateTimeFullDialog
 import com.example.finito.features.tasks.presentation.screen.urgent.components.UrgentDialogs
@@ -64,6 +65,7 @@ fun UrgentScreen(
     appViewModel: AppViewModel = hiltViewModel(),
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
+    onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
     finishActivity: () -> Unit = {},
     onShowSnackbar: (
         message: Int,
@@ -99,7 +101,8 @@ fun UrgentScreen(
         }
     }
     var creatingTask by rememberSaveable { mutableStateOf(false) }
-    val noCompletedTasks = urgentViewModel.tasks.values.flatten().filterCompleted().isEmpty()
+    val noCompletedTasks = urgentViewModel.tasks.values.flatten().none { it.task.completed }
+            && urgentViewModel.tasks.values.flatten().flatMap { it.subtasks }.none { it.completed }
     val disabledMenuOptions = listOf(UrgentScreenMenuOption.DeleteCompleted)
 
     BackHandler {
@@ -130,6 +133,14 @@ fun UrgentScreen(
                 is UrgentViewModel.Event.Snackbar.UndoTaskChange -> {
                     onShowSnackbar(event.message, R.string.undo) {
                         appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
+                    }
+                }
+                is UrgentViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
+                    onShowSnackbar(event.message, R.string.undo) {
+                        appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(
+                            subtask = event.subtask,
+                            task = event.task
+                        ))
                     }
                 }
             }
@@ -314,7 +325,7 @@ fun UrgentScreen(
                     onToggleShowCompletedTasks = {
                         urgentViewModel.onEvent(UrgentEvent.ToggleCompletedTasksVisibility)
                     },
-                    onTaskClick = { onNavigateToEditTask(it.task.taskId) },
+                    onTaskClick = { onNavigateToEditTask(it.taskId) },
                     onPriorityClick = {
                         urgentViewModel.onEvent(UrgentEvent.ShowDialog(
                             type = UrgentEvent.DialogType.Priority(it)
@@ -325,19 +336,26 @@ fun UrgentScreen(
                     },
                     onToggleTaskCompleted = {
                         urgentViewModel.onEvent(UrgentEvent.ToggleTaskCompleted(it))
+                    },
+                    onSubtaskClick = {
+                        onNavigateToEditSubtask(urgentViewModel.selectedBoard!!.boardId, it.subtaskId)
+                    },
+                    onToggleSubtaskCompleted = {
+                        urgentViewModel.onEvent(UrgentEvent.ToggleSubtaskCompleted(it))
+                    },
+                    onBoardNameClick = {
+                        urgentViewModel.onEvent(UrgentEvent.ChangeBottomSheetContent(
+                            UrgentEvent.BottomSheetContent.BoardsList(it)
+                        ))
+                        scope.launch {
+                            if (urgentViewModel.selectedBoard == null) return@launch
+                            bottomSheetListState.scrollToItem(
+                                index = urgentViewModel.boards.indexOf(urgentViewModel.selectedBoard)
+                            )
+                            bottomSheetState.show()
+                        }
                     }
-                ) {
-                    urgentViewModel.onEvent(UrgentEvent.ChangeBottomSheetContent(
-                        UrgentEvent.BottomSheetContent.BoardsList(it)
-                    ))
-                    scope.launch {
-                        if (urgentViewModel.selectedBoard == null) return@launch
-                        bottomSheetListState.scrollToItem(
-                            index = urgentViewModel.boards.indexOf(urgentViewModel.selectedBoard)
-                        )
-                        bottomSheetState.show()
-                    }
-                }
+                )
             }
             AnimatedVisibility(
                 visible = urgentViewModel.selectedTask != null,
@@ -392,11 +410,13 @@ private fun UrgentScreen(
     tasks: Map<LocalDate?, List<TaskWithSubtasks>> = emptyMap(),
     showCompletedTasks: Boolean = true,
     onToggleShowCompletedTasks: () -> Unit = {},
-    onTaskClick: (TaskWithSubtasks) -> Unit = {},
-    onPriorityClick: (TaskWithSubtasks) -> Unit = {},
-    onDateTimeClick: (TaskWithSubtasks) -> Unit = {},
+    onTaskClick: (Task) -> Unit = {},
+    onPriorityClick: (Task) -> Unit = {},
+    onDateTimeClick: (Task) -> Unit = {},
     onToggleTaskCompleted: (TaskWithSubtasks) -> Unit = {},
-    onBoardNameClick: (TaskWithSubtasks) -> Unit = {},
+    onBoardNameClick: (Task) -> Unit = {},
+    onSubtaskClick: (Subtask) -> Unit = {},
+    onToggleSubtaskCompleted: (Subtask) -> Unit = {},
 ) {
     Surface(
         modifier = Modifier
@@ -416,7 +436,9 @@ private fun UrgentScreen(
                 onPriorityClick = onPriorityClick,
                 onDateTimeClick = onDateTimeClick,
                 onToggleTaskCompleted = onToggleTaskCompleted,
-                onBoardNameClick = onBoardNameClick
+                onBoardNameClick = onBoardNameClick,
+                onSubtaskClick = onSubtaskClick,
+                onToggleSubtaskCompleted = onToggleSubtaskCompleted
             )
         }
     }

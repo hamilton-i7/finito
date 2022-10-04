@@ -12,6 +12,7 @@ import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
@@ -42,10 +43,10 @@ class AddEditTaskViewModel @Inject constructor(
     var boards by mutableStateOf<List<SimpleBoard>>(emptyList())
         private set
 
-    var nameState by mutableStateOf(TextFieldState())
+    var nameState by mutableStateOf(TextFieldState.Default)
         private set
 
-    var descriptionState by mutableStateOf(TextFieldState())
+    var descriptionState by mutableStateOf(TextFieldState.Default)
         private set
 
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
@@ -66,7 +67,7 @@ class AddEditTaskViewModel @Inject constructor(
     var dialogType by mutableStateOf<AddEditTaskEvent.DialogType?>(null)
         private set
 
-    var subtaskNameStates by mutableStateOf<List<TextFieldState>>(emptyList())
+    var subtaskNameStates by mutableStateOf<List<SubtaskTextField>>(emptyList())
         private set
 
     var showReminders by mutableStateOf(false)
@@ -79,7 +80,6 @@ class AddEditTaskViewModel @Inject constructor(
         private set
 
     private var subtaskNameStateId = -1
-    private var recentlyToggledCompletedTask: TaskWithSubtasks? = null
 
     init {
         fetchTask()
@@ -101,7 +101,7 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ChangePriority -> selectedPriority = event.priority
             is AddEditTaskEvent.ChangeReminder -> selectedReminder = event.reminder
             AddEditTaskEvent.CreateSubtask -> onCreateSubtask()
-            is AddEditTaskEvent.RemoveSubtask -> onRemoveTask(event.state)
+            is AddEditTaskEvent.RemoveSubtask -> onRemoveSubtask(event.state)
             AddEditTaskEvent.CreateTask -> onCreateTask()
             AddEditTaskEvent.EditTask -> onEditTask()
             AddEditTaskEvent.DeleteTask -> onDeleteTask()
@@ -131,7 +131,6 @@ class AddEditTaskViewModel @Inject constructor(
     private fun onToggleCompleted() = viewModelScope.launch {
         if (task == null) return@launch
         with(task!!) {
-            recentlyToggledCompletedTask = this
             boardUseCases.findOneBoard(task.boardId).let {
                 if (it is Result.Error) return@launch
                 val board = (it as Result.Success).data
@@ -140,7 +139,7 @@ class AddEditTaskViewModel @Inject constructor(
                 val updatedTask = copy(task = task.copy(
                     completed = completed,
                     completedAt = if (completed) LocalDateTime.now() else null,
-                    boardPosition = if (completed) board.tasks.lastIndex else uncompletedTasksAmount
+                    boardPosition = if (completed) null else uncompletedTasksAmount
                 ))
 
                 when (taskUseCases.updateTask(updatedTask)) {
@@ -265,10 +264,10 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun onCreateSubtask() {
-        subtaskNameStates = subtaskNameStates + listOf(TextFieldState(id = ++subtaskNameStateId))
+        subtaskNameStates = subtaskNameStates + listOf(SubtaskTextField(id = ++subtaskNameStateId))
     }
 
-    private fun onRemoveTask(state: TextFieldState) {
+    private fun onRemoveSubtask(state: SubtaskTextField) {
         subtaskNameStates = subtaskNameStates.filter { it.id != state.id }
     }
 
@@ -290,7 +289,7 @@ class AddEditTaskViewModel @Inject constructor(
     private fun fetchBoards() = viewModelScope.launch {
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@AddEditTaskViewModel.boards = boards
-            val boardId = savedStateHandle.get<Int>(Screen.BOARD_ROUTE_ID_ARGUMENT) ?: return@onEach
+            val boardId = savedStateHandle.get<Int>(Screen.BOARD_ID_ARGUMENT) ?: return@onEach
             if (boardId == -1) return@onEach
 
             boards.first { it.boardId == boardId }.let {
@@ -325,7 +324,26 @@ class AddEditTaskViewModel @Inject constructor(
     
     private suspend fun setupData(taskWithSubtasks: TaskWithSubtasks) {
          this.task = taskWithSubtasks
-        boardUseCases.findOneBoard(taskWithSubtasks.task.boardId).let { result ->
+        fetchRelatedBoard(taskWithSubtasks.task.boardId)
+        nameState = nameState.copy(value = taskWithSubtasks.task.name)
+        if (taskWithSubtasks.task.description != null) {
+            descriptionState = descriptionState.copy(value = taskWithSubtasks.task.description)
+        }
+        selectedDate = taskWithSubtasks.task.date
+        selectedTime = taskWithSubtasks.task.time
+        selectedReminder = taskWithSubtasks.task.reminder
+        selectedPriority = taskWithSubtasks.task.priority
+        subtaskNameStates = taskWithSubtasks.subtasks.map {
+            SubtaskTextField(
+                id = it.subtaskId,
+                value = it.name,
+                completed = it.completed
+            )
+        }
+    }
+
+    private suspend fun fetchRelatedBoard(boardId: Int) {
+        boardUseCases.findOneBoard(boardId).let { result ->
             when (result) {
                 is Result.Error -> {
                     _eventFlow.emit(Event.ShowError(
@@ -338,20 +356,6 @@ class AddEditTaskViewModel @Inject constructor(
                     originalRelatedBoard = result.data.board
                 }
             }
-        }
-        nameState = nameState.copy(value = taskWithSubtasks.task.name)
-        if (taskWithSubtasks.task.description != null) {
-            descriptionState = descriptionState.copy(value = taskWithSubtasks.task.description)
-        }
-        selectedDate = taskWithSubtasks.task.date
-        selectedTime = taskWithSubtasks.task.time
-        selectedReminder = taskWithSubtasks.task.reminder
-        selectedPriority = taskWithSubtasks.task.priority
-        subtaskNameStates = taskWithSubtasks.subtasks.map {
-            TextFieldState(
-                id = it.subtaskId,
-                value = it.name
-            )
         }
     }
 

@@ -98,7 +98,7 @@ class AddEditBoardViewModel @Inject constructor(
                 labels = labels,
                 tasks = tasks.map { task -> task.toCompletedTask() }
             )
-            _eventFlow.emit(Event.Snackbar.UneditableBoard(board = restoredBoard))
+            fireEvents(Event.Snackbar.UneditableBoard(board = restoredBoard))
         }
     }
 
@@ -130,17 +130,12 @@ class AddEditBoardViewModel @Inject constructor(
     private fun onRestoreBoard(showSnackbar: Boolean) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            val originalBoard = BoardWithLabelsAndTasks(
-                board = board,
-                labels = labels,
-                tasks = tasks.map { it.toCompletedTask() }
-            )
-
             val updatedBoard = BoardWithLabelsAndTasks(
-                board = this.board.copy(
+                board = board.copy(
                     state = BoardState.ACTIVE,
                     removedAt = null,
-                    archivedAt = null
+                    archivedAt = null,
+                    position = 0
                 ),
                 labels = labels,
                 tasks = tasks.map { it.toCompletedTask() }
@@ -148,11 +143,17 @@ class AddEditBoardViewModel @Inject constructor(
             when (boardUseCases.updateBoard(updatedBoard)) {
                 is Result.Error -> TODO()
                 is Result.Success -> {
+                    val originalBoard = BoardWithLabelsAndTasks(
+                        board = board,
+                        labels = labels,
+                        tasks = tasks.map { it.toCompletedTask() }
+                    )
+
                     fetchBoard()
                     boardState = BoardState.ACTIVE
 
                     if (!showSnackbar) return@launch
-                    _eventFlow.emit(Event.Snackbar.BoardStateChanged(
+                    fireEvents(Event.Snackbar.BoardStateChanged(
                         message = R.string.board_was_restored,
                         board = originalBoard
                     ))
@@ -218,14 +219,14 @@ class AddEditBoardViewModel @Inject constructor(
             labels = selectedLabels
         )
         boardUseCases.createBoard(board).also {
-            _eventFlow.emit(Event.NavigateToCreatedBoard(it))
+            fireEvents(Event.NavigateToCreatedBoard(it))
         }
     }
 
     private fun onEditBoard() = viewModelScope.launch {
         if (board == null) return@launch
         if (!boardChanged()) {
-            _eventFlow.emit(Event.NavigateToUpdatedBoard(board!!.board.boardId))
+            fireEvents(Event.NavigateToUpdatedBoard(board!!.board.boardId))
             return@launch
         }
 
@@ -237,13 +238,11 @@ class AddEditBoardViewModel @Inject constructor(
             ).let {
                 when (boardUseCases.updateBoard(it)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.update_board_error
                         ))
                     }
-                    is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateToUpdatedBoard(it.board.boardId))
-                    }
+                    is Result.Success -> fireEvents(Event.NavigateToUpdatedBoard(it.board.boardId))
                 }
             }
         }
@@ -254,11 +253,12 @@ class AddEditBoardViewModel @Inject constructor(
             viewModelScope.launch {
                 when (val result = boardUseCases.findOneBoard(boardId)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.find_board_error
                         ))
                     }
                     is Result.Success -> {
+                        println(result.data.board)
                         board = result.data
                         nameState = TextFieldState(value = result.data.board.name)
                         selectedLabels = result.data.labels

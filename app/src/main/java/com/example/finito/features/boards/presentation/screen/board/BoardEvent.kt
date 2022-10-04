@@ -19,6 +19,8 @@ sealed class BoardEvent {
 
     object RestoreBoard : BoardEvent()
 
+    object RestoreUneditableBoard : BoardEvent()
+
     object RefreshBoard : BoardEvent()
 
     object DeleteCompletedTasks : BoardEvent()
@@ -60,6 +62,8 @@ sealed class BoardEvent {
     data class SearchLabels(val query: String) : BoardEvent()
 
     object ChangeBoardLabels : BoardEvent()
+
+    object AlertNotEditable : BoardEvent()
 
     sealed class DialogType {
         object DeleteCompletedTasks : DialogType()

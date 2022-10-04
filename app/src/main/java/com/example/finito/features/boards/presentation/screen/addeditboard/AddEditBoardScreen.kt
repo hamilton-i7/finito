@@ -73,23 +73,14 @@ fun AddEditBoardScreen(
             when (event) {
                 is AddEditBoardViewModel.Event.Snackbar -> {
                     when (event) {
-                        AddEditBoardViewModel.Event.Snackbar.RestoredBoard -> {
+                        is AddEditBoardViewModel.Event.Snackbar.UneditableBoard -> {
                             onShowSnackbar(event.message, event.actionLabel) {
-                                addEditBoardViewModel.onEvent(AddEditBoardEvent.UndoRestore)
+                                appViewModel.onEvent(AppEvent.RestoreUneditableBoard(event.board))
                             }
                         }
-                        AddEditBoardViewModel.Event.Snackbar.UneditableBoard -> {
+                        is AddEditBoardViewModel.Event.Snackbar.BoardStateChanged -> {
                             onShowSnackbar(event.message, event.actionLabel) {
-                                addEditBoardViewModel.onEvent(
-                                    AddEditBoardEvent.RestoreBoard()
-                                )
-                            }
-                        }
-                        AddEditBoardViewModel.Event.Snackbar.DeletedBoard -> {
-                            onShowSnackbar(event.message, event.actionLabel) {
-                                appViewModel.onEvent(AppEvent.UndoBoardChange(
-                                    board = addEditBoardViewModel.board!!
-                                ))
+                                appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                             }
                         }
                     }
@@ -105,7 +96,17 @@ fun AddEditBoardScreen(
                         type = AddEditBoardEvent.DialogType.Error(message = event.error)
                     ))
                 }
+                AddEditBoardViewModel.Event.NavigateToTrash -> onNavigateToTrash()
+                AddEditBoardViewModel.Event.NavigateToArchive -> onNavigateToArchive()
+                AddEditBoardViewModel.Event.NavigateToHome -> onNavigateToHome()
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        appViewModel.event.collect { event ->
+            if (event != AppViewModel.Event.RefreshBoard) return@collect
+            addEditBoardViewModel.onEvent(AddEditBoardEvent.RefreshBoard)
         }
     }
 
@@ -128,11 +129,6 @@ fun AddEditBoardScreen(
                 },
                 onMoveToTrashClick = {
                     addEditBoardViewModel.onEvent(AddEditBoardEvent.MoveBoardToTrash)
-                    if (addEditBoardViewModel.boardState == BoardState.ACTIVE) {
-                        onNavigateToHome()
-                    } else if (addEditBoardViewModel.boardState == BoardState.ARCHIVED) {
-                        onNavigateToArchive()
-                    }
                 },
                 onRestoreBoardClick = {
                     addEditBoardViewModel.onEvent(
@@ -171,7 +167,7 @@ fun AddEditBoardScreen(
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             .noRippleClickable { focusManager.clearFocus() }
     ) { innerPadding ->
-        AddEditBoardDialogs(addEditBoardViewModel, onNavigateToTrash)
+        AddEditBoardDialogs(addEditBoardViewModel)
 
         AddEditBoardScreen(
             paddingValues = innerPadding,
@@ -227,9 +223,7 @@ private fun AddEditBoardScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .noRippleClickable(onClick = {
-                if (isDeleted) onScreenClick()
-            })
+            .noRippleClickable(onClick = { if (isDeleted) onScreenClick() })
     ) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 32.dp),

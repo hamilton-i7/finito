@@ -127,7 +127,8 @@ class BoardViewModel @Inject constructor(
         when (event) {
             BoardEvent.ArchiveBoard -> onDeactivateBoard(DeactivateMode.ARCHIVE)
             BoardEvent.DeleteBoard -> onDeactivateBoard(DeactivateMode.DELETE)
-            BoardEvent.RestoreBoard -> onRestoreBoard()
+            BoardEvent.RestoreBoard -> onRestoreBoard(showSnackbar = true)
+            BoardEvent.RestoreUneditableBoard -> onRestoreBoard(showSnackbar = false)
             is BoardEvent.ChangeTaskPriority -> selectedPriority = event.priority
             is BoardEvent.ChangeTaskPriorityConfirm -> onChangeTaskPriorityConfirm(event.task)
             is BoardEvent.ToggleTaskCompleted -> onToggleTaskCompleted(event.task)
@@ -155,6 +156,18 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ShowLabelsFullDialog -> showLabelsFullDialog = event.show
             is BoardEvent.SearchLabels -> onSearchLabels(event.query)
             BoardEvent.ChangeBoardLabels -> onChangeBoardLabels()
+            BoardEvent.AlertNotEditable -> onAlertNotEditable()
+        }
+    }
+
+    private fun onAlertNotEditable() = viewModelScope.launch {
+        with(board!!) {
+            val restoredBoard = BoardWithLabelsAndTasks(
+                board = board.copy(state = BoardState.ACTIVE, removedAt = null, archivedAt = null),
+                labels = labels,
+                tasks = tasks.map { task -> task.toCompletedTask() }
+            )
+            _eventFlow.emit(Event.Snackbar.UneditableBoard(board = restoredBoard))
         }
     }
 
@@ -588,7 +601,7 @@ class BoardViewModel @Inject constructor(
             }
             is Result.Success -> {
                 fetchBoard()
-                _eventFlow.emit(Event.Snackbar.UndoTaskCompletedToggle(
+                _eventFlow.emit(Event.Snackbar.TaskCompletedStateChanged(
                     message = if (completed)
                         R.string.task_marked_as_completed
                     else
@@ -614,7 +627,7 @@ class BoardViewModel @Inject constructor(
             is Result.Success -> {
                 fetchBoard()
                 val relatedTask = board!!.tasks.first { it.task.taskId == subtask.taskId }
-                _eventFlow.emit(Event.Snackbar.UndoSubtaskCompletedToggle(
+                _eventFlow.emit(Event.Snackbar.SubtaskCompletedStateChanged(
                     message = if (completed)
                         R.string.subtask_marked_as_completed
                     else
@@ -723,11 +736,11 @@ class BoardViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    private fun onRestoreBoard() = viewModelScope.launch {
+    private fun onRestoreBoard(showSnackbar: Boolean) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
             val restoredBoard = BoardWithLabelsAndTasks(
-                board = board.copy(state = BoardState.ACTIVE, removedAt = null),
+                board = board.copy(state = BoardState.ACTIVE, removedAt = null, archivedAt = null),
                 labels = labels,
                 tasks = tasks.map { task -> task.toCompletedTask() }
             )
@@ -738,11 +751,18 @@ class BoardViewModel @Inject constructor(
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emit(Event.Snackbar.UndoBoardChange(
-                        message = R.string.board_was_restored,
-                        board = this
-                    ))
-                    delay(100)
+                    val originalBoard = BoardWithLabelsAndTasks(
+                        board = board,
+                        labels = labels,
+                        tasks = tasks.map { it.toCompletedTask() }
+                    )
+
+                    if (showSnackbar) {
+                        _eventFlow.emit(Event.Snackbar.BoardStateChanged(
+                            message = R.string.board_was_restored,
+                            board = originalBoard
+                        ))
+                    }
                     _eventFlow.emit(Event.NavigateBack)
                 }
             }
@@ -752,6 +772,11 @@ class BoardViewModel @Inject constructor(
     private fun onDeactivateBoard(mode: DeactivateMode) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
+            val originalBoard = BoardWithLabelsAndTasks(
+                board = board,
+                labels = labels,
+                tasks = tasks.map { it.toCompletedTask() }
+            )
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
                     val updatedBoard = BoardWithLabelsAndTasks(
@@ -770,9 +795,9 @@ class BoardViewModel @Inject constructor(
                             ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                            _eventFlow.emit(Event.Snackbar.BoardStateChanged(
                                 message = R.string.board_archived,
-                                board = this,
+                                board = originalBoard,
                             ))
                             delay(100)
                             _eventFlow.emit(Event.NavigateHome)
@@ -796,9 +821,9 @@ class BoardViewModel @Inject constructor(
                             ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.Snackbar.UndoBoardChange(
+                            _eventFlow.emit(Event.Snackbar.BoardStateChanged(
                                 message = R.string.board_moved_to_trash,
-                                board = this@with
+                                board = originalBoard
                             ))
                             delay(100)
                             _eventFlow.emit(
@@ -819,22 +844,32 @@ class BoardViewModel @Inject constructor(
 
         object NavigateBack : Event()
 
-        sealed class Snackbar : Event() {
-            data class UndoBoardChange(
-                @StringRes val message: Int,
-                val board: DetailedBoard,
-            ) : Snackbar()
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
 
-            data class UndoTaskCompletedToggle(
-                @StringRes val message: Int,
+            class TaskCompletedStateChanged(
+                @StringRes message: Int,
                 val task: TaskWithSubtasks
-            ) : Snackbar()
+            ) : Snackbar(message)
 
-            data class UndoSubtaskCompletedToggle(
-                @StringRes val message: Int,
+            class SubtaskCompletedStateChanged(
+                @StringRes message: Int,
                 val subtask: Subtask,
                 val task: Task
-            ) : Snackbar()
+            ) : Snackbar(message)
+
+            class UneditableBoard(
+                val board: BoardWithLabelsAndTasks
+            ) : Snackbar(
+                message = R.string.cannot_make_changes,
+                actionLabel = R.string.restore
+            )
         }
     }
 }

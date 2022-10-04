@@ -35,6 +35,7 @@ import com.example.finito.core.presentation.util.LazyListKeys
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
@@ -130,22 +131,27 @@ fun BoardScreen(
             when (event) {
                 is BoardViewModel.Event.Snackbar -> {
                     when (event) {
-                        is BoardViewModel.Event.Snackbar.UndoBoardChange -> {
-                            onShowSnackbar(event.message, R.string.undo) {
+                        is BoardViewModel.Event.Snackbar.BoardStateChanged -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                             }
                         }
-                        is BoardViewModel.Event.Snackbar.UndoTaskCompletedToggle -> {
-                            onShowSnackbar(event.message, R.string.undo) {
+                        is BoardViewModel.Event.Snackbar.TaskCompletedStateChanged -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }
-                        is BoardViewModel.Event.Snackbar.UndoSubtaskCompletedToggle -> {
-                            onShowSnackbar(event.message, R.string.undo) {
+                        is BoardViewModel.Event.Snackbar.SubtaskCompletedStateChanged -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.UndoSubtaskCompletedToggle(
                                     subtask = event.subtask,
                                     task = event.task
                                 ))
+                            }
+                        }
+                        is BoardViewModel.Event.Snackbar.UneditableBoard -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
+                                appViewModel.onEvent(AppEvent.RestoreUneditableBoard(event.board))
                             }
                         }
                     }
@@ -318,6 +324,7 @@ fun BoardScreen(
                     paddingValues = innerPadding,
                     hapticFeedback = hapticFeedback,
                     reorderableState = reorderableState,
+                    isDeleted = boardViewModel.boardState == BoardState.DELETED,
                     labels = boardViewModel.board?.labels ?: emptyList(),
                     tasks = boardViewModel.tasks,
                     draggableTasks = boardViewModel.draggableTasks,
@@ -348,6 +355,9 @@ fun BoardScreen(
                     },
                     onLabelClick = {
                         boardViewModel.onEvent(BoardEvent.ShowLabelsFullDialog(show = true))
+                    },
+                    onScreenClick = {
+                        boardViewModel.onEvent(BoardEvent.AlertNotEditable)
                     }
                 )
             }
@@ -427,6 +437,7 @@ private fun BoardScreen(
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
+    isDeleted: Boolean = false,
     labels: List<SimpleLabel> = emptyList(),
     onLabelClick: () -> Unit = {},
     tasks: List<TaskWithSubtasks> = emptyList(),
@@ -440,6 +451,7 @@ private fun BoardScreen(
     onSubtaskClick: (Subtask) -> Unit = {},
     onToggleSubtaskCompleted: (Subtask) -> Unit = {},
     onDragging: (Int?) -> Unit = {},
+    onScreenClick: () -> Unit = {},
 ) {
     val uncompletedTasks = tasks.filterUncompleted()
     val tasksWithCompletedSubtasks = uncompletedTasks.filter {
@@ -458,10 +470,11 @@ private fun BoardScreen(
         onDragging(reorderableState.draggingItemKey as? Int)
     }
 
-    // TODO 21/09/2022: Show board labels
     Surface(modifier = Modifier
         .fillMaxSize()
-        .padding(paddingValues)) {
+        .padding(paddingValues)
+        .noRippleClickable(onClick = { if (isDeleted) onScreenClick() })
+    ) {
         LazyColumn(
             contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
             state = reorderableState.listState,

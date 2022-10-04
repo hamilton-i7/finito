@@ -153,13 +153,13 @@ fun AddEditTaskScreen(
                 }
                 is AddEditTaskViewModel.Event.Snackbar -> {
                     when (event) {
-                        is AddEditTaskViewModel.Event.Snackbar.RecoverTask -> {
-                            onShowSnackbar(event.message, R.string.undo) {
+                        is AddEditTaskViewModel.Event.Snackbar.TaskDeleted -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.RecoverTask(task = event.task))
                             }
                         }
-                        is AddEditTaskViewModel.Event.Snackbar.UndoTaskChange -> {
-                            onShowSnackbar(event.message, R.string.undo) {
+                        is AddEditTaskViewModel.Event.Snackbar.TaskStateChanged -> {
+                            onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
                             }
                         }

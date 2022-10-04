@@ -22,7 +22,11 @@ import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
@@ -144,22 +148,20 @@ class AddEditTaskViewModel @Inject constructor(
 
                 when (taskUseCases.updateTask(updatedTask)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.update_task_error
                         ))
                     }
                     is Result.Success -> {
-                        _eventFlow.emitAll(
-                            flow {
-                                emit(Event.Snackbar.UndoTaskChange(
-                                    message = if (completed)
-                                        R.string.task_marked_as_completed
-                                    else
-                                        R.string.task_marked_as_uncompleted,
-                                    task = this@with
-                                ))
-                                emit(Event.NavigateBack)
-                            }
+                        fireEvents(
+                            Event.Snackbar.TaskStateChanged(
+                                message = if (completed)
+                                    R.string.task_marked_as_completed
+                                else
+                                    R.string.task_marked_as_uncompleted,
+                                task = this@with
+                            ),
+                            Event.NavigateBack
                         )
                     }
                 }
@@ -182,19 +184,14 @@ class AddEditTaskViewModel @Inject constructor(
         with(task!!) {
             when (taskUseCases.deleteTask(task)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
+                    fireEvents(Event.ShowError(
                         error = R.string.delete_task_error
                     ))
                 }
                 is Result.Success -> {
-                    _eventFlow.emitAll(
-                        flow {
-                            emit(Event.Snackbar.RecoverTask(
-                                message = R.string.task_deleted,
-                                task = this@with
-                            ))
-                            emit(Event.NavigateBack)
-                        }
+                    fireEvents(
+                        Event.Snackbar.TaskDeleted(task = this@with),
+                        Event.NavigateBack
                     )
                 }
             }
@@ -225,13 +222,13 @@ class AddEditTaskViewModel @Inject constructor(
             ).let {
                 when (taskUseCases.updateTask(it)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
-                            error = R.string.update_task_error
-                        ))
+                        fireEvents(
+                            Event.ShowError(
+                                error = R.string.update_task_error
+                            )
+                        )
                     }
-                    is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateBack)
-                    }
+                    is Result.Success -> fireEvents(Event.NavigateBack)
                 }
             }
         }
@@ -252,13 +249,13 @@ class AddEditTaskViewModel @Inject constructor(
         ).let {
             when (taskUseCases.createTask(it)) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.create_task_error
-                    ))
+                    fireEvents(
+                        Event.ShowError(
+                            error = R.string.create_task_error
+                        )
+                    )
                 }
-                is Result.Success -> {
-                    _eventFlow.emit(Event.NavigateBack)
-                }
+                is Result.Success -> fireEvents(Event.NavigateBack)
             }
         }
     }
@@ -276,9 +273,11 @@ class AddEditTaskViewModel @Inject constructor(
             viewModelScope.launch {
                 when (val result = taskUseCases.findOneTask(taskId)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
-                            error = R.string.find_task_error
-                        ))
+                        fireEvents(
+                            Event.ShowError(
+                                error = R.string.find_task_error
+                            )
+                        )
                     }
                     is Result.Success -> setupData(result.data)
                 }
@@ -346,9 +345,11 @@ class AddEditTaskViewModel @Inject constructor(
         boardUseCases.findOneBoard(boardId).let { result ->
             when (result) {
                 is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.find_board_error
-                    ))
+                    fireEvents(
+                        Event.ShowError(
+                            error = R.string.find_board_error
+                        )
+                    )
                 }
                 is Result.Success -> {
                     val board = result.data.board
@@ -359,21 +360,28 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
+
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
 
         object NavigateBack : Event()
 
-        sealed class Snackbar : Event() {
-            data class UndoTaskChange(
-                @StringRes val message: Int,
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class TaskStateChanged(
+                @StringRes message: Int,
                 val task: TaskWithSubtasks,
-            ) : Snackbar()
+            ) : Snackbar(message)
 
-            data class RecoverTask(
-                @StringRes val message: Int,
-                val task: TaskWithSubtasks,
-            ) : Snackbar()
+            class TaskDeleted(val task: TaskWithSubtasks) : Snackbar(message = R.string.task_deleted)
         }
     }
 }

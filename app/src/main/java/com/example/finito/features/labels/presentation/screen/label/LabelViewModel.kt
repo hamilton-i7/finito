@@ -49,7 +49,7 @@ class LabelViewModel @Inject constructor(
     var dialogType by mutableStateOf<LabelEvent.DialogType?>(null)
         private set
 
-    var labelNameState by mutableStateOf(TextFieldState())
+    var labelNameState by mutableStateOf(TextFieldState.Default)
         private set
 
     private var fetchBoardsJob: Job? = null
@@ -60,7 +60,7 @@ class LabelViewModel @Inject constructor(
     var showScreenMenu by mutableStateOf(false)
         private set
 
-    var searchQueryState by mutableStateOf(TextFieldState())
+    var searchQueryState by mutableStateOf(TextFieldState.Default)
         private set
 
     private var searchJob: Job? = null
@@ -68,15 +68,16 @@ class LabelViewModel @Inject constructor(
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesModule.TAG.BOARDS_ORDER.name,
-            SortingOption.Common.Default.name
+            null
         )?.let {
             when (it) {
                 SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
-                else -> SortingOption.Common.NameAZ
+                SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
+                else -> null
             }
-        } ?: SortingOption.Common.Default
+        }
     ); private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -151,12 +152,10 @@ class LabelViewModel @Inject constructor(
         }
     }
 
-    private fun onSortBoards(sortingOption: SortingOption.Common) {
-        if (sortingOption::class == boardsOrder::class) return
-
+    private fun onSortBoards(sortingOption: SortingOption.Common?) {
         boardsOrder = sortingOption
         with(preferences.edit()) {
-            putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption.name)
+            putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption?.name)
             apply()
         }
         label?.let { fetchBoards(it.labelId) }

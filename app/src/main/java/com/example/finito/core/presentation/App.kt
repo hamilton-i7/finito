@@ -170,6 +170,7 @@ fun App(
                     },
                 ) {
                     HomeScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,

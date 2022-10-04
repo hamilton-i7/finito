@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.TextFieldState
@@ -76,12 +77,13 @@ class HomeViewModel @Inject constructor(
         true
     )); private set
 
-    private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
-
     var showCardMenu by mutableStateOf(false)
         private set
 
     var selectedBoardId by mutableStateOf(0)
+        private set
+
+    var dialogType by mutableStateOf<HomeEvent.DialogType?>(null)
         private set
 
     private val _eventFlow = MutableSharedFlow<Event>()
@@ -101,12 +103,16 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.MoveBoardToTrash -> onDeactivateBoard(event.board, DeactivateMode.DELETE)
             is HomeEvent.SearchBoards -> onSearchBoards(event.query)
             HomeEvent.ToggleLayout -> onToggleLayout()
-            HomeEvent.RestoreBoard -> onRestoreBoard()
             is HomeEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is HomeEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
             is HomeEvent.ReorderTasks -> onReorder(event.from, event.to)
             is HomeEvent.SaveTasksOrder -> onSaveTasksOrder(event.from, event.to)
+            is HomeEvent.ShowDialog -> onShowDialogChange(event.type)
         }
+    }
+
+    private fun onShowDialogChange(dialogType: HomeEvent.DialogType?) {
+        this.dialogType = dialogType
     }
 
     fun canDrag(position: ItemPosition): Boolean = boards.any { it.board.boardId == position.key }
@@ -184,27 +190,54 @@ class HomeViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(
-                        state = BoardState.ARCHIVED,
-                        archivedAt = LocalDateTime.now(),
-                        position = null
-                    )))
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
-                }
-                DeactivateMode.DELETE -> {
-                    boardUseCases.updateBoard(
-                        copy(
-                            board = this.board.copy(
-                                state = BoardState.DELETED,
-                                removedAt = LocalDateTime.now(),
-                                position = null
-                            )
+                    val updatedBoard = copy(
+                        board = this.board.copy(
+                            state = BoardState.ARCHIVED,
+                            archivedAt = LocalDateTime.now(),
+                            position = null,
                         )
                     )
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            fireEvents(Event.ShowError(
+                                error = R.string.archive_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_archived,
+                                    board = this,
+                                )
+                            )
+                        }
+                    }
+                }
+                DeactivateMode.DELETE -> {
+                    val updatedBoard = copy(
+                        board = this.board.copy(
+                            state = BoardState.DELETED,
+                            position = null,
+                            removedAt = LocalDateTime.now(),
+                        )
+                    )
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            fireEvents(Event.ShowError(
+                                error = R.string.move_to_trash_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_archived,
+                                    board = this,
+                                )
+                            )
+                        }
+                    }
                 }
             }
-            recentlyDeactivatedBoard = this
         }
     }
 
@@ -213,20 +246,6 @@ class HomeViewModel @Inject constructor(
         with(preferences.edit()) {
             putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
             apply()
-        }
-    }
-
-    private fun onRestoreBoard() = viewModelScope.launch {
-        recentlyDeactivatedBoard?.let {
-            boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(
-                    state = BoardState.ACTIVE,
-                    removedAt = null,
-                    archivedAt = null,
-                    position = recentlyDeactivatedBoard!!.board.position
-                ))
-            )
-            recentlyDeactivatedBoard = null
         }
     }
 
@@ -243,7 +262,24 @@ class HomeViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
+
     sealed class Event {
-        data class ShowSnackbar(@StringRes val message: Int) : Event()
+        data class ShowError(@StringRes val error: Int) : Event()
+
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
+        }
     }
 }

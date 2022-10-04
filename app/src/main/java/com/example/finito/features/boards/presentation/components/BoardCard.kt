@@ -34,7 +34,6 @@ fun BoardCard(
     options: List<BoardCardMenuOption> = emptyList(),
     onMenuItemClick: (BoardCardMenuOption) -> Unit = {},
 ) {
-    // FIXME 30/09/2022: Fix total tasks amount to match quantity shown on BoardScreen.kt
     val tasksAmount = board.tasks.size + board.tasks.flatMap { it.subtasks }.size
     val completedTasksProgress = with(board.tasks) {
         if (isEmpty()) return@with 0F

@@ -23,6 +23,7 @@ fun BoardsList(
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
+    allowDrag: Boolean = false,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
     onLabelClick: (labelId: Int) -> Unit = {},
@@ -38,8 +39,6 @@ fun BoardsList(
     onCardOptionsClick: (boardId: Int) -> Unit,
     onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit
 ) {
-    val allowDrag = selectedSortingOption == null
-
     LazyColumn(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),

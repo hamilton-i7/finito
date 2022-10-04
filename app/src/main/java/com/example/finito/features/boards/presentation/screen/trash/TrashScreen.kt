@@ -144,7 +144,7 @@ private fun TrashScreen(
             onCardOptionsClick = onCardOptionsClick,
             onMenuItemClick = { boardId, option ->
                 onMenuItemClick(boardId, option as DeletedBoardCardMenuOption)
-            }
+            },
         )
     }
 }

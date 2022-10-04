@@ -15,11 +15,12 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 @Composable
 fun BoardLayout(
     reorderableListState: ReorderableLazyListState = rememberReorderableLazyListState(
-    onMove = { _, _ -> }
+        onMove = { _, _ -> }
     ),
     reorderableGridState: ReorderableLazyGridState = rememberReorderableLazyGridState(
         onMove = { _, _ -> }
     ),
+    allowDrag: Boolean = false,
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
@@ -34,7 +35,7 @@ fun BoardLayout(
     onDismissMenu: (boardId: Int) -> Unit = {},
     options: List<BoardCardMenuOption> = emptyList(),
     onCardOptionsClick: (boardId: Int) -> Unit,
-    onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit
+    onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit,
 ) {
     val contentPadding = PaddingValues(
         vertical = 12.dp,
@@ -45,6 +46,7 @@ fun BoardLayout(
         BoardsGrid(
             contentPadding = contentPadding,
             reorderableState = reorderableGridState,
+            allowDrag = allowDrag,
             labels = labels,
             labelFilters = labelFilters,
             onLabelClick = onLabelClick,
@@ -63,6 +65,7 @@ fun BoardLayout(
     } else {
         BoardsList(
             contentPadding = contentPadding,
+            allowDrag = allowDrag,
             reorderableState = reorderableListState,
             labels = labels,
             labelFilters = labelFilters,

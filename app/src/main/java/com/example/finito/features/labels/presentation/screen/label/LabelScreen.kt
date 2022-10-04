@@ -240,6 +240,7 @@ private fun LabelScreen(
             onMenuItemClick = { boardId, option ->
                 onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
             },
+            allowDrag = true,
         )
     }
 }

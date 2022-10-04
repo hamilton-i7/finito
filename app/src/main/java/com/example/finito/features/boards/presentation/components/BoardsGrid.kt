@@ -32,6 +32,7 @@ fun BoardsGrid(
     reorderableState: ReorderableLazyGridState = rememberReorderableLazyGridState(
         onMove = { _, _ -> }
     ),
+    allowDrag: Boolean = false,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
     onLabelClick: (labelId: Int) -> Unit = {},
@@ -47,8 +48,6 @@ fun BoardsGrid(
     onCardOptionsClick: (boardId: Int) -> Unit,
     onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit
 ) {
-    val allowDrag = selectedSortingOption == null
-
     LazyVerticalGrid(
         state = reorderableState.gridState,
         columns = GridCells.Fixed(count = BOARD_COLUMNS),

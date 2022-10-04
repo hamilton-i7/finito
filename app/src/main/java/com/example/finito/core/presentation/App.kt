@@ -170,6 +170,7 @@ fun App(
                     },
                 ) {
                     HomeScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,
@@ -321,6 +322,7 @@ fun App(
                     }
                 ) {
                     ArchiveScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,
@@ -351,6 +353,7 @@ fun App(
                     }
                 ) {
                     TrashScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,

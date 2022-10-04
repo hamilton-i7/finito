@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.TextFieldState
@@ -74,12 +75,13 @@ class ArchiveViewModel @Inject constructor(
         true
     )); private set
 
-    private var recentlyMovedBoard: BoardWithLabelsAndTasks? = null
-
     var showCardMenu by mutableStateOf(false)
         private set
 
     var selectedBoardId by mutableStateOf(0)
+        private set
+
+    var dialogType by mutableStateOf<ArchiveEvent.DialogType?>(null)
         private set
 
     private val _eventFlow = MutableSharedFlow<Event>()
@@ -99,10 +101,14 @@ class ArchiveViewModel @Inject constructor(
             is ArchiveEvent.MoveBoardToTrash -> onMoveBoard(event.board, EditMode.DELETE)
             is ArchiveEvent.SearchBoards -> onSearchBoards(event.query)
             ArchiveEvent.ToggleLayout -> onToggleLayout()
-            ArchiveEvent.RestoreBoard -> onRestoreBoard()
             is ArchiveEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is ArchiveEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
+            is ArchiveEvent.ShowDialog -> onShowDialogChange(event.type)
         }
+    }
+
+    private fun onShowDialogChange(dialogType: ArchiveEvent.DialogType?) {
+        this.dialogType = dialogType
     }
 
     private fun onSearchBoards(query: String) {
@@ -165,25 +171,54 @@ class ArchiveViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 EditMode.UNARCHIVE -> {
-                    boardUseCases.updateBoard(copy(board = this.board.copy(
-                        state = BoardState.ACTIVE,
-                        archivedAt = null,
-                        position = 0
-                    )))
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_out_of_archive))
+                    val updatedBoard = copy(
+                        board = this.board.copy(
+                            state = BoardState.ACTIVE,
+                            position = 0,
+                            archivedAt = null,
+                        )
+                    )
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            fireEvents(Event.ShowError(
+                                error = R.string.restore_board_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_was_restored,
+                                    board = this,
+                                )
+                            )
+                        }
+                    }
                 }
                 EditMode.DELETE -> {
-                    boardUseCases.updateBoard(
-                        copy(board = this.board.copy(
+                    val updatedBoard = copy(
+                        board = this.board.copy(
                             state = BoardState.DELETED,
+                            position = null,
                             removedAt = LocalDateTime.now(),
-                            archivedAt = null
-                        ))
+                        )
                     )
-                    _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
+                    when (boardUseCases.updateBoard(updatedBoard)) {
+                        is Result.Error -> {
+                            fireEvents(Event.ShowError(
+                                error = R.string.move_to_trash_error
+                            ))
+                        }
+                        is Result.Success -> {
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_moved_to_trash,
+                                    board = this,
+                                )
+                            )
+                        }
+                    }
                 }
             }
-            recentlyMovedBoard = this
         }
     }
 
@@ -192,20 +227,6 @@ class ArchiveViewModel @Inject constructor(
         with(preferences.edit()) {
             putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
             apply()
-        }
-    }
-
-    private fun onRestoreBoard() = viewModelScope.launch {
-        recentlyMovedBoard?.let {
-            boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(
-                    state = BoardState.ARCHIVED,
-                    removedAt = null,
-                    archivedAt = recentlyMovedBoard!!.board.archivedAt,
-                    position = null
-                ))
-            )
-            recentlyMovedBoard = null
         }
     }
 
@@ -223,11 +244,28 @@ class ArchiveViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
+
     enum class EditMode {
         UNARCHIVE, DELETE
     }
 
     sealed class Event {
-        data class ShowSnackbar(@StringRes val message: Int) : Event()
+        data class ShowError(@StringRes val error: Int) : Event()
+
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
+        }
     }
 }

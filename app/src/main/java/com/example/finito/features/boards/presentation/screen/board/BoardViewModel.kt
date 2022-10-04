@@ -782,6 +782,7 @@ class BoardViewModel @Inject constructor(
                     val updatedBoard = BoardWithLabelsAndTasks(
                         board = board.copy(
                             state = BoardState.ARCHIVED,
+                            archivedAt = LocalDateTime.now(),
                             removedAt = null,
                             position = null
                         ),
@@ -791,7 +792,7 @@ class BoardViewModel @Inject constructor(
                     when(boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
                             fireEvents(Event.ShowError(
-                                error = R.string.update_board_error
+                                error = R.string.archive_board_error
                             ))
                         }
                         is Result.Success -> {
@@ -818,7 +819,7 @@ class BoardViewModel @Inject constructor(
                     when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
                             fireEvents(Event.ShowError(
-                                error = R.string.update_board_error
+                                error = R.string.move_to_trash_error
                             ))
                         }
                         is Result.Success -> {
@@ -841,7 +842,6 @@ class BoardViewModel @Inject constructor(
         events.forEachIndexed { index, event ->
             _eventFlow.emit(event)
             if (index != events.lastIndex) { delay(100) }
-
         }
     }
 

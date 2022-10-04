@@ -23,6 +23,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.TestTags
@@ -31,6 +33,7 @@ import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
+import com.example.finito.features.boards.presentation.screen.home.components.HomeDialogs
 import com.example.finito.features.boards.presentation.screen.home.components.HomeTopBar
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
@@ -47,6 +50,7 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 )
 @Composable
 fun HomeScreen(
+    appViewModel: AppViewModel,
     homeViewModel: HomeViewModel = hiltViewModel(),
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onNavigateToCreateBoard: () -> Unit = {},
@@ -107,9 +111,14 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         homeViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is HomeViewModel.Event.ShowSnackbar -> {
-                    onShowSnackbar(event.message, R.string.undo) {
-                        homeViewModel.onEvent(HomeEvent.RestoreBoard)
+                is HomeViewModel.Event.ShowError -> {
+                    homeViewModel.onEvent(HomeEvent.ShowDialog(
+                        type = HomeEvent.DialogType.Error(message = event.error)
+                    ))
+                }
+                is HomeViewModel.Event.Snackbar.BoardStateChanged -> {
+                    onShowSnackbar(event.message, event.actionLabel) {
+                        appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                     }
                 }
             }
@@ -175,6 +184,8 @@ fun HomeScreen(
             .noRippleClickable { focusManager.clearFocus() }
             .testTag(TestTags.HOME_SCREEN),
     ) { innerPadding ->
+        HomeDialogs(homeViewModel)
+
         HomeScreen(
             paddingValues = innerPadding,
             reorderableListState = reorderableListState,

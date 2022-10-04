@@ -1,5 +1,7 @@
 package com.example.finito.features.tasks.presentation.screen.addedittask
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
@@ -35,6 +37,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -86,6 +89,7 @@ fun AddEditTaskScreen(
         onActionClick: () -> Unit
     ) -> Unit = {_, _, _ -> },
 ) {
+    val window = (LocalView.current.context as Activity).window
     val scope = rememberCoroutineScope()
     val focusManager: FocusManager = LocalFocusManager.current
     var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
@@ -170,6 +174,10 @@ fun AddEditTaskScreen(
             if (event != AppViewModel.Event.RefreshTask) return@collect
             addEditTaskViewModel.onEvent(AddEditTaskEvent.RefreshTask)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
     }
 
     ModalBottomSheetLayout(
@@ -548,8 +556,9 @@ private fun AddEditTaskScreen(
                         textFieldModifier = Modifier
                             .focusRequester(focusRequest)
                             .onFocusChanged {
-                                textStyle = if (it.isFocused || !textFieldState.completed) defaultTextStyle
-                                else completedTextStyle
+                                textStyle =
+                                    if (it.isFocused || !textFieldState.completed) defaultTextStyle
+                                    else completedTextStyle
                             }
                             .onKeyEvent { event ->
                                 if (event.key != Key.Backspace) return@onKeyEvent false

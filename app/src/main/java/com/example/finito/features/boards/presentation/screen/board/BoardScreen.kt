@@ -667,6 +667,7 @@ private fun BoardScreen(
                     }
                 }
             }
+            // TODO: 04/10/2022: Disable label animation when entering screen
             item(key = LazyListKeys.LABELS) {
                 BoardLabels(
                     labels = labels.sortedBy { it.normalizedName },

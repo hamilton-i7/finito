@@ -81,7 +81,7 @@ fun App(
     val snackbarModifier = when(currentRoute) {
         Screen.Today.route, Screen.Tomorrow.route,
         Screen.Urgent.route, Screen.Home.route,
-        Screen.Archive.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
+        Screen.Archive.route, Screen.Label.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
         Screen.Board.route -> {
             if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
                 Modifier.navigationBarsPadding()
@@ -410,6 +410,7 @@ fun App(
                     }
                 ) {
                     LabelScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         onShowSnackbar = onShowSnackbar,
                         onNavigateToHome = { navController.navigateToHome() },

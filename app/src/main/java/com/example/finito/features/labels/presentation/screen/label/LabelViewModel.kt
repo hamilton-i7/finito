@@ -85,8 +85,6 @@ class LabelViewModel @Inject constructor(
         true
     )); private set
 
-    private var recentlyDeactivatedBoard: BoardWithLabelsAndTasks? = null
-
     var showCardMenu by mutableStateOf(false)
 
     var selectedBoardId by mutableStateOf(0)
@@ -103,7 +101,6 @@ class LabelViewModel @Inject constructor(
         when (event) {
             is LabelEvent.ArchiveBoard -> onDeactivateBoard(event.board, DeactivateMode.ARCHIVE)
             is LabelEvent.MoveBoardToTrash -> onDeactivateBoard(event.board, DeactivateMode.DELETE)
-            LabelEvent.RestoreBoard -> onRestoreBoard()
             is LabelEvent.SearchBoards -> onSearchBoards(event.query)
             is LabelEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
             is LabelEvent.ShowSearchBar -> onShowSearchBar(event.show)
@@ -161,24 +158,6 @@ class LabelViewModel @Inject constructor(
         label?.let { fetchBoards(it.labelId) }
     }
 
-    private fun onRestoreBoard() = viewModelScope.launch {
-        if (recentlyDeactivatedBoard == null) return@launch
-        with(recentlyDeactivatedBoard!!) {
-            val restoredBoard = copy(board = board.copy(
-                state = BoardState.ACTIVE,
-                removedAt = null
-            ))
-            when (boardUseCases.updateBoard(restoredBoard)) {
-                is Result.Error -> {
-                    _eventFlow.emit(Event.ShowError(
-                        error = R.string.restore_board_error)
-                    )
-                }
-                is Result.Success -> recentlyDeactivatedBoard = null
-            }
-        }
-    }
-
     private fun onDeactivateBoard(
         board: BoardWithLabelsAndTasks,
         mode: DeactivateMode,
@@ -186,35 +165,50 @@ class LabelViewModel @Inject constructor(
         with(board) {
             when (mode) {
                 DeactivateMode.ARCHIVE -> {
-                    val archivedBoard = copy(board = this.board.copy(state = BoardState.ARCHIVED))
-                    when (boardUseCases.updateBoard(archivedBoard)) {
+                    val updatedBoard = copy(
+                        board = this.board.copy(
+                            state = BoardState.ARCHIVED,
+                            archivedAt = LocalDateTime.now(),
+                            position = null,
+                        )
+                    )
+                    when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
-                            _eventFlow.emit(Event.ShowError(
-                                error = R.string.archive_board_error)
-                            )
+                            fireEvents(Event.ShowError(
+                                error = R.string.archive_board_error
+                            ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_archived))
-                            recentlyDeactivatedBoard = this
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_archived,
+                                    board = this,
+                                )
+                            )
                         }
                     }
                 }
                 DeactivateMode.DELETE -> {
-                    val deletedBoard = copy(
+                    val updatedBoard = copy(
                         board = this.board.copy(
                             state = BoardState.DELETED,
-                            removedAt = LocalDateTime.now()
+                            position = null,
+                            removedAt = LocalDateTime.now(),
                         )
                     )
-                    when (boardUseCases.updateBoard(deletedBoard)) {
+                    when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
-                            _eventFlow.emit(Event.ShowError(
-                                error = R.string.move_to_trash_error)
-                            )
+                            fireEvents(Event.ShowError(
+                                error = R.string.move_to_trash_error
+                            ))
                         }
                         is Result.Success -> {
-                            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_moved_to_trash))
-                            recentlyDeactivatedBoard = this
+                            fireEvents(
+                                Event.Snackbar.BoardStateChanged(
+                                    message = R.string.board_moved_to_trash,
+                                    board = this,
+                                )
+                            )
                         }
                     }
                 }
@@ -282,11 +276,26 @@ class LabelViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    sealed class Event {
-        data class ShowSnackbar(@StringRes val message: Int) : Event()
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
 
+    sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
 
         object NavigateHome : Event()
+
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
+        }
     }
 }

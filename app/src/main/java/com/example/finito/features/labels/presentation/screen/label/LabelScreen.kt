@@ -20,6 +20,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.domain.util.commonSortingOptions
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.TestTags
@@ -38,6 +40,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LabelScreen(
+    appViewModel: AppViewModel,
     labelViewModel: LabelViewModel = hiltViewModel(),
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onShowSnackbar: (
@@ -72,17 +75,17 @@ fun LabelScreen(
     LaunchedEffect(Unit) {
         labelViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is LabelViewModel.Event.ShowSnackbar -> {
-                    onShowSnackbar(event.message, R.string.undo) {
-                        labelViewModel.onEvent(LabelEvent.RestoreBoard)
-                    }
-                }
                 is LabelViewModel.Event.ShowError -> {
                     labelViewModel.onEvent(LabelEvent.ShowDialog(
                         type = LabelEvent.DialogType.Error(message = event.error)
                     ))
                 }
                 LabelViewModel.Event.NavigateHome -> onNavigateToHome()
+                is LabelViewModel.Event.Snackbar.BoardStateChanged -> {
+                    onShowSnackbar(event.message, event.actionLabel) {
+                        appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
+                    }
+                }
             }
         }
     }

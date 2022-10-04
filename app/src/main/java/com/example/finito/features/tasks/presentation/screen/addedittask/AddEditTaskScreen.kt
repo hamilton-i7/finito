@@ -383,6 +383,8 @@ private fun AddEditTaskScreen(
     onNextSubtask: (position: Int) -> Unit = {},
     onAddEditButtonClick: () -> Unit = {},
 ) {
+    val keyboardState by keyboardAsState()
+
     Surface(modifier = Modifier.padding(paddingValues)) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 12.dp),
@@ -536,7 +538,6 @@ private fun AddEditTaskScreen(
                 )
                 var textStyle by remember { mutableStateOf(defaultTextStyle) }
 
-                // TODO: 22/09/2022: Fix offset when closing the IME while dragging
                 ReorderableItem(reorderableState, key = textFieldState.id) { isDragging ->
                     SubtaskTextFieldItem(
                         state = textFieldState,
@@ -545,6 +546,8 @@ private fun AddEditTaskScreen(
                         focusManager = focusManager,
                         textStyle = textStyle,
                         isDragging = isDragging,
+                        showDragIndicator = keyboardState == Keyboard.CLOSED,
+                        readOnly = reorderableState.draggingItemKey != null,
                         onRemoveSubtask = { onRemoveSubtask(textFieldState) },
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Sentences,

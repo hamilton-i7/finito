@@ -25,6 +25,7 @@ import com.example.finito.ui.theme.finitoColors
 fun BasicTextField(
     state: TextFieldState,
     modifier: Modifier = Modifier,
+    readOnly: Boolean = true,
     @StringRes placeholder: Int? = null,
     textStyle: TextStyle = LocalTextStyle.current,
     leadingIcon: (@Composable () -> Unit)? = null,
@@ -56,6 +57,7 @@ fun BasicTextField(
         keyboardActions = keyboardActions,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
+        readOnly = readOnly,
         modifier = Modifier.fillMaxWidth().then(modifier)
     )
 }

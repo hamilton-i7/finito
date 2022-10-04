@@ -102,6 +102,7 @@ fun UrgentTabsContent(
                 onPriorityClick = onPriorityClick,
                 onDateTimeClick = onDateTimeClick,
                 onToggleTaskCompleted = onToggleTaskCompleted,
+                onBoardNameClick = onBoardNameClick,
                 onSubtaskClick = onSubtaskClick,
                 onToggleSubtaskCompleted = onToggleSubtaskCompleted
             )

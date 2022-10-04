@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Finito</string>
-    <string name="empty_name_error">Name cannot be empty</string>
     <string name="main">Main</string>
     <string name="home">Home</string>
     <string name="today">Today</string>
@@ -42,7 +41,6 @@
     <string name="board_archived">Board archived</string>
     <string name="undo">Undo</string>
     <string name="board_moved_to_trash">Board moved to trash</string>
-    <string name="board_moved_out_of_archive">Board moved out of archive</string>
     <string name="board_was_restored">Board was restored</string>
     <string name="cancel">Cancel</string>
     <string name="delete_board_confirmation">This board will be deleted permanently</string>
@@ -125,15 +123,10 @@
     <string name="remove_subtask">Remove subtask</string>
     <string name="enter_subtask_name">Enter subtask name</string>
     <string name="create_subtask">Create subtask</string>
-    <string name="remove_reminder">Remove reminder</string>
     <string name="subtasks">Subtasks</string>
-    <string name="choose_board">Choose board</string>
     <string name="edit_task">Edit task</string>
     <string name="mark_as_completed">Mark as completed</string>
     <string name="delete_task">Delete task</string>
-    <string name="hide_reminders">Hide reminders</string>
-    <string name="show_reminders">Show reminders</string>
-    <string name="close_boards_menu">Close boards menu</string>
     <string name="move_to">Move to</string>
     <string name="selected">Selected</string>
     <string name="reorder_task">Reorder task</string>
@@ -155,7 +148,6 @@
     <string name="delete_completed_subtasks_error">There was an error while trying to delete the subtasks</string>
     <string name="search_labels">Search labels</string>
     <string name="delete_board_error">There was a problem while trying to delete this board</string>
-    <string name="cannot_make_changes">Cannot make any changes on this board while in trash</string>
     <string name="recover_task_error">There was an error while trying to recover this task</string>
     <string name="recover_subtask_error">There was an error while trying to recover this subtask</string>
 </resources>

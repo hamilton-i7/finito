@@ -875,7 +875,7 @@ class BoardViewModel @Inject constructor(
             class UneditableBoard(
                 val board: BoardWithLabelsAndTasks
             ) : Snackbar(
-                message = R.string.cannot_make_changes,
+                message = R.string.board_not_editable,
                 actionLabel = R.string.restore
             )
         }

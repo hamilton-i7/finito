@@ -1,17 +1,15 @@
 package com.example.finito.core.presentation.components.textfields
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -38,7 +36,7 @@ fun FinitoTextField(
     ),
     keyboardActions: KeyboardActions = KeyboardActions()
 ) {
-    TextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         readOnly = readOnly,
@@ -53,14 +51,7 @@ fun FinitoTextField(
         colors = colors,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = modifier
-            .then(Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = finitoColors.outline,
-                    shape = FinitoTextFieldDefaults.Shape
-                )),
+        modifier = Modifier.fillMaxWidth().then(modifier)
     )
 }
 
@@ -69,33 +60,26 @@ object FinitoTextFieldDefaults {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun textFieldColors() = TextFieldDefaults.textFieldColors(
-        unfocusedIndicatorColor = Color.Transparent,
-        focusedIndicatorColor = Color.Transparent,
+    fun textFieldColors() = TextFieldDefaults.outlinedTextFieldColors(
         containerColor = finitoColors.surfaceColorAtElevation(1.dp),
-        unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f),
-        disabledIndicatorColor = Color.Transparent,
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun clickableTextFieldColors(enabled: Boolean = true): TextFieldColors {
         return if (enabled) {
-            TextFieldDefaults.textFieldColors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
+            TextFieldDefaults.outlinedTextFieldColors(
                 containerColor = finitoColors.surfaceColorAtElevation(1.dp),
-                disabledIndicatorColor = Color.Transparent,
                 disabledTextColor = finitoColors.onSurface,
                 disabledLeadingIconColor = finitoColors.onSurfaceVariant,
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant,
+                disabledPlaceholderColor = finitoColors.onSurfaceVariant,
+                disabledLabelColor = finitoColors.onSurfaceVariant,
+                disabledBorderColor = finitoColors.outline,
             )
         } else {
-            TextFieldDefaults.textFieldColors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
+            TextFieldDefaults.outlinedTextFieldColors(
                 containerColor = finitoColors.surfaceColorAtElevation(1.dp),
-                disabledIndicatorColor = Color.Transparent,
                 disabledTextColor = finitoColors.onSurface.copy(alpha = DisabledAlpha),
                 disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),

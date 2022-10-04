@@ -137,10 +137,7 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             BoardEvent.ToggleCompletedTasksVisibility -> onShowCompletedTasksChange()
             is BoardEvent.ShowDialog -> onShowDialogChange(event.type)
-            BoardEvent.RefreshBoard -> {
-                fetchBoard()
-                fetchBoardState()
-            }
+            BoardEvent.RefreshBoard -> fetchBoard()
             is BoardEvent.ShowTaskDateTimeFullDialog -> onShowTaskDateTimeFullDialog(event.task)
             is BoardEvent.ChangeTaskDate -> selectedDate = event.date
             is BoardEvent.ChangeTaskTime -> selectedTime = event.time
@@ -711,6 +708,7 @@ class BoardViewModel @Inject constructor(
                          tasks = result.data.tasks
                          draggableTasks = setupDraggableTasks()
                          selectedLabels = result.data.labels
+                         boardState = result.data.board.state
                      }
                  }
             }

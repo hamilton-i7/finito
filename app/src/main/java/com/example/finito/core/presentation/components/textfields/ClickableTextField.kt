@@ -26,11 +26,11 @@ fun ClickableTextField(
         placeholder = placeholder,
         enabled = false,
         colors = FinitoTextFieldDefaults.clickableTextFieldColors(enabled),
-        modifier = Modifier
-            .clip(FinitoTextFieldDefaults.Shape)
-            .clickable(
-                onClick = onClick,
-                enabled = enabled
-            ).then(modifier),
+        modifier = modifier
+            .then(
+                Modifier
+                    .clip(FinitoTextFieldDefaults.Shape)
+                    .clickable(onClick = onClick, enabled = enabled)
+            ),
     )
 }

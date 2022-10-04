@@ -470,6 +470,9 @@ fun App(
                         appViewModel = appViewModel,
                         previousRoute = navController.previousBackStackEntry?.destination?.route ?: "",
                         onNavigateBack = { navController.navigateUp() },
+                        onNavigateToBoard = { boardId, boardState ->
+                            navController.navigateToBoard(boardId, boardState)
+                        },
                         onShowSnackbar = onShowSnackbar
                     )
                 }

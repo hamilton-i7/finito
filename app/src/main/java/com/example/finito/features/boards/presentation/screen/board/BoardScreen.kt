@@ -170,8 +170,17 @@ fun BoardScreen(
 
     LaunchedEffect(Unit) {
         appViewModel.event.collect { event ->
-            if (event != AppViewModel.Event.RefreshBoard) return@collect
-            boardViewModel.onEvent(BoardEvent.RefreshBoard)
+            when (event) {
+                AppViewModel.Event.RefreshBoard -> {
+                    boardViewModel.onEvent(BoardEvent.RefreshBoard)
+                }
+                is AppViewModel.Event.ShowError -> {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.Error(event.error)
+                    ))
+                }
+                else -> Unit
+            }
         }
     }
 

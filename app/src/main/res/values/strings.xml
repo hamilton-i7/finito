@@ -156,4 +156,6 @@
     <string name="search_labels">Search labels</string>
     <string name="delete_board_error">There was a problem while trying to delete this board</string>
     <string name="cannot_make_changes">Cannot make any changes on this board while in trash</string>
+    <string name="recover_task_error">There was an error while trying to recover this task</string>
+    <string name="recover_subtask_error">There was an error while trying to recover this subtask</string>
 </resources>

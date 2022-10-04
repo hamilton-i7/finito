@@ -44,14 +44,22 @@ class AppViewModel @Inject constructor(
 
     private fun onRecoverSubtask(subtask: Subtask) = viewModelScope.launch {
         when (subtaskUseCases.createSubtask(subtask)) {
-            is Result.Error -> TODO(reason = "Implement error scenario")
+            is Result.Error -> {
+                fireEvents(Event.ShowError(
+                    error = R.string.recover_subtask_error
+                ))
+            }
             is Result.Success -> onRefreshBoard()
         }
     }
 
     private fun onRecoverTask(task: TaskWithSubtasks) = viewModelScope.launch {
         when (taskUseCases.createTask(task)) {
-            is Result.Error -> TODO(reason = "Implement error scenario")
+            is Result.Error -> {
+                fireEvents(Event.ShowError(
+                    error = R.string.recover_task_error
+                ))
+            }
             is Result.Success -> onRefreshBoard()
         }
     }

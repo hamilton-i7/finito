@@ -143,7 +143,11 @@ class AddEditBoardViewModel @Inject constructor(
                 tasks = tasks.map { it.toCompletedTask() }
             )
             when (boardUseCases.updateBoard(updatedBoard)) {
-                is Result.Error -> TODO()
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.restore_board_error
+                    ))
+                }
                 is Result.Success -> {
                     val originalBoard = BoardWithLabelsAndTasks(
                         board = board,
@@ -191,7 +195,11 @@ class AddEditBoardViewModel @Inject constructor(
                 tasks = tasks.map { it.toCompletedTask() }
             )
             when (boardUseCases.updateBoard(updatedBoard)) {
-                is Result.Error -> TODO()
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.move_to_trash_error
+                    ))
+                }
                 is Result.Success -> {
                     val originalBoard = BoardWithLabelsAndTasks(
                         board = board,

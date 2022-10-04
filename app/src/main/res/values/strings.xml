@@ -153,4 +153,5 @@
     <string name="edit_subtask">Edit subtask</string>
     <string name="delete_subtask">Delete subtask</string>
     <string name="delete_completed_subtasks_error">There was an error while trying to delete the subtasks</string>
+    <string name="search_labels">Search labels</string>
 </resources>

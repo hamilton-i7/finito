@@ -41,7 +41,7 @@ fun BoardCard(
         val completedAmount = it.filter { task -> task.completed }.size.toFloat()
         completedAmount / it.size
     }
-    val labelNames = board.labels.joinToString { it.name }
+    val labelNames = board.labels.sortedBy { it.normalizedName }.joinToString { it.name }
 
     Card(
         onClick = onClick,

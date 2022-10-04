@@ -70,33 +70,33 @@ class AddEditBoardViewModel @Inject constructor(
 
     fun onEvent(event: AddEditBoardEvent) {
         when (event) {
-            is AddEditBoardEvent.SelectLabel -> {
-                val exists = selectedLabels.contains(event.label)
-                selectedLabels = if (exists) {
-                    selectedLabels.filter { it != event.label }
-                } else {
-                    selectedLabels + listOf(event.label)
-                }
-            }
-            is AddEditBoardEvent.ChangeName -> {
-                nameState = nameState.copy(
-                    value = event.name
-                )
-            }
+            is AddEditBoardEvent.SelectLabel -> onSelectLabel(event.label)
+            is AddEditBoardEvent.ChangeName -> nameState = nameState.copy(
+                value = event.name
+            )
             AddEditBoardEvent.CreateBoard -> onCreateBoard()
             AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
             AddEditBoardEvent.EditBoard -> onEditBoard()
-            AddEditBoardEvent.ToggleLabelsVisibility -> {
-                showLabels = !showLabels
-            }
+            AddEditBoardEvent.ToggleLabelsVisibility -> showLabels = !showLabels
             AddEditBoardEvent.DeleteForever -> onDeleteForever()
             is AddEditBoardEvent.RestoreBoard -> onRestoreBoard(event.showSnackbar)
             is AddEditBoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             is AddEditBoardEvent.ShowDialog -> dialogType = event.type
-            AddEditBoardEvent.AlertNotEditable -> viewModelScope.launch {
-                _eventFlow.emit(Event.Snackbar.UneditableBoard)
-            }
+            AddEditBoardEvent.AlertNotEditable -> onAlertNotEditable()
             AddEditBoardEvent.UndoRestore -> onUndoRestore()
+        }
+    }
+
+    private fun onAlertNotEditable() = viewModelScope.launch {
+        _eventFlow.emit(Event.Snackbar.UneditableBoard)
+    }
+
+    private fun onSelectLabel(label: SimpleLabel) {
+        val exists = selectedLabels.contains(label)
+        selectedLabels = if (exists) {
+            selectedLabels.filter { it != label }
+        } else {
+            selectedLabels + listOf(label)
         }
     }
 
@@ -212,7 +212,7 @@ class AddEditBoardViewModel @Inject constructor(
     }
 
     private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().onEach {
+        labelUseCases.findSimpleLabels().data.onEach {
             labels = it
         }.launchIn(viewModelScope)
     }

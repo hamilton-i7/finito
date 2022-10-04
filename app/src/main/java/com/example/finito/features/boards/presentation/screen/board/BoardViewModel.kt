@@ -12,6 +12,7 @@ import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Result
+import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
@@ -19,6 +20,8 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.boards.utils.DeactivateMode
+import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.entity.filterUncompleted
@@ -26,9 +29,12 @@ import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
 import com.example.finito.features.tasks.domain.entity.*
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
@@ -41,6 +47,7 @@ class BoardViewModel @Inject constructor(
     private val boardUseCases: BoardUseCases,
     private val taskUseCases: TaskUseCases,
     private val subtaskUseCases: SubtaskUseCases,
+    private val labelUseCases: LabelUseCases,
     private val preferences: SharedPreferences,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -49,6 +56,22 @@ class BoardViewModel @Inject constructor(
         private set
 
     var board by mutableStateOf<DetailedBoard?>(null)
+        private set
+
+    var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
+        private set
+
+    private var fetchLabelsJob: Job? = null
+
+    var selectedLabels by mutableStateOf<List<SimpleLabel>>(emptyList())
+        private set
+
+    var labelSearchQuery by mutableStateOf(TextFieldState.Default)
+        private set
+
+    private var searchJob: Job? = null
+
+    var showLabelsFullDialog by mutableStateOf(false)
         private set
 
     var showCompletedTasks by mutableStateOf(preferences.getBoolean(
@@ -94,6 +117,7 @@ class BoardViewModel @Inject constructor(
     init {
         fetchBoard()
         fetchBoardState()
+        fetchLabels()
     }
 
     fun onEvent(event: BoardEvent) {
@@ -124,6 +148,46 @@ class BoardViewModel @Inject constructor(
             is BoardEvent.ReorderTasks -> onReorder(event.from, event.to)
             is BoardEvent.SaveTasksOrder -> onSaveTasksOrder(event.from, event.to)
             is BoardEvent.DragItem -> draggingItem = event.itemId
+            is BoardEvent.SelectLabel -> onSelectLabel(event.label)
+            is BoardEvent.ShowLabelsFullDialog -> showLabelsFullDialog = event.show
+            is BoardEvent.SearchLabels -> onSearchLabels(event.query)
+            BoardEvent.ChangeBoardLabels -> onChangeBoardLabels()
+        }
+    }
+
+    private fun onChangeBoardLabels() = viewModelScope.launch {
+        with(board!!) {
+            val updatedBoard = BoardWithLabelsAndTasks(
+                board = board,
+                labels = selectedLabels,
+                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+            )
+            when (boardUseCases.updateBoard(updatedBoard)) {
+                is Result.Error -> {
+                    _eventFlow.emit(Event.ShowError(
+                        error = R.string.update_board_error
+                    ))
+                }
+                is Result.Success -> fetchBoard()
+            }
+        }
+    }
+
+    private fun onSearchLabels(query: String) {
+        labelSearchQuery = labelSearchQuery.copy(value = query)
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_DELAY_MILLIS)
+            fetchLabels()
+        }
+    }
+
+    private fun onSelectLabel(label: SimpleLabel) {
+        val exists = selectedLabels.contains(label)
+        selectedLabels = if (exists) {
+            selectedLabels.filter { it != label }
+        } else {
+            selectedLabels + listOf(label)
         }
     }
 
@@ -630,6 +694,7 @@ class BoardViewModel @Inject constructor(
                          board = result.data
                          tasks = result.data.tasks
                          draggableTasks = setupDraggableTasks()
+                         selectedLabels = result.data.labels
                      }
                  }
             }
@@ -644,6 +709,15 @@ class BoardViewModel @Inject constructor(
                 else -> BoardState.ACTIVE
             }
         }
+    }
+
+    private fun fetchLabels() = viewModelScope.launch {
+        fetchLabelsJob?.cancel()
+        fetchLabelsJob = labelUseCases.findSimpleLabels(
+            searchQuery = labelSearchQuery.value
+        ).data.onEach { labels ->
+            this@BoardViewModel.labels = labels
+        }.launchIn(viewModelScope)
     }
 
     private fun onRestoreBoard() = viewModelScope.launch {

@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.finitoColors
@@ -16,9 +17,10 @@ import com.example.finito.ui.theme.finitoColors
 @Composable
 fun LabelItem(
     label: SimpleLabel,
-    selected: Boolean,
-    enabled: Boolean,
-    onLabelClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    enabled: Boolean = true,
+    onLabelClick: () -> Unit = {},
 ) {
     val textColor = if (enabled) finitoColors.onSurface else finitoColors.onSurface.copy(
         alpha = DisabledAlpha
@@ -36,6 +38,8 @@ fun LabelItem(
             Text(
                 text = label.name,
                 color = textColor,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
         },
         trailingContent = {
@@ -54,6 +58,6 @@ fun LabelItem(
                 value = selected,
                 role = Role.Checkbox,
                 onValueChange = { onLabelClick() }
-            )
+            ).then(modifier)
     )
 }

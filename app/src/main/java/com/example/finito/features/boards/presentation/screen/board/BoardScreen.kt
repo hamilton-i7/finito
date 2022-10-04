@@ -38,7 +38,10 @@ import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOpti
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
+import com.example.finito.features.boards.presentation.screen.board.components.BoardLabels
 import com.example.finito.features.boards.presentation.screen.board.components.BoardTopBar
+import com.example.finito.features.labels.domain.entity.SimpleLabel
+import com.example.finito.features.labels.presentation.components.LabelsListFullDialog
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.presentation.components.SubtaskItem
@@ -79,6 +82,8 @@ fun BoardScreen(
     val hapticFeedback = LocalHapticFeedback.current
 
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     val reorderableState = rememberReorderableLazyListState(
         onMove = { from, to ->
             boardViewModel.onEvent(BoardEvent.ReorderTasks(from, to))
@@ -299,7 +304,13 @@ fun BoardScreen(
                     )
                 },
                 floatingActionButtonPosition = FabPosition.Center,
-                modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                modifier = Modifier
+                    .nestedScroll(
+                        if (boardViewModel.showLabelsFullDialog)
+                            searchTopBarScrollBehavior.nestedScrollConnection
+                        else
+                            topBarScrollBehavior.nestedScrollConnection
+                    )
             ) { innerPadding ->
                 BoardDialogs(boardViewModel)
 
@@ -307,6 +318,7 @@ fun BoardScreen(
                     paddingValues = innerPadding,
                     hapticFeedback = hapticFeedback,
                     reorderableState = reorderableState,
+                    labels = boardViewModel.board?.labels ?: emptyList(),
                     tasks = boardViewModel.tasks,
                     draggableTasks = boardViewModel.draggableTasks,
                     showCompletedTasks = boardViewModel.showCompletedTasks,
@@ -333,6 +345,9 @@ fun BoardScreen(
                     },
                     onDragging = {
                         boardViewModel.onEvent(BoardEvent.DragItem(it))
+                    },
+                    onLabelClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowLabelsFullDialog(show = true))
                     }
                 )
             }
@@ -376,6 +391,30 @@ fun BoardScreen(
                     }
                 )
             }
+
+            AnimatedVisibility(
+                visible = boardViewModel.showLabelsFullDialog,
+                enter = slideInVertically { it / 2 },
+                exit = slideOutVertically { it }
+            ) {
+                LabelsListFullDialog(
+                    labels = boardViewModel.labels,
+                    selectedLabels = boardViewModel.selectedLabels,
+                    onLabelClick = {
+                        boardViewModel.onEvent(BoardEvent.SelectLabel(it))
+                    },
+                    searchQuery = boardViewModel.labelSearchQuery.copy(
+                        onValueChange = {
+                            boardViewModel.onEvent(BoardEvent.SearchLabels(it))
+                        }
+                    ),
+                    scrollBehavior = searchTopBarScrollBehavior,
+                    onCloseClick = {
+                        boardViewModel.onEvent(BoardEvent.ShowLabelsFullDialog(show = false))
+                        boardViewModel.onEvent(BoardEvent.ChangeBoardLabels)
+                    }
+                )
+            }
         }
     }
 }
@@ -388,6 +427,8 @@ private fun BoardScreen(
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
+    labels: List<SimpleLabel> = emptyList(),
+    onLabelClick: () -> Unit = {},
     tasks: List<TaskWithSubtasks> = emptyList(),
     draggableTasks: List<Any> = emptyList(),
     showCompletedTasks: Boolean = true,
@@ -592,6 +633,15 @@ private fun BoardScreen(
                         }
                     }
                 }
+            }
+            item(key = LazyListKeys.LABELS) {
+                BoardLabels(
+                    labels = labels.sortedBy { it.normalizedName },
+                    onLabelClick = onLabelClick,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
+                )
             }
         }
     }

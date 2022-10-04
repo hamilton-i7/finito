@@ -1,5 +1,6 @@
 package com.example.finito.features.subtasks.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,8 @@ fun SubtaskTextFieldItem(
     focusManager: FocusManager = LocalFocusManager.current,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
     isDragging: Boolean = false,
+    showDragIndicator: Boolean = true,
+    readOnly: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions(
         capitalization = KeyboardCapitalization.Sentences,
         imeAction = ImeAction.Done
@@ -64,14 +67,16 @@ fun SubtaskTextFieldItem(
             .background(finitoColors.surfaceColorAtElevation(elevation))
             .then(modifier)
     ) {
-        IconButton(
-            onClick = {},
-            modifier = Modifier.detectReorderAfterLongPress(reorderableState)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.DragIndicator,
-                contentDescription = null
-            )
+        AnimatedVisibility(visible = showDragIndicator) {
+            IconButton(
+                onClick = {},
+                modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.DragIndicator,
+                    contentDescription = null
+                )
+            }
         }
         BasicTextField(
             state = state.toTextFieldState(),
@@ -85,6 +90,7 @@ fun SubtaskTextFieldItem(
                 }
             },
             textStyle = textStyle,
+            readOnly = readOnly,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             modifier = textFieldModifier

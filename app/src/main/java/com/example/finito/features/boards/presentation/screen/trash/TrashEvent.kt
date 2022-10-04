@@ -1,12 +1,11 @@
 package com.example.finito.features.boards.presentation.screen.trash
 
+import androidx.annotation.StringRes
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 
 sealed class TrashEvent {
     data class RestoreBoard(val board: BoardWithLabelsAndTasks) : TrashEvent()
-
-    object UndoRestore : TrashEvent()
 
     data class DeleteForever(val board: Board) : TrashEvent()
 
@@ -22,5 +21,7 @@ sealed class TrashEvent {
         data class DeleteBoard(val board: Board) : DialogType()
 
         object EmptyTrash : DialogType()
+
+        data class Error(@StringRes val message: Int) : DialogType()
     }
 }

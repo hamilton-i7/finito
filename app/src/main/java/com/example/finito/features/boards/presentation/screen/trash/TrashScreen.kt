@@ -11,7 +11,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.finito.R
+import com.example.finito.core.presentation.AppEvent
+import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.util.menu.DeletedBoardCardMenuOption
 import com.example.finito.core.presentation.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
@@ -26,9 +27,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrashScreen(
-    drawerState: DrawerState,
-    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    appViewModel: AppViewModel,
     trashViewModel: TrashViewModel = hiltViewModel(),
+    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
+    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
     finishActivity: () -> Unit = {},
     onNavigateToBoardFlow: (boardId: Int) -> Unit = {}
 ) {
@@ -46,9 +48,14 @@ fun TrashScreen(
     LaunchedEffect(Unit) {
         trashViewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is TrashViewModel.Event.ShowSnackbar -> {
-                    onShowSnackbar(event.message, R.string.undo) {
-                        trashViewModel.onEvent(TrashEvent.UndoRestore)
+                is TrashViewModel.Event.ShowError -> {
+                    trashViewModel.onEvent(TrashEvent.ShowDialog(
+                        type = TrashEvent.DialogType.Error(message = event.error)
+                    ))
+                }
+                is TrashViewModel.Event.Snackbar.BoardStateChanged -> {
+                    onShowSnackbar(event.message, event.actionLabel) {
+                        appViewModel.onEvent(AppEvent.UndoBoardChange(board = event.board))
                     }
                 }
             }

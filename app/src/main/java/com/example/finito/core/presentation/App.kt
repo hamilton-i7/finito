@@ -353,6 +353,7 @@ fun App(
                     }
                 ) {
                     TrashScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,

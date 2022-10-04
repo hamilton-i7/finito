@@ -181,7 +181,7 @@ class ArchiveViewModel @Inject constructor(
                     when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
                             fireEvents(Event.ShowError(
-                                error = R.string.archive_board_error
+                                error = R.string.restore_board_error
                             ))
                         }
                         is Result.Success -> {

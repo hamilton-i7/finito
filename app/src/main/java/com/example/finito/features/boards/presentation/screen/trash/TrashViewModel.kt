@@ -9,11 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.domain.Result
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -29,8 +31,6 @@ class TrashViewModel @Inject constructor(
 
     var boards by mutableStateOf<List<BoardWithLabelsAndTasks>>(emptyList())
         private set
-
-    private var recentlyRestoredBoard: BoardWithLabelsAndTasks? = null
 
     val gridLayout = preferences.getBoolean(
         PreferencesModule.TAG.GRID_LAYOUT.name,
@@ -62,7 +62,6 @@ class TrashViewModel @Inject constructor(
             is TrashEvent.DeleteForever -> deleteBoard(event.board)
             TrashEvent.EmptyTrash -> emptyTrash()
             is TrashEvent.RestoreBoard -> restoreBoard(event.board)
-            TrashEvent.UndoRestore -> undoRestore()
             is TrashEvent.ShowMenu -> showMenu = event.show
             is TrashEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
             is TrashEvent.ShowDialog -> dialogType = event.type
@@ -87,28 +86,28 @@ class TrashViewModel @Inject constructor(
 
     private fun restoreBoard(board: BoardWithLabelsAndTasks) = viewModelScope.launch {
         with(board) {
-            boardUseCases.updateBoard(
-                copy(board = this.board.copy(
+            val updatedBoard = copy(
+                board = this.board.copy(
                     state = BoardState.ACTIVE,
+                    position = 0,
                     removedAt = null,
-                    position = 0
-                ))
+                )
             )
-            _eventFlow.emit(Event.ShowSnackbar(message = R.string.board_was_restored))
-            recentlyRestoredBoard = this
-        }
-    }
-
-    private fun undoRestore() = viewModelScope.launch {
-        recentlyRestoredBoard?.let {
-            boardUseCases.updateBoard(
-                it.copy(board = it.board.copy(
-                    state = BoardState.DELETED,
-                    removedAt = it.board.removedAt,
-                    position = null
-                ))
-            )
-            recentlyRestoredBoard = null
+            when (boardUseCases.updateBoard(updatedBoard)) {
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.restore_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    fireEvents(
+                        Event.Snackbar.BoardStateChanged(
+                            message = R.string.board_was_restored,
+                            board = this,
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -117,7 +116,24 @@ class TrashViewModel @Inject constructor(
         showCardMenu = show
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+        }
+    }
+
     sealed class Event {
-        data class ShowSnackbar(@StringRes val message: Int) : Event()
+        data class ShowError(@StringRes val error: Int) : Event()
+
+        sealed class Snackbar(
+            @StringRes open val message: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
+        ) : Event() {
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
+        }
     }
 }

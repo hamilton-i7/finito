@@ -18,7 +18,6 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
-import com.example.finito.features.tasks.domain.entity.CompletedTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -106,7 +105,7 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = this.board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 boardUseCases.updateBoard(it)
             }.also {
@@ -122,7 +121,7 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = this.board.copy(state = BoardState.ACTIVE, removedAt = null),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 boardUseCases.updateBoard(it)
             }.also {
@@ -148,7 +147,7 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 boardUseCases.updateBoard(it)
             }.also { _eventFlow.emit(Event.Snackbar.DeletedBoard) }
@@ -176,7 +175,7 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = board.copy(name = nameState.value),
                 labels = selectedLabels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 when (boardUseCases.updateBoard(it)) {
                     is Result.Error -> {

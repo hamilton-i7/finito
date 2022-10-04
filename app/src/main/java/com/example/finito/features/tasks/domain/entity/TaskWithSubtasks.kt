@@ -13,6 +13,14 @@ data class TaskWithSubtasks(
     )
     val subtasks: List<Subtask> = emptyList()
 ) {
+    fun toCompletedTask(): CompletedTask {
+        return CompletedTask(
+            taskId = task.taskId,
+            completed = task.completed,
+            subtasks = subtasks.map { it.toCompletedSubtask() }
+        )
+    }
+
     companion object {
         val dummyTasks = ('A'..'Z').mapIndexed { index, _ ->
             TaskWithSubtasks(

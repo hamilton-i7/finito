@@ -26,7 +26,10 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.entity.filterCompleted
 import com.example.finito.features.subtasks.domain.entity.filterUncompleted
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
-import com.example.finito.features.tasks.domain.entity.*
+import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.entity.filterCompleted
+import com.example.finito.features.tasks.domain.entity.filterUncompleted
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -160,7 +163,7 @@ class BoardViewModel @Inject constructor(
             val updatedBoard = BoardWithLabelsAndTasks(
                 board = board,
                 labels = selectedLabels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             )
             when (boardUseCases.updateBoard(updatedBoard)) {
                 is Result.Error -> {
@@ -726,7 +729,7 @@ class BoardViewModel @Inject constructor(
             val restoredBoard = BoardWithLabelsAndTasks(
                 board = board.copy(state = BoardState.ACTIVE, removedAt = null),
                 labels = labels,
-                tasks = tasks.map { task -> CompletedTask(completed = task.task.completed) }
+                tasks = tasks.map { task -> task.toCompletedTask() }
             )
             when (boardUseCases.updateBoard(restoredBoard)) {
                 is Result.Error -> {
@@ -758,7 +761,7 @@ class BoardViewModel @Inject constructor(
                             position = null
                         ),
                         labels = labels,
-                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                        tasks = tasks.map { it.toCompletedTask() }
                     )
                     when(boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {
@@ -784,7 +787,7 @@ class BoardViewModel @Inject constructor(
                             position = null
                         ),
                         labels = labels,
-                        tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                        tasks = tasks.map { it.toCompletedTask() }
                     )
                     when (boardUseCases.updateBoard(updatedBoard)) {
                         is Result.Error -> {

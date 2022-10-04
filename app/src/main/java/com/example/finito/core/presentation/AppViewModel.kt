@@ -9,7 +9,6 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.usecase.SubtaskUseCases
-import com.example.finito.features.tasks.domain.entity.CompletedTask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
@@ -99,7 +98,7 @@ class AppViewModel @Inject constructor(
                 BoardWithLabelsAndTasks(
                     board = it.board,
                     labels = it.labels,
-                    tasks = it.tasks.map { task -> CompletedTask(task.task.completed) }
+                    tasks = it.tasks.map { task -> task.toCompletedTask() }
                 )
             )
         }

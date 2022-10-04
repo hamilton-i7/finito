@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -26,11 +27,8 @@ import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.textfields.FinitoTextField
-import com.example.finito.core.presentation.util.ContentTypes
-import com.example.finito.core.presentation.util.LazyListKeys
-import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.*
 import com.example.finito.core.presentation.util.menu.DeletedEditBoardScreenMenuOption
-import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.addeditboard.components.AddEditBoardDialogs
@@ -223,7 +221,11 @@ private fun AddEditBoardScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .noRippleClickable(onClick = { if (isDeleted) onScreenClick() })
+            .pointerInput(Unit) {
+                detectTapAndPressUnconsumed(
+                    onTap = { if (isDeleted) onScreenClick() }
+                )
+            }
     ) {
         LazyColumn(
             contentPadding = PaddingValues(vertical = 32.dp),
@@ -246,6 +248,7 @@ private fun AddEditBoardScreen(
                 RowToggle(
                     showContent = showLabels,
                     onShowContentToggle = onShowLabelsChange,
+                    enabled = !isDeleted,
                     label = stringResource(id = R.string.labels),
                     showContentDescription = R.string.show_labels,
                     hideContentDescription = R.string.hide_labels,

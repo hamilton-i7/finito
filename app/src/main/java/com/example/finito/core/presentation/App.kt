@@ -350,7 +350,6 @@ fun App(
                         }
                     }
                 ) {
-                    // TODO 21/09/2022: Disable task editing functionalities
                     TrashScreen(
                         drawerState = drawerState,
                         finishActivity = finishActivity,

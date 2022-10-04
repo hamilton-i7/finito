@@ -17,6 +17,7 @@ import com.google.accompanist.flowlayout.FlowRow
 fun BoardLabels(
     labels: List<SimpleLabel>,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onLabelClick: () -> Unit = {},
 ) {
     FlowRow(
@@ -28,6 +29,7 @@ fun BoardLabels(
         labels.forEach { label ->
             SuggestionChip(
                 onClick = onLabelClick,
+                enabled = enabled,
                 label = { Text(text = label.name) },
                 colors = SuggestionChipDefaults.suggestionChipColors(
                     containerColor = finitoColors.surfaceVariant,

@@ -508,7 +508,7 @@ private fun TomorrowScreen(
                         TaskItem(
                             task = task,
                             boardName = boardNamesMap[task.boardId],
-                            ghostVariant = true,
+                            enabled = false,
                             onTaskClick = { onTaskClick(task) },
                         )
                     }

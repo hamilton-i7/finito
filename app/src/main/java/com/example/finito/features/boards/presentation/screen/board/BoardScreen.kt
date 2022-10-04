@@ -18,6 +18,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
@@ -32,10 +33,10 @@ import com.example.finito.core.presentation.components.CreateFab
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
+import com.example.finito.core.presentation.util.detectTapAndPressUnconsumed
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
-import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.board.components.BoardDialogs
@@ -473,7 +474,11 @@ private fun BoardScreen(
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)
-        .noRippleClickable(onClick = { if (isDeleted) onScreenClick() })
+        .pointerInput(Unit) {
+            detectTapAndPressUnconsumed(
+                onTap = { if (isDeleted) onScreenClick() }
+            )
+        }
     ) {
         LazyColumn(
             contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
@@ -514,6 +519,7 @@ private fun BoardScreen(
                             TaskItem(
                                 task = it,
                                 subtasksAmount = subtasksAmount,
+                                enabled = !isDeleted,
                                 isDragging = isDragging,
                                 onPriorityClick = { onPriorityClick(it) },
                                 onCompletedToggle = {
@@ -529,9 +535,9 @@ private fun BoardScreen(
                                 },
                                 onTaskClick = { onTaskClick(it) },
                                 onDateTimeClick = { onDateTimeClick(it) },
-                                showDragIndicator = true,
-                                modifier = Modifier
-                                    .detectReorderAfterLongPress(reorderableState)
+                                showDragIndicator = !isDeleted,
+                                modifier = if (isDeleted) Modifier
+                                else Modifier.detectReorderAfterLongPress(reorderableState)
                             )
                         }
                     }
@@ -559,6 +565,7 @@ private fun BoardScreen(
                                 SubtaskItem(
                                     subtask = it,
                                     isDragging = isDragging,
+                                    enabled = !isDeleted,
                                     showDragIndicator = true,
                                     onSubtaskClick = { onSubtaskClick(it) },
                                     onCompletedToggle = { onToggleSubtaskCompleted(it) },
@@ -577,7 +584,8 @@ private fun BoardScreen(
                         label = stringResource(id = R.string.completed, completedTasksAmount),
                         showContentDescription = R.string.show_completed_tasks,
                         hideContentDescription = R.string.hide_completed_tasks,
-                        modifier = Modifier.animateItemPlacement()
+                        modifier = Modifier.animateItemPlacement(),
+                        enabled = !isDeleted,
                     )
                 }
                 tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
@@ -590,7 +598,7 @@ private fun BoardScreen(
                         ) {
                             TaskItem(
                                 task = task,
-                                ghostVariant = true,
+                                enabled = false,
                                 onTaskClick = { onTaskClick(task) },
                             )
                         }
@@ -607,6 +615,7 @@ private fun BoardScreen(
                         ) {
                             SubtaskItem(
                                 subtask = it,
+                                enabled = !isDeleted,
                                 onSubtaskClick = { onSubtaskClick(it) },
                                 onCompletedToggle = { onToggleSubtaskCompleted(it) },
                             )
@@ -623,6 +632,7 @@ private fun BoardScreen(
                         ) {
                             TaskItem(
                                 task = it.task,
+                                enabled = !isDeleted,
                                 onCompletedToggle = { onToggleTaskCompleted(it) },
                                 onTaskClick = { onTaskClick(it.task) },
                             )
@@ -640,6 +650,7 @@ private fun BoardScreen(
                         ) {
                             SubtaskItem(
                                 subtask = it,
+                                enabled = !isDeleted,
                                 onSubtaskClick = { onSubtaskClick(it) },
                                 onCompletedToggle = { onToggleSubtaskCompleted(it) },
                             )
@@ -651,6 +662,7 @@ private fun BoardScreen(
                 BoardLabels(
                     labels = labels.sortedBy { it.normalizedName },
                     onLabelClick = onLabelClick,
+                    enabled = !isDeleted,
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .animateItemPlacement()

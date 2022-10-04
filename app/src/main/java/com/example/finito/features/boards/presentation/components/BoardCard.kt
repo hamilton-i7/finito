@@ -34,14 +34,15 @@ fun BoardCard(
     options: List<BoardCardMenuOption> = emptyList(),
     onMenuItemClick: (BoardCardMenuOption) -> Unit = {},
 ) {
-    // FIXME 30/09/2022: Fix total tasks amount to match quantity shown on BoardScreen.kt
-    val completedTasksProgress = board.tasks.let {
-        if (it.isEmpty()) return@let 0F
-
-        val completedAmount = it.filter { task -> task.completed }.size.toFloat()
-        completedAmount / it.size
+    val tasksAmount = board.tasks.size + board.tasks.flatMap { it.subtasks }.size
+    val completedTasksProgress = with(board.tasks) {
+        if (isEmpty()) return@with 0F
+        val completedTasks = filter { it.completed }.size
+        val completedSubtasks = flatMap { it.subtasks }.filter { it.completed }.size
+        val completedAmount = completedTasks + completedSubtasks
+        completedAmount / tasksAmount.toFloat()
     }
-    val labelNames = board.labels.joinToString { it.name }
+    val labelNames = board.labels.sortedBy { it.normalizedName }.joinToString { it.name }
 
     Card(
         onClick = onClick,
@@ -86,7 +87,7 @@ fun BoardCard(
             Spacer(modifier = Modifier.height(16.dp))
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
-                    text = stringResource(id = R.string.tasks_amount, board.tasks.size),
+                    text = stringResource(id = R.string.tasks_amount, tasksAmount),
                     color = finitoColors.outline
                 )
                 Text(

@@ -18,8 +18,8 @@ import com.example.finito.features.boards.domain.entity.DetailedBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.domain.usecase.LabelUseCases
-import com.example.finito.features.tasks.domain.entity.CompletedTask
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -70,33 +70,46 @@ class AddEditBoardViewModel @Inject constructor(
 
     fun onEvent(event: AddEditBoardEvent) {
         when (event) {
-            is AddEditBoardEvent.SelectLabel -> {
-                val exists = selectedLabels.contains(event.label)
-                selectedLabels = if (exists) {
-                    selectedLabels.filter { it != event.label }
-                } else {
-                    selectedLabels + listOf(event.label)
-                }
-            }
-            is AddEditBoardEvent.ChangeName -> {
-                nameState = nameState.copy(
-                    value = event.name
-                )
-            }
+            is AddEditBoardEvent.SelectLabel -> onSelectLabel(event.label)
+            is AddEditBoardEvent.ChangeName -> nameState = nameState.copy(
+                value = event.name
+            )
             AddEditBoardEvent.CreateBoard -> onCreateBoard()
             AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
             AddEditBoardEvent.EditBoard -> onEditBoard()
-            AddEditBoardEvent.ToggleLabelsVisibility -> {
-                showLabels = !showLabels
-            }
+            AddEditBoardEvent.ToggleLabelsVisibility -> showLabels = !showLabels
             AddEditBoardEvent.DeleteForever -> onDeleteForever()
             is AddEditBoardEvent.RestoreBoard -> onRestoreBoard(event.showSnackbar)
             is AddEditBoardEvent.ShowScreenMenu -> showScreenMenu = event.show
             is AddEditBoardEvent.ShowDialog -> dialogType = event.type
-            AddEditBoardEvent.AlertNotEditable -> viewModelScope.launch {
-                _eventFlow.emit(Event.Snackbar.UneditableBoard)
-            }
+            AddEditBoardEvent.AlertNotEditable -> onAlertNotEditable()
             AddEditBoardEvent.UndoRestore -> onUndoRestore()
+            AddEditBoardEvent.RefreshBoard -> fetchBoard()
+        }
+    }
+
+    private fun onAlertNotEditable() = viewModelScope.launch {
+        with(board!!) {
+            val restoredBoard = BoardWithLabelsAndTasks(
+                board = board.copy(
+                    state = BoardState.ACTIVE,
+                    removedAt = null,
+                    archivedAt = null,
+                    position = 0
+                ),
+                labels = labels,
+                tasks = tasks.map { task -> task.toCompletedTask() }
+            )
+            fireEvents(Event.Snackbar.UneditableBoard(board = restoredBoard))
+        }
+    }
+
+    private fun onSelectLabel(label: SimpleLabel) {
+        val exists = selectedLabels.contains(label)
+        selectedLabels = if (exists) {
+            selectedLabels.filter { it != label }
+        } else {
+            selectedLabels + listOf(label)
         }
     }
 
@@ -106,7 +119,7 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = this.board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 boardUseCases.updateBoard(it)
             }.also {
@@ -119,18 +132,38 @@ class AddEditBoardViewModel @Inject constructor(
     private fun onRestoreBoard(showSnackbar: Boolean) = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            BoardWithLabelsAndTasks(
-                board = this.board.copy(state = BoardState.ACTIVE, removedAt = null),
+            val updatedBoard = BoardWithLabelsAndTasks(
+                board = board.copy(
+                    state = BoardState.ACTIVE,
+                    removedAt = null,
+                    archivedAt = null,
+                    position = 0
+                ),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-            ).let {
-                boardUseCases.updateBoard(it)
-            }.also {
-                fetchBoard()
-                boardState = BoardState.ACTIVE
+                tasks = tasks.map { it.toCompletedTask() }
+            )
+            when (boardUseCases.updateBoard(updatedBoard)) {
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.restore_board_error
+                    ))
+                }
+                is Result.Success -> {
+                    val originalBoard = BoardWithLabelsAndTasks(
+                        board = board,
+                        labels = labels,
+                        tasks = tasks.map { it.toCompletedTask() }
+                    )
 
-                if (!showSnackbar) return@also
-                _eventFlow.emit(Event.Snackbar.RestoredBoard)
+                    fetchBoard()
+                    boardState = BoardState.ACTIVE
+
+                    if (!showSnackbar) return@launch
+                    fireEvents(Event.Snackbar.BoardStateChanged(
+                        message = R.string.board_was_restored,
+                        board = originalBoard
+                    ))
+                }
             }
         }
     }
@@ -138,20 +171,55 @@ class AddEditBoardViewModel @Inject constructor(
     private fun onDeleteForever() = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            boardUseCases.deleteBoard(board)
+            when (boardUseCases.deleteBoard(board)) {
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.delete_board_error
+                    ))
+                }
+                is Result.Success -> fireEvents(Event.NavigateToTrash)
+            }
         }
     }
 
     private fun onMoveToTrash() = viewModelScope.launch {
         if (board == null) return@launch
         with(board!!) {
-            BoardWithLabelsAndTasks(
-                board = board.copy(state = BoardState.DELETED, removedAt = LocalDateTime.now()),
+            val updatedBoard = BoardWithLabelsAndTasks(
+                board = board.copy(
+                    state = BoardState.DELETED,
+                    removedAt = LocalDateTime.now(),
+                    position = null
+                ),
                 labels = labels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
-            ).let {
-                boardUseCases.updateBoard(it)
-            }.also { _eventFlow.emit(Event.Snackbar.DeletedBoard) }
+                tasks = tasks.map { it.toCompletedTask() }
+            )
+            when (boardUseCases.updateBoard(updatedBoard)) {
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.move_to_trash_error
+                    ))
+                }
+                is Result.Success -> {
+                    val originalBoard = BoardWithLabelsAndTasks(
+                        board = board,
+                        labels = labels,
+                        tasks = tasks.map { it.toCompletedTask() }
+                    )
+                    val events = mutableListOf<Event>(
+                        Event.Snackbar.BoardStateChanged(
+                            message = R.string.board_moved_to_trash,
+                            board = originalBoard
+                        )
+                    ).apply {
+                        if (boardState == BoardState.ACTIVE)
+                            add(Event.NavigateToHome)
+                        else if (boardState == BoardState.ARCHIVED)
+                            add(Event.NavigateToArchive)
+                    }
+                    fireEvents(*events.toTypedArray())
+                }
+            }
         }
     }
 
@@ -161,14 +229,14 @@ class AddEditBoardViewModel @Inject constructor(
             labels = selectedLabels
         )
         boardUseCases.createBoard(board).also {
-            _eventFlow.emit(Event.NavigateToCreatedBoard(it))
+            fireEvents(Event.NavigateToCreatedBoard(it))
         }
     }
 
     private fun onEditBoard() = viewModelScope.launch {
         if (board == null) return@launch
         if (!boardChanged()) {
-            _eventFlow.emit(Event.NavigateToUpdatedBoard(board!!.board.boardId))
+            fireEvents(Event.NavigateToUpdatedBoard(board!!.board.boardId))
             return@launch
         }
 
@@ -176,17 +244,15 @@ class AddEditBoardViewModel @Inject constructor(
             BoardWithLabelsAndTasks(
                 board = board.copy(name = nameState.value),
                 labels = selectedLabels,
-                tasks = tasks.map { CompletedTask(completed = it.task.completed) }
+                tasks = tasks.map { it.toCompletedTask() }
             ).let {
                 when (boardUseCases.updateBoard(it)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.update_board_error
                         ))
                     }
-                    is Result.Success -> {
-                        _eventFlow.emit(Event.NavigateToUpdatedBoard(it.board.boardId))
-                    }
+                    is Result.Success -> fireEvents(Event.NavigateToUpdatedBoard(it.board.boardId))
                 }
             }
         }
@@ -197,7 +263,7 @@ class AddEditBoardViewModel @Inject constructor(
             viewModelScope.launch {
                 when (val result = boardUseCases.findOneBoard(boardId)) {
                     is Result.Error -> {
-                        _eventFlow.emit(Event.ShowError(
+                        fireEvents(Event.ShowError(
                             error = R.string.find_board_error
                         ))
                     }
@@ -205,6 +271,7 @@ class AddEditBoardViewModel @Inject constructor(
                         board = result.data
                         nameState = TextFieldState(value = result.data.board.name)
                         selectedLabels = result.data.labels
+                        boardState = result.data.board.state
                     }
                 }
             }
@@ -212,7 +279,7 @@ class AddEditBoardViewModel @Inject constructor(
     }
 
     private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().onEach {
+        labelUseCases.findSimpleLabels().data.onEach {
             labels = it
         }.launchIn(viewModelScope)
     }
@@ -233,6 +300,14 @@ class AddEditBoardViewModel @Inject constructor(
         } else selectedLabels != board?.labels
     }
 
+    private suspend fun fireEvents(vararg events: Event) {
+        events.forEachIndexed { index, event ->
+            _eventFlow.emit(event)
+            if (index != events.lastIndex) { delay(100) }
+
+        }
+    }
+
     sealed class Event {
         data class NavigateToCreatedBoard(val id: Int) : Event()
 
@@ -240,24 +315,27 @@ class AddEditBoardViewModel @Inject constructor(
 
         data class ShowError(@StringRes val error: Int) : Event()
 
+        object NavigateToTrash : Event()
+
+        object NavigateToHome : Event()
+
+        object NavigateToArchive : Event()
+
         sealed class Snackbar(
             @StringRes val message: Int,
-            @StringRes val actionLabel: Int,
+            @StringRes val actionLabel: Int = R.string.undo,
         ) : Event() {
-            object UneditableBoard : Snackbar(
+            class UneditableBoard(
+                val board: BoardWithLabelsAndTasks
+            ) : Snackbar(
                 message = R.string.board_not_editable,
                 actionLabel = R.string.restore
             )
 
-            object RestoredBoard : Snackbar(
-                message = R.string.board_was_restored,
-                actionLabel = R.string.undo
-            )
-
-            object DeletedBoard : Snackbar(
-                message = R.string.board_moved_to_trash,
-                actionLabel = R.string.undo
-            )
+            class BoardStateChanged(
+                @StringRes message: Int,
+                val board: BoardWithLabelsAndTasks,
+            ) : Snackbar(message)
         }
     }
 }

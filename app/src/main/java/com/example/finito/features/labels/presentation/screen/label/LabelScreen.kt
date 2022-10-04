@@ -171,7 +171,11 @@ fun LabelScreen(
             boards = labelViewModel.boards,
             onBoardClick = onNavigateToBoardFlow,
             selectedSortingOption = labelViewModel.boardsOrder,
-            onSortOptionClick = {
+            onSortOptionClick = onSortOptionClick@{
+                if (labelViewModel.boardsOrder == it) {
+                    labelViewModel.onEvent(LabelEvent.SortBoards(sortingOption = null))
+                    return@onSortOptionClick
+                }
                 labelViewModel.onEvent(LabelEvent.SortBoards(it))
             },
             onCardOptionsClick = {
@@ -205,7 +209,7 @@ private fun LabelScreen(
     paddingValues: PaddingValues = PaddingValues(),
     gridLayout: Boolean = true,
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common = SortingOption.Common.NameAZ,
+    selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },

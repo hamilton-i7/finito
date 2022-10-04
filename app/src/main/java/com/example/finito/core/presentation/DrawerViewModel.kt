@@ -55,7 +55,7 @@ class DrawerViewModel @Inject constructor(
     }
 
     private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().onEach { labels ->
+        labelUseCases.findSimpleLabels().data.onEach { labels ->
             this@DrawerViewModel.labels = labels
         }.launchIn(viewModelScope)
     }

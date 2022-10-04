@@ -39,8 +39,8 @@ class BoardRepositoryImpl(
         return dao.findOne(id)
     }
 
-    override suspend fun update(vararg board: Board) {
-        return dao.update(*board)
+    override suspend fun update(vararg boards: Board) {
+        return dao.update(*boards)
     }
 
     override suspend fun remove(vararg boards: Board) {

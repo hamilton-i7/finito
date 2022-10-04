@@ -45,7 +45,7 @@ fun TaskItem(
     subtasksAmount: Int = 0,
     isDragging: Boolean = false,
     showDragIndicator: Boolean = false,
-    ghostVariant: Boolean = false,
+    enabled: Boolean = true,
     boardName: String? = null,
     onTaskClick: () -> Unit = {},
     onCompletedToggle: () -> Unit = {},
@@ -71,34 +71,35 @@ fun TaskItem(
             Row(
                 verticalAlignment = if (isSimpleTask) Alignment.CenterVertically else Alignment.Top,
                 modifier = Modifier
-                    .clickable(onClick = onTaskClick)
+                    .clickable(enabled = enabled, onClick = onTaskClick)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 if (task.completed) {
                     IconButton(
                         onClick = onCompletedToggle,
+                        enabled = enabled,
                         modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
                             contentDescription = stringResource(id = R.string.mark_as_uncompleted),
-                            tint = finitoColors.primary,
+                            tint = if (enabled) finitoColors.primary
+                            else finitoColors.primary.copy(alpha = DisabledAlpha),
                         )
                     }
                 } else {
                     RadioButton(
                         selected = false,
                         onClick = onCompletedToggle,
-                        enabled = !ghostVariant,
+                        enabled = enabled,
                         modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = task.name,
-                        color = if (ghostVariant) finitoColors.onSurface.copy(
-                            alpha = DisabledAlpha
-                        ) else finitoColors.onSurface,
+                        color = if (enabled) finitoColors.onSurface
+                        else finitoColors.onSurface.copy(alpha = DisabledAlpha),
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 2,
                         textDecoration = if (task.completed)
@@ -109,9 +110,8 @@ fun TaskItem(
                         Text(
                             text = task.description,
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (ghostVariant) finitoColors.onSurfaceVariant.copy(
-                                alpha = DisabledAlpha
-                            ) else finitoColors.onSurfaceVariant,
+                            color = if (enabled) finitoColors.onSurfaceVariant
+                            else finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 3,
                             textDecoration = if (task.completed)
@@ -135,13 +135,13 @@ fun TaskItem(
                                     label = {
                                         Text(
                                             text = boardName,
-                                            color = if (ghostVariant)
-                                                finitoColors.outline.copy(alpha = DisabledAlpha)
-                                            else
+                                            color = if (enabled)
                                                 finitoColors.primary
+                                            else
+                                                finitoColors.outline.copy(alpha = DisabledAlpha)
                                         )
                                     },
-                                    enabled = !task.completed && !ghostVariant,
+                                    enabled = !task.completed && enabled,
                                 )
                             }
                             if (task.priority != null) {
@@ -158,7 +158,7 @@ fun TaskItem(
                                                 containerColor = finitoColors.lowPriorityContainer,
                                                 disabledContainerColor = finitoColors.lowPriorityContainer.copy(alpha = 0.25f),
                                             ),
-                                            enabled = !task.completed && !ghostVariant,
+                                            enabled = !task.completed && enabled,
                                             border = null
                                         )
                                     }
@@ -174,7 +174,7 @@ fun TaskItem(
                                                 containerColor = finitoColors.mediumPriorityContainer,
                                                 disabledContainerColor = finitoColors.mediumPriorityContainer.copy(alpha = 0.25f),
                                             ),
-                                            enabled = !task.completed && !ghostVariant,
+                                            enabled = !task.completed && enabled,
                                             border = null
                                         )
                                     }
@@ -190,7 +190,7 @@ fun TaskItem(
                                                 containerColor = finitoColors.urgentPriorityContainer,
                                                 disabledContainerColor = finitoColors.urgentPriorityContainer.copy(alpha = 0.25f),
                                             ),
-                                            enabled = !task.completed && !ghostVariant,
+                                            enabled = !task.completed && enabled,
                                             border = null
                                         )
                                     }
@@ -222,7 +222,7 @@ fun TaskItem(
                                             locale = locale
                                         ))
                                     },
-                                    enabled = !task.completed && !ghostVariant,
+                                    enabled = !task.completed && enabled,
                                     colors = InputChipDefaults.inputChipColors(
                                         labelColor = contentColor,
                                         trailingIconColor = contentColor,
@@ -236,7 +236,7 @@ fun TaskItem(
                         }
                     }
                 }
-                if (showDragIndicator && !ghostVariant) {
+                if (showDragIndicator && enabled) {
                     Icon(
                         imageVector = Icons.Outlined.DragIndicator,
                         contentDescription = stringResource(id = R.string.reorder_task)
@@ -275,7 +275,7 @@ private fun TaskItemPreview() {
         Surface {
             TaskItem(
                 task = item,
-                ghostVariant = !item.completed,
+                enabled = item.completed,
                 subtasksAmount = 4,
                 isDragging = true
             )

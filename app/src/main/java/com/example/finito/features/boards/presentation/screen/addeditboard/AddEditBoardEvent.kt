@@ -28,6 +28,8 @@ sealed class AddEditBoardEvent {
 
     data class ShowDialog(val type: DialogType? = null) : AddEditBoardEvent()
 
+    object RefreshBoard : AddEditBoardEvent()
+
     sealed class DialogType {
         object DeleteForever : DialogType()
 

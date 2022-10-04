@@ -2,6 +2,7 @@ package com.example.finito.features.boards.presentation.screen.board
 
 import androidx.annotation.StringRes
 import com.example.finito.core.domain.Priority
+import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
@@ -17,6 +18,8 @@ sealed class BoardEvent {
     object DeleteBoard : BoardEvent()
 
     object RestoreBoard : BoardEvent()
+
+    object RestoreUneditableBoard : BoardEvent()
 
     object RefreshBoard : BoardEvent()
 
@@ -51,6 +54,16 @@ sealed class BoardEvent {
     object SaveTaskDateTimeChanges : BoardEvent()
 
     object ToggleCompletedTasksVisibility : BoardEvent()
+
+    data class SelectLabel(val label: SimpleLabel) : BoardEvent()
+
+    data class ShowLabelsFullDialog(val show: Boolean) : BoardEvent()
+
+    data class SearchLabels(val query: String) : BoardEvent()
+
+    object ChangeBoardLabels : BoardEvent()
+
+    object AlertNotEditable : BoardEvent()
 
     sealed class DialogType {
         object DeleteCompletedTasks : DialogType()

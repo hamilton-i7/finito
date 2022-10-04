@@ -36,6 +36,13 @@ data class Subtask(
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
+    fun toCompletedSubtask(): CompletedSubtask {
+        return CompletedSubtask(
+            subtaskId = subtaskId,
+            completed = completed
+        )
+    }
+
     companion object {
         val dummySubtasks = ('A'..'Z').mapIndexed { index, c ->
             Subtask(

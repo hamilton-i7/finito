@@ -8,10 +8,7 @@ import com.example.finito.features.boards.presentation.screen.addeditboard.AddEd
 import com.example.finito.features.boards.presentation.screen.addeditboard.AddEditBoardViewModel
 
 @Composable
-fun AddEditBoardDialogs(
-    addEditBoardViewModel: AddEditBoardViewModel,
-    onNavigateToTrash: () -> Unit = {},
-) {
+fun AddEditBoardDialogs(addEditBoardViewModel: AddEditBoardViewModel) {
     when (addEditBoardViewModel.dialogType) {
         AddEditBoardEvent.DialogType.DeleteForever -> {
             DeleteDialog(
@@ -19,8 +16,6 @@ fun AddEditBoardDialogs(
                 description = R.string.delete_board_confirmation,
                 onConfirmClick = {
                     addEditBoardViewModel.onEvent(AddEditBoardEvent.DeleteForever)
-                    // TODO 21/09/2022: Use AddEditBoardViewModel.Event to track method's result
-                    onNavigateToTrash()
                 },
                 onDismissClick = {
                     addEditBoardViewModel.onEvent(AddEditBoardEvent.ShowDialog())

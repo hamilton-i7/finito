@@ -13,4 +13,5 @@ object LazyListKeys {
     const val TASK_PRIORITY = "TASK_PRIORITY"
     const val CREATE_SUBTASK_BUTTON = "CREATE_SUBTASK_BUTTON"
     const val SUBTASKS_TITLE = "SUBTASKS_TITLE"
+    const val LABELS = "LABELS"
 }

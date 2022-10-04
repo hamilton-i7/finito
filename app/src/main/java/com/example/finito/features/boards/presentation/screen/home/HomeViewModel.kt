@@ -160,7 +160,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().onEach { labels ->
+        labelUseCases.findSimpleLabels().data.onEach { labels ->
             this@HomeViewModel.labels = labels
         }.launchIn(viewModelScope)
     }

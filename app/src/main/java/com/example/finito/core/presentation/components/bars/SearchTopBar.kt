@@ -1,12 +1,12 @@
 package com.example.finito.core.presentation.components.bars
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -22,11 +22,13 @@ import com.example.finito.core.presentation.util.TextFieldState
 fun SearchTopBar(
     onBackClick: () -> Unit = {},
     queryState: TextFieldState,
+    @StringRes placeholder: Int = R.string.search_boards,
+    @StringRes backIconDescription: Int = R.string.close_search_bar,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    focusRequester: FocusRequester = remember { FocusRequester() },
+    focusRequester: FocusRequester? = null,
 ) {
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        focusRequester?.requestFocus()
     }
 
     TopAppBar(title = {
@@ -34,7 +36,7 @@ fun SearchTopBar(
             value = queryState.value,
             onValueChange = queryState.onValueChange,
             placeholder = {
-                Text(text = stringResource(id = R.string.search_boards))
+                Text(text = stringResource(id = placeholder))
             },
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -44,15 +46,17 @@ fun SearchTopBar(
             textStyle = MaterialTheme.typography.bodyLarge,
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(focusRequester)
                 .testTag(TestTags.SEARCH_TEXT_FIELD)
+                .then(
+                    other = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+                )
         )
     },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = stringResource(id = R.string.close_search_bar)
+                    contentDescription = stringResource(id = backIconDescription)
                 )
             }
         },

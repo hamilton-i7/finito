@@ -140,7 +140,7 @@ class ArchiveViewModel @Inject constructor(
     }
 
     private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().onEach { labels ->
+        labelUseCases.findSimpleLabels().data.onEach { labels ->
             this@ArchiveViewModel.labels = labels
         }.launchIn(viewModelScope)
     }

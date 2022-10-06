@@ -247,7 +247,7 @@ class LabelViewModel @Inject constructor(
     }
 
     private fun fetchLabel() {
-        savedStateHandle.get<Int>(Screen.LABEL_ROUTE_ARGUMENT)?.let { labelId ->
+        savedStateHandle.get<Int>(Screen.LABEL_ID_ARGUMENT)?.let { labelId ->
             viewModelScope.launch {
                 when (val result = labelUseCases.findLabel(labelId)) {
                     is Result.Error -> {

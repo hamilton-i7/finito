@@ -40,7 +40,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LabelScreen(
-    appViewModel: AppViewModel,
+    appViewModel: AppViewModel = hiltViewModel(),
     labelViewModel: LabelViewModel = hiltViewModel(),
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onShowSnackbar: (

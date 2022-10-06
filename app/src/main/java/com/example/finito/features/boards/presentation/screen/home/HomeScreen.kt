@@ -50,7 +50,7 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 )
 @Composable
 fun HomeScreen(
-    appViewModel: AppViewModel,
+    appViewModel: AppViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel(),
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     onNavigateToCreateBoard: () -> Unit = {},

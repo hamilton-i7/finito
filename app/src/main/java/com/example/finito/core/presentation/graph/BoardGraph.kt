@@ -15,13 +15,14 @@ import com.example.finito.core.presentation.util.NavigationTransitions.childScre
 import com.example.finito.core.presentation.util.NavigationTransitions.childScreenPopExitTransition
 import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenEnterTransition
 import com.example.finito.core.presentation.util.NavigationTransitions.peerScreenExitTransition
+import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.screen.board.BoardScreen
 import com.google.accompanist.navigation.animation.composable
 
 const val BOARD_GRAPH_ROUTE = "board_flow/{${Screen.BOARD_ID_ARGUMENT}}" +
-        "?${Screen.BOARD_ROUTE_STATE_ARGUMENT}" +
-        "={${Screen.BOARD_ROUTE_STATE_ARGUMENT}}"
+        "?${Screen.BOARD_STATE_ARGUMENT}" +
+        "={${Screen.BOARD_STATE_ARGUMENT}}"
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.boardGraph(
@@ -92,15 +93,24 @@ fun NavGraphBuilder.boardGraph(
             enterTransition = childScreenEnterTransition,
             exitTransition = childScreenExitTransition,
             popExitTransition = childScreenPopExitTransition
-        ) {
+        ) { backStackEntry ->
             AddEditBoardScreen(
                 onShowSnackbar = onShowSnackbar,
                 appViewModel = appViewModel,
                 createMode = false,
                 onNavigateBack = { navController.navigateUp() },
-                onNavigateToHome = { navController.navigateToHome() },
-                onNavigateToArchive = { navController.navigateToArchive() },
-                onNavigateToTrash = { navController.navigateToTrash() },
+                onNavigateBackTwice = onNavigateBackTwice@{
+                    backStackEntry.arguments?.getString(Screen.BOARD_STATE_ARGUMENT)?.let { state ->
+                        if (state != BoardState.ACTIVE.name) return@let
+                        navController.navigateBackTwice()
+                        val currentRoute = navController.currentBackStackEntry?.destination?.route
+                        if (currentRoute == Screen.Label.route) return@onNavigateBackTwice
+
+                        navController.navigateToHome()
+                        return@onNavigateBackTwice
+                    }
+                    navController.navigateBackTwice()
+                },
                 onNavigateToBoard = { boardId, boardState ->
                     navController.navigateToBoard(boardId, boardState)
                 },

@@ -17,6 +17,7 @@ import com.example.finito.MainActivity
 import com.example.finito.R
 import com.example.finito.core.data.FinitoDatabase
 import com.example.finito.core.di.PreferencesModuleTest
+import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.features.boards.di.BoardModule
@@ -40,7 +41,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
-import com.example.finito.core.domain.Result
 
 @HiltAndroidTest
 @UninstallModules(
@@ -85,7 +85,7 @@ class LabelScreenTest {
         Label.dummyLabels.take(5).forEach {
             labelUseCases.createLabel(it)
         }
-        val labels = labelUseCases.findSimpleLabels().first()
+        val labels = labelUseCases.findSimpleLabels().data.first()
         label = (labelUseCases.findLabel(labels.random().labelId) as Result.Success).data
 
         Board.activeBoards.forEach {
@@ -116,7 +116,7 @@ class LabelScreenTest {
                     composable(
                         route = Screen.Label.route,
                         arguments = listOf(
-                            navArgument(Screen.LABEL_ROUTE_ARGUMENT) {
+                            navArgument(Screen.LABEL_ID_ARGUMENT) {
                                 type = NavType.IntType
                                 defaultValue = this@LabelScreenTest.label.labelId
                             }

@@ -5,7 +5,7 @@ buildscript {
         coroutines_version = '1.6.4'
         kotlin_version = '1.7.10'
         hilt_version = '2.38.1'
-        accompanist_version = '0.26.2-beta'
+        accompanist_version = '0.26.5-rc'
         nav_version = '2.5.2'
     }
     dependencies {

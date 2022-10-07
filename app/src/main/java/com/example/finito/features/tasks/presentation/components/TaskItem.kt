@@ -34,6 +34,7 @@ import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.accompanist.flowlayout.SizeMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -120,10 +121,13 @@ fun TaskItem(
                         )
                     }
                     if (!isSimpleTask) {
-                        // TODO 22/09/2022: Fix spacing on the cross axis
+                        val chipHeight = 32.dp
+
                         FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
+                            mainAxisSize = SizeMode.Expand,
                             mainAxisSpacing = 8.dp,
+                            crossAxisSpacing = 8.dp,
+                            modifier = Modifier.padding(top = 8.dp)
                         ) {
                             if (boardName != null) {
                                 InputChip(
@@ -142,6 +146,7 @@ fun TaskItem(
                                         )
                                     },
                                     enabled = !task.completed && enabled,
+                                    modifier = Modifier.height(chipHeight)
                                 )
                             }
                             if (task.priority != null) {
@@ -159,7 +164,8 @@ fun TaskItem(
                                                 disabledContainerColor = finitoColors.lowPriorityContainer.copy(alpha = 0.25f),
                                             ),
                                             enabled = !task.completed && enabled,
-                                            border = null
+                                            border = null,
+                                            modifier = Modifier.height(chipHeight)
                                         )
                                     }
                                     Priority.MEDIUM -> {
@@ -175,7 +181,8 @@ fun TaskItem(
                                                 disabledContainerColor = finitoColors.mediumPriorityContainer.copy(alpha = 0.25f),
                                             ),
                                             enabled = !task.completed && enabled,
-                                            border = null
+                                            border = null,
+                                            modifier = Modifier.height(chipHeight)
                                         )
                                     }
                                     Priority.URGENT -> {
@@ -191,7 +198,8 @@ fun TaskItem(
                                                 disabledContainerColor = finitoColors.urgentPriorityContainer.copy(alpha = 0.25f),
                                             ),
                                             enabled = !task.completed && enabled,
-                                            border = null
+                                            border = null,
+                                            modifier = Modifier.height(chipHeight)
                                         )
                                     }
                                 }
@@ -230,7 +238,8 @@ fun TaskItem(
                                         ),
                                     border = InputChipDefaults.inputChipBorder(
                                         borderColor = borderColor,
-                                    )
+                                    ),
+                                    modifier = Modifier.height(chipHeight)
                                 )
                             }
                         }

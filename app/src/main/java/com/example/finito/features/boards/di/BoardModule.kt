@@ -39,6 +39,7 @@ object BoardModule {
             findActiveBoards = FindActiveBoards(boardRepository),
             findArchivedBoards = FindArchivedBoards(boardRepository),
             findDeletedBoards = FindDeletedBoards(boardRepository),
+            findDeletedBoardsAsync = FindDeletedBoardsAsync(boardRepository),
             findSimpleBoards = FindSimpleBoards(boardRepository),
             findOneBoard = FindOneBoard(boardRepository),
             updateBoard = UpdateBoard(boardRepository, boardLabelRepository),

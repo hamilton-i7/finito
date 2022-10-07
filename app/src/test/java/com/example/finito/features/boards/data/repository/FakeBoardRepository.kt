@@ -90,6 +90,10 @@ class FakeBoardRepository(
         }
     }
 
+    override suspend fun findDeletedBoardsAsync(): List<Board> {
+        return boards.filter { it.state == BoardState.DELETED }
+    }
+
     override suspend fun findOne(id: Int): DetailedBoard? {
         val board = boards.find { it.boardId == id } ?: return null
         return board.let {
@@ -126,11 +130,13 @@ class FakeBoardRepository(
         }
     }
 
-    override suspend fun update(board: Board) {
-        boards.set(
-            index = boards.indexOfFirst { it.boardId == board.boardId },
-            element = board
-        )
+    override suspend fun update(vararg boards: Board) {
+        boards.forEach { board ->
+            this.boards.set(
+                index = this.boards.indexOfFirst { it.boardId == board.boardId },
+                element = board
+            )
+        }
     }
 
     override suspend fun remove(vararg boards: Board) {

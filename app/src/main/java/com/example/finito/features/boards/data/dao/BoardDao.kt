@@ -35,6 +35,9 @@ interface BoardDao {
     @Query("SELECT * FROM boards WHERE state = $DELETED_BOARD_STATE")
     fun findDeletedBoards(): Flow<List<BoardWithLabelsAndTasks>>
 
+    @Query("SELECT * FROM boards WHERE state = $DELETED_BOARD_STATE")
+    suspend fun findDeletedBoardsAsync(): List<Board>
+
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM boards WHERE board_id = :id")

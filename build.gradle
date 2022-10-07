@@ -7,6 +7,7 @@ buildscript {
         hilt_version = '2.38.1'
         accompanist_version = '0.26.5-rc'
         nav_version = '2.5.2'
+        work_version = '2.7.1'
     }
     dependencies {
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"

@@ -72,7 +72,7 @@ fun BoardScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
-    onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
+    onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = { _, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
@@ -254,7 +254,7 @@ fun BoardScreen(
                                         ArchivedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.ARCHIVED
+                                                BoardState.ARCHIVED,
                                             )
                                         }
                                         ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
@@ -272,7 +272,7 @@ fun BoardScreen(
                                         DeletedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.DELETED
+                                                BoardState.DELETED,
                                             )
                                         }
                                         DeletedBoardScreenMenuOption.RestoreBoard -> {
@@ -296,7 +296,7 @@ fun BoardScreen(
                                         ActiveBoardScreenOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.ACTIVE
+                                                BoardState.ACTIVE,
                                             )
                                         }
                                     }
@@ -667,6 +667,7 @@ private fun BoardScreen(
                     }
                 }
             }
+            // TODO: 04/10/2022: Disable label animation when entering screen
             item(key = LazyListKeys.LABELS) {
                 BoardLabels(
                     labels = labels.sortedBy { it.normalizedName },

@@ -716,7 +716,7 @@ class BoardViewModel @Inject constructor(
     }
 
     private fun fetchBoardState() {
-        savedStateHandle.get<String>(Screen.BOARD_ROUTE_STATE_ARGUMENT)?.let { state ->
+        savedStateHandle.get<String>(Screen.BOARD_STATE_ARGUMENT)?.let { state ->
             boardState = when (state) {
                 BoardState.ARCHIVED.name -> BoardState.ARCHIVED
                 BoardState.DELETED.name -> BoardState.DELETED
@@ -801,7 +801,7 @@ class BoardViewModel @Inject constructor(
                                     message = R.string.board_archived,
                                     board = originalBoard,
                                 ),
-                                Event.NavigateHome
+                                Event.NavigateBack
                             )
                         }
                     }
@@ -828,8 +828,7 @@ class BoardViewModel @Inject constructor(
                                     message = R.string.board_moved_to_trash,
                                     board = originalBoard
                                 ),
-                                if (boardState == BoardState.ACTIVE) Event.NavigateHome
-                                else Event.NavigateBack
+                                Event.NavigateBack
                             )
                         }
                     }

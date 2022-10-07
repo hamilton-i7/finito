@@ -81,7 +81,7 @@ fun App(
     val snackbarModifier = when(currentRoute) {
         Screen.Today.route, Screen.Tomorrow.route,
         Screen.Urgent.route, Screen.Home.route,
-        Screen.Archive.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
+        Screen.Archive.route, Screen.Label.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
         Screen.Board.route -> {
             if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
                 Modifier.navigationBarsPadding()
@@ -105,7 +105,7 @@ fun App(
             } else if (destination.route == Screen.Board.route) {
                 "${Screen.Board.prefix}/${arguments?.getInt(Screen.BOARD_ID_ARGUMENT)}"
             } else {
-                "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ROUTE_ARGUMENT)}"
+                "${Screen.Label.prefix}/${arguments?.getInt(Screen.LABEL_ID_ARGUMENT)}"
             }
             drawerViewModel.onEvent(DrawerEvent.ChangeRoute(route))
         }
@@ -126,10 +126,32 @@ fun App(
         onExpandLabelsChange = {
             drawerViewModel.onEvent(DrawerEvent.ToggleLabelsExpanded)
         },
-        onItemSelected = onItemSelected@{ route ->
+        onBoardSelected = onBoardSelected@{ boardId ->
+            val route = "${Screen.Board.prefix}/$boardId"
             if (drawerViewModel.currentRoute == route) {
                 scope.launch { drawerState.close() }
-                return@onItemSelected
+                return@onBoardSelected
+            }
+            scope.launch {
+                drawerState.close()
+                navController.navigateToBoard(boardId)
+            }
+        },
+        onLabelSelected = onLabelSelected@{ labelId ->
+            val route = "${Screen.Label.prefix}/$labelId"
+            if (drawerViewModel.currentRoute == route) {
+                scope.launch { drawerState.close() }
+                return@onLabelSelected
+            }
+            scope.launch {
+                drawerState.close()
+                navController.navigateToLabel(labelId)
+            }
+        },
+        onStaticItemSelected = onStaticItemSelected@{ route ->
+            if (drawerViewModel.currentRoute == route) {
+                scope.launch { drawerState.close() }
+                return@onStaticItemSelected
             }
             scope.launch {
                 drawerState.close()
@@ -381,9 +403,6 @@ fun App(
                         appViewModel = appViewModel,
                         createMode = true,
                         onNavigateBack = { navController.navigateUp() },
-                        onNavigateToHome = { navController.navigateToHome() },
-                        onNavigateToArchive = { navController.navigateToArchive() },
-                        onNavigateToTrash = { navController.navigateToTrash() },
                         onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
                     )
                 }
@@ -410,6 +429,7 @@ fun App(
                     }
                 ) {
                     LabelScreen(
+                        appViewModel = appViewModel,
                         drawerState = drawerState,
                         onShowSnackbar = onShowSnackbar,
                         onNavigateToHome = { navController.navigateToHome() },

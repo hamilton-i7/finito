@@ -494,10 +494,7 @@ private fun BoardScreen(
             state = reorderableState.listState,
             modifier = Modifier.reorderable(reorderableState),
         ) {
-            item(
-                key = LazyListKeys.COMPLETED_TASKS_PROGRESS_BAR,
-                contentType = ContentTypes.PROGRESS_BAR
-            ) {
+            item(contentType = ContentTypes.PROGRESS_BAR) {
                 CompletedTasksProgressBar(
                     totalTasks = totalTasksAmount,
                     completedTasks = completedTasksAmount,
@@ -667,15 +664,12 @@ private fun BoardScreen(
                     }
                 }
             }
-            // TODO: 04/10/2022: Disable label animation when entering screen
-            item(key = LazyListKeys.LABELS) {
+            item(contentType = ContentTypes.LABELS) {
                 BoardLabels(
                     labels = labels.sortedBy { it.normalizedName },
                     onLabelClick = onLabelClick,
                     enabled = !isDeleted,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }

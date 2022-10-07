@@ -41,7 +41,7 @@ fun CompletedTasksProgressBar(
             Text(text = "$completedTasks/$totalTasks")
         }
         LinearProgressIndicator(
-            progress = progress,
+            progress = if (progress.isNaN()) 0F else progress,
             trackColor = finitoColors.tertiaryContainer,
             color = finitoColors.onTertiaryContainer,
             modifier = Modifier

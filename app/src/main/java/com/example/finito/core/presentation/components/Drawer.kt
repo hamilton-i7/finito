@@ -71,12 +71,14 @@ fun Drawer(
     drawerState: DrawerState,
     isSelectedScreen: (String) -> Boolean,
     boards: List<SimpleBoard> = emptyList(),
+    onBoardSelected: (boardId: Int) -> Unit = {},
     labels: List<SimpleLabel> = emptyList(),
+    onLabelSelected: (labelId: Int) -> Unit = {},
     expandBoards: Boolean = true,
     onExpandBoardsChange: () -> Unit = {},
     expandLabels: Boolean = true,
     onExpandLabelsChange: () -> Unit = {},
-    onItemSelected: (route: String) -> Unit,
+    onStaticItemSelected: (route: String) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     ModalNavigationDrawer(
@@ -86,12 +88,14 @@ fun Drawer(
             DrawerContent(
                 isSelectedScreen,
                 boards,
+                onBoardSelected,
                 labels,
+                onLabelSelected,
                 expandBoards,
                 onExpandBoardsChange,
                 expandLabels,
                 onExpandLabelsChange,
-                onItemSelected
+                onStaticItemSelected
             )
         },
         content = content
@@ -103,12 +107,14 @@ fun Drawer(
 private fun DrawerContent(
     isSelectedScreen: (route: String) -> Boolean,
     boards: List<SimpleBoard> ,
+    onBoardSelected: (boardId: Int) -> Unit = {},
     labels: List<SimpleLabel>,
+    onLabelSelected: (labelId: Int) -> Unit = {},
     expandBoards: Boolean,
     onExpandBoardsChange: () -> Unit,
     expandLabels: Boolean,
     onExpandLabelsChange: () -> Unit,
-    onItemSelected: (route: String) -> Unit
+    onStaticItemSelected: (route: String) -> Unit = {},
 ) {
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(
@@ -129,12 +135,12 @@ private fun DrawerContent(
             }
             item { DrawerSectionHeader(text = R.string.main) }
 
-            items(mainScreens) { item ->
+            items(mainScreens) { screen ->
                 NavigationDrawerItem(
-                    icon = { Icon(imageVector = item.icon, contentDescription = null) },
-                    label = { Text(text = stringResource(id = item.label)) },
-                    selected = isSelectedScreen(item.screen.route),
-                    onClick = { onItemSelected(item.screen.route) },
+                    icon = { Icon(imageVector = screen.icon, contentDescription = null) },
+                    label = { Text(text = stringResource(id = screen.label)) },
+                    selected = isSelectedScreen(screen.screen.route),
+                    onClick = { onStaticItemSelected(screen.screen.route) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
@@ -155,7 +161,7 @@ private fun DrawerContent(
                         icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
                         label = { Text(text = board.name) },
                         selected = isSelectedScreen(route),
-                        onClick = { onItemSelected(route) },
+                        onClick = { onBoardSelected(board.boardId) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -164,7 +170,7 @@ private fun DrawerContent(
                 DrawerItemButton(
                     text = R.string.create_new_board,
                     onClick = {
-                        onItemSelected(Screen.CreateBoard.route)
+                        onStaticItemSelected(Screen.CreateBoard.route)
                     }
                 )
             }
@@ -187,7 +193,7 @@ private fun DrawerContent(
                         icon = { Icon(imageVector = Icons.Outlined.Label, contentDescription = null) },
                         label = { Text(text = label.name) },
                         selected = isSelectedScreen(route),
-                        onClick = { onItemSelected(route) },
+                        onClick = { onLabelSelected(label.labelId) },
                         modifier = Modifier
                             .padding(NavigationDrawerItemDefaults.ItemPadding)
                             .testTag(TestTags.DRAWER_LABEL_ITEM)
@@ -196,17 +202,17 @@ private fun DrawerContent(
             }
             item {
                 DrawerItemButton(text = R.string.create_new_label) {
-                    onItemSelected(Screen.CreateLabel.route)
+                    onStaticItemSelected(Screen.CreateLabel.route)
                 }
             }
             item { FinitoDivider(modifier = Modifier.padding(vertical = 4.dp, horizontal = 32.dp)) }
 
-            items(otherScreens) { item ->
+            items(otherScreens) { screen ->
                 NavigationDrawerItem(
-                    icon = { Icon(imageVector = item.icon, contentDescription = null) },
-                    label = { Text(text = stringResource(id = item.label)) },
-                    selected = isSelectedScreen(item.screen.route),
-                    onClick = { onItemSelected(item.screen.route) },
+                    icon = { Icon(imageVector = screen.icon, contentDescription = null) },
+                    label = { Text(text = stringResource(id = screen.label)) },
+                    selected = isSelectedScreen(screen.screen.route),
+                    onClick = { onStaticItemSelected(screen.screen.route) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
@@ -298,7 +304,6 @@ private fun DrawerPreview() {
                 SimpleLabel(labelId = 2, name = "Label 2"),
                 SimpleLabel(labelId = 3, name = "Label 3"),
             ),
-            onItemSelected = {},
         ) {}
     }
 }

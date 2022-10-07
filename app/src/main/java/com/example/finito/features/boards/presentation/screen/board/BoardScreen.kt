@@ -72,7 +72,7 @@ fun BoardScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateBack: () -> Unit = {},
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
-    onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = {_, _ -> },
+    onNavigateToEditBoard: (boardId: Int, boardState: BoardState) -> Unit = { _, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
 ) {
@@ -170,8 +170,17 @@ fun BoardScreen(
 
     LaunchedEffect(Unit) {
         appViewModel.event.collect { event ->
-            if (event != AppViewModel.Event.RefreshBoard) return@collect
-            boardViewModel.onEvent(BoardEvent.RefreshBoard)
+            when (event) {
+                AppViewModel.Event.RefreshBoard -> {
+                    boardViewModel.onEvent(BoardEvent.RefreshBoard)
+                }
+                is AppViewModel.Event.ShowError -> {
+                    boardViewModel.onEvent(BoardEvent.ShowDialog(
+                        type = BoardEvent.DialogType.Error(event.error)
+                    ))
+                }
+                else -> Unit
+            }
         }
     }
 
@@ -245,7 +254,7 @@ fun BoardScreen(
                                         ArchivedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.ARCHIVED
+                                                BoardState.ARCHIVED,
                                             )
                                         }
                                         ArchivedBoardScreenMenuOption.UnarchiveBoard -> {
@@ -263,7 +272,7 @@ fun BoardScreen(
                                         DeletedBoardScreenMenuOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.DELETED
+                                                BoardState.DELETED,
                                             )
                                         }
                                         DeletedBoardScreenMenuOption.RestoreBoard -> {
@@ -287,7 +296,7 @@ fun BoardScreen(
                                         ActiveBoardScreenOption.EditBoard -> {
                                             onNavigateToEditBoard(
                                                 detailedBoard!!.board.boardId,
-                                                BoardState.ACTIVE
+                                                BoardState.ACTIVE,
                                             )
                                         }
                                     }
@@ -485,10 +494,7 @@ private fun BoardScreen(
             state = reorderableState.listState,
             modifier = Modifier.reorderable(reorderableState),
         ) {
-            item(
-                key = LazyListKeys.COMPLETED_TASKS_PROGRESS_BAR,
-                contentType = ContentTypes.PROGRESS_BAR
-            ) {
+            item(contentType = ContentTypes.PROGRESS_BAR) {
                 CompletedTasksProgressBar(
                     totalTasks = totalTasksAmount,
                     completedTasks = completedTasksAmount,
@@ -658,14 +664,12 @@ private fun BoardScreen(
                     }
                 }
             }
-            item(key = LazyListKeys.LABELS) {
+            item(contentType = ContentTypes.LABELS) {
                 BoardLabels(
                     labels = labels.sortedBy { it.normalizedName },
                     onLabelClick = onLabelClick,
                     enabled = !isDeleted,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }

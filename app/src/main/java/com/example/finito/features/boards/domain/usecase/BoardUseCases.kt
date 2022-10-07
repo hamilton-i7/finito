@@ -5,6 +5,7 @@ data class BoardUseCases(
     val findActiveBoards: FindActiveBoards,
     val findArchivedBoards: FindArchivedBoards,
     val findDeletedBoards: FindDeletedBoards,
+    val findDeletedBoardsAsync: FindDeletedBoardsAsync,
     val findSimpleBoards: FindSimpleBoards,
     val findOneBoard: FindOneBoard,
     val updateBoard: UpdateBoard,

@@ -57,7 +57,6 @@ class TrashViewModel @Inject constructor(
     }
 
     fun onEvent(event: TrashEvent) {
-        // TODO 01/10/2022: Automatically delete boards that have a week on trash
         when (event) {
             is TrashEvent.DeleteForever -> deleteBoard(event.board)
             TrashEvent.EmptyTrash -> emptyTrash()
@@ -69,7 +68,7 @@ class TrashViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
-        boardUseCases.findDeletedBoards().onEach { boards ->
+        boardUseCases.findDeletedBoards().data.onEach { boards ->
             this@TrashViewModel.boards = boards
         }.launchIn(viewModelScope)
     }

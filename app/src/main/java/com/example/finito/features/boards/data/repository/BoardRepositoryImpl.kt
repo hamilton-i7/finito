@@ -35,6 +35,10 @@ class BoardRepositoryImpl(
         return dao.findDeletedBoards()
     }
 
+    override suspend fun findDeletedBoardsAsync(): List<Board> {
+        return dao.findDeletedBoardsAsync()
+    }
+
     override suspend fun findOne(id: Int): DetailedBoard? {
         return dao.findOne(id)
     }

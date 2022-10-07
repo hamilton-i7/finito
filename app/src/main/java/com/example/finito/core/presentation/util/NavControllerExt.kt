@@ -11,28 +11,23 @@ fun NavController.navigateToHome() {
     }
 }
 
-fun NavController.navigateToArchive() {
-    navigate(Screen.Archive.route) {
-        popUpTo(Screen.Archive.route) { inclusive = true }
-    }
-}
-
-fun NavController.navigateToTrash() {
-    navigate(route = Screen.Trash.route) {
-        popUpTo(Screen.Trash.route) { inclusive = true }
+fun NavController.navigateToLabel(labelId: Int) {
+    val route = "${Screen.Label.prefix}/$labelId"
+    navigate(route) {
+        popUpTo(Screen.Board.route) { inclusive = true }
     }
 }
 
 fun NavController.navigateToBoardFlow(boardId: Int, state: BoardState = BoardState.ACTIVE) {
-    val route = "${Screen.Board.prefix}/${boardId}" +
-            "?${Screen.BOARD_ROUTE_STATE_ARGUMENT}" +
+    val route = "${Screen.Board.prefix}/$boardId" +
+            "?${Screen.BOARD_STATE_ARGUMENT}" +
             "=${state.name}"
     navigate(route)
 }
 
 fun NavController.navigateToBoard(boardId: Int, state: BoardState = BoardState.ACTIVE) {
-    val route = "${Screen.Board.prefix}/${boardId}" +
-            "?${Screen.BOARD_ROUTE_STATE_ARGUMENT}" +
+    val route = "${Screen.Board.prefix}/$boardId" +
+            "?${Screen.BOARD_STATE_ARGUMENT}" +
             "=${state.name}"
     navigate(route) {
         popUpTo(Screen.Board.route) { inclusive = true }
@@ -43,10 +38,12 @@ fun NavController.navigateToCreateBoard() {
     navigate(route = Screen.CreateBoard.route)
 }
 
-fun NavController.navigateToEditBoard(boardId: Int, state: BoardState = BoardState.ACTIVE) {
-    val route = "${Screen.EditBoard.prefix}/${boardId}" +
-            "?${Screen.BOARD_ROUTE_STATE_ARGUMENT}" +
-            "=${state.name}"
+fun NavController.navigateToEditBoard(
+    boardId: Int,
+    state: BoardState = BoardState.ACTIVE
+) {
+    val route = "${Screen.EditBoard.prefix}/$boardId" +
+            "?${Screen.BOARD_STATE_ARGUMENT}=${state.name}"
     navigate(route)
 }
 
@@ -92,4 +89,9 @@ fun NavController.navigateToEditTask(taskId: Int) {
 fun NavController.navigateToEditSubtask(boardId: Int, subtaskId: Int) {
     val route = "${Screen.EditSubtask.prefix}/${subtaskId}?${Screen.BOARD_ID_ARGUMENT}=$boardId"
     navigate(route)
+}
+
+fun NavController.navigateBackTwice() {
+    navigateUp()
+    navigateUp()
 }

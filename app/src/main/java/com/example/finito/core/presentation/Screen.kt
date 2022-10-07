@@ -24,11 +24,11 @@ sealed class Screen(
     object Urgent : Screen(route = "urgent")
 
     object Board : Screen(
-        route = "board/{$BOARD_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
+        route = "board/{$BOARD_ID_ARGUMENT}?$BOARD_STATE_ARGUMENT={$BOARD_STATE_ARGUMENT}",
         prefix = "board",
         arguments = listOf(
             navArgument(BOARD_ID_ARGUMENT) { type = NavType.IntType },
-            navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
+            navArgument(BOARD_STATE_ARGUMENT) {
                 type = NavType.StringType
                 defaultValue = BoardState.ACTIVE.name
             }
@@ -38,21 +38,22 @@ sealed class Screen(
     object CreateBoard : Screen(route = "create_board")
 
     object EditBoard : Screen(
-        route = "edit_board/{$BOARD_ID_ARGUMENT}?$BOARD_ROUTE_STATE_ARGUMENT={$BOARD_ROUTE_STATE_ARGUMENT}",
+        route = "edit_board/{$BOARD_ID_ARGUMENT}" +
+                "?$BOARD_STATE_ARGUMENT={$BOARD_STATE_ARGUMENT}",
         prefix = "edit_board",
         arguments = listOf(
             navArgument(BOARD_ID_ARGUMENT) { type = NavType.IntType },
-            navArgument(BOARD_ROUTE_STATE_ARGUMENT) {
+            navArgument(BOARD_STATE_ARGUMENT) {
                 type = NavType.StringType
                 nullable = true
-            }
+            },
         )
     )
 
     object Label : Screen(
-        route = "label/{$LABEL_ROUTE_ARGUMENT}",
+        route = "label/{$LABEL_ID_ARGUMENT}",
         prefix = "label",
-        arguments = listOf(navArgument(LABEL_ROUTE_ARGUMENT) { type = NavType.IntType })
+        arguments = listOf(navArgument(LABEL_ID_ARGUMENT) { type = NavType.IntType })
     ) {
         val childRoutes = listOf(Board.route)
     }
@@ -116,8 +117,8 @@ sealed class Screen(
 
     companion object {
         const val BOARD_ID_ARGUMENT = "boardId"
-        const val BOARD_ROUTE_STATE_ARGUMENT = "boardState"
-        const val LABEL_ROUTE_ARGUMENT = "labelId"
+        const val BOARD_STATE_ARGUMENT = "boardState"
+        const val LABEL_ID_ARGUMENT = "labelId"
         const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
         const val TASK_NAME_ARGUMENT = "taskName"
         const val DATE_ARGUMENT = "includeDate"

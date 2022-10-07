@@ -44,6 +44,9 @@ class AddEditBoardViewModel @Inject constructor(
     var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
         private set
 
+    var labelOriginId by mutableStateOf<Int?>(null)
+        private set
+
     var selectedLabels by mutableStateOf<List<SimpleLabel>>(emptyList())
         private set
 
@@ -66,6 +69,7 @@ class AddEditBoardViewModel @Inject constructor(
         fetchBoard()
         fetchLabels()
         fetchBoardState()
+        fetchFromLabelState()
     }
 
     fun onEvent(event: AddEditBoardEvent) {
@@ -75,7 +79,7 @@ class AddEditBoardViewModel @Inject constructor(
                 value = event.name
             )
             AddEditBoardEvent.CreateBoard -> onCreateBoard()
-            AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
+            is AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
             AddEditBoardEvent.EditBoard -> onEditBoard()
             AddEditBoardEvent.ToggleLabelsVisibility -> showLabels = !showLabels
             AddEditBoardEvent.DeleteForever -> onDeleteForever()
@@ -177,7 +181,7 @@ class AddEditBoardViewModel @Inject constructor(
                         error = R.string.delete_board_error
                     ))
                 }
-                is Result.Success -> fireEvents(Event.NavigateToTrash)
+                is Result.Success -> fireEvents(Event.NavigateBackTwice)
             }
         }
     }
@@ -206,18 +210,13 @@ class AddEditBoardViewModel @Inject constructor(
                         labels = labels,
                         tasks = tasks.map { it.toCompletedTask() }
                     )
-                    val events = mutableListOf<Event>(
+                    fireEvents(
                         Event.Snackbar.BoardStateChanged(
                             message = R.string.board_moved_to_trash,
                             board = originalBoard
-                        )
-                    ).apply {
-                        if (boardState == BoardState.ACTIVE)
-                            add(Event.NavigateToHome)
-                        else if (boardState == BoardState.ARCHIVED)
-                            add(Event.NavigateToArchive)
-                    }
-                    fireEvents(*events.toTypedArray())
+                        ),
+                        Event.NavigateBackTwice
+                    )
                 }
             }
         }
@@ -285,12 +284,19 @@ class AddEditBoardViewModel @Inject constructor(
     }
 
     private fun fetchBoardState() {
-        savedStateHandle.get<String>(Screen.BOARD_ROUTE_STATE_ARGUMENT)?.let { state ->
+        savedStateHandle.get<String>(Screen.BOARD_STATE_ARGUMENT)?.let { state ->
             boardState = when (state) {
                 BoardState.ARCHIVED.name -> BoardState.ARCHIVED
                 BoardState.DELETED.name -> BoardState.DELETED
                 else -> BoardState.ACTIVE
             }
+        }
+    }
+
+    private fun fetchFromLabelState() {
+        savedStateHandle.get<Int>(Screen.LABEL_ID_ARGUMENT)?.let { labelId ->
+            if (labelId == -1) return
+            labelOriginId = labelId
         }
     }
 
@@ -315,11 +321,15 @@ class AddEditBoardViewModel @Inject constructor(
 
         data class ShowError(@StringRes val error: Int) : Event()
 
-        object NavigateToTrash : Event()
+//        object NavigateToTrash : Event()
+//
+//        object NavigateToHome : Event()
+//
+//        object NavigateToLabel : Event()
+//
+//        object NavigateToArchive : Event()
 
-        object NavigateToHome : Event()
-
-        object NavigateToArchive : Event()
+        object NavigateBackTwice : Event()
 
         sealed class Snackbar(
             @StringRes val message: Int,

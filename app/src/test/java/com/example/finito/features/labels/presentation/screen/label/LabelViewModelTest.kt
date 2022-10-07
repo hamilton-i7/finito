@@ -47,7 +47,7 @@ class LabelViewModelTest {
         val labelIds = labelRepository.findAll().map { it.labelId }
         val selectedLabelId = labelIds.random()
         val savedStateHandle = SavedStateHandle().apply {
-            set(Screen.LABEL_ROUTE_ARGUMENT, selectedLabelId)
+            set(Screen.LABEL_ID_ARGUMENT, selectedLabelId)
         }
 
         boardRepository.findAll().take(15).map {
@@ -90,7 +90,7 @@ class LabelViewModelTest {
         val board = boardUseCases.findActiveBoards().data.first().random()
         labelViewModel.onEvent(LabelEvent.ArchiveBoard(board))
         val event = labelViewModel.eventFlow.first()
-        assertThat(event).isInstanceOf(LabelViewModel.Event.ShowSnackbar::class.java)
+        assertThat(event).isInstanceOf(LabelViewModel.Event.Snackbar::class.java)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -99,7 +99,7 @@ class LabelViewModelTest {
         val board = boardUseCases.findActiveBoards().data.first().random()
         labelViewModel.onEvent(LabelEvent.MoveBoardToTrash(board))
         val event = labelViewModel.eventFlow.first()
-        assertThat(event).isInstanceOf(LabelViewModel.Event.ShowSnackbar::class.java)
+        assertThat(event).isInstanceOf(LabelViewModel.Event.Snackbar::class.java)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

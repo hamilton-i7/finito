@@ -295,7 +295,11 @@ class AddEditTaskViewModel @Inject constructor(
                 selectedBoard = it
             }
             when (val result = boardUseCases.findOneBoard(boardId)) {
-                is Result.Error -> TODO()
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.find_board_error
+                    ))
+                }
                 is Result.Success -> originalRelatedBoard = result.data.board
             }
         }.launchIn(viewModelScope)

@@ -21,8 +21,6 @@ sealed class LabelEvent {
 
     object ToggleLayout : LabelEvent()
 
-    object RestoreBoard : LabelEvent()
-
     data class ShowSearchBar(val show: Boolean) : LabelEvent()
 
     data class ShowScreenMenu(val show: Boolean) : LabelEvent()

@@ -2,9 +2,33 @@
 <resources>
     <style name="ThemeOverlay.Finito.DatePicker" parent="@style/ThemeOverlay.Material3.MaterialCalendar">
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Finito.MediumComponent</item>
+        <item name="materialCalendarHeaderLayout">@style/MaterialCalendar.Finito.HeaderLayout</item>
+        <item name="materialCalendarHeaderSelection">@style/MaterialCalendar.Finito.HeaderSelection</item>
+        <item name="materialCalendarHeaderTitle">@style/MaterialCalendar.Finito.HeaderTitle</item>
+        <item name="materialCalendarHeaderToggleButton">@style/MaterialCalendar.Finito.HeaderToggleButton</item>
     </style>
 
     <style name="ShapeAppearance.Finito.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
-        <item name="cornerSize">28dp</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="MaterialCalendar.Finito.HeaderLayout" parent="Widget.Material3.MaterialCalendar.HeaderLayout">
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+
+    <style name="MaterialCalendar.Finito.HeaderSelection" parent="Widget.Material3.MaterialCalendar.HeaderSelection">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="MaterialCalendar.Finito.HeaderTitle" parent="Widget.Material3.MaterialCalendar.HeaderTitle">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="MaterialCalendar.Finito.HeaderToggleButton" parent="Widget.Material3.MaterialCalendar.HeaderToggleButton">
+        <item name="android:tint">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="ThemeOverlay.Finito.TimePicker" parent="@style/ThemeOverlay.Material3.MaterialTimePicker">
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Finito.MediumComponent</item>
     </style>
 </resources>

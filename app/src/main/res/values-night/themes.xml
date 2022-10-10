@@ -44,5 +44,6 @@
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
 
         <item name="materialCalendarTheme">@style/ThemeOverlay.Finito.DatePicker</item>
+        <item name="materialTimePickerTheme">@style/ThemeOverlay.Finito.TimePicker</item>
     </style>
 </resources>

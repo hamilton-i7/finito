@@ -19,11 +19,7 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.utils.BOARD_COLUMNS
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.LabelFilters
-import org.burnoutcrew.reorderable.ReorderableLazyGridState
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
-import org.burnoutcrew.reorderable.reorderable
-import org.burnoutcrew.reorderable.ReorderableItem as DefaultReorderableItem
+import org.burnoutcrew.reorderable.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -78,11 +74,11 @@ fun BoardsGrid(
             }
         }
         items(boards, key = { it.board.boardId }, contentType = { ContentTypes.BOARDS }) {
-            DefaultReorderableItem(
+            ReorderableItem(
                 reorderableState,
                 key = it.board.boardId,
                 orientationLocked = false,
-                defaultDraggingModifier = Modifier.animateItemPlacement()
+                defaultDraggingModifier = if (reorderableState.draggingItemKey != null) Modifier.animateItemPlacement() else Modifier
             ) { isDragging ->
                 BoardCard(
                     onClick = { onBoardClick(it.board.boardId) },

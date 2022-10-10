@@ -190,6 +190,7 @@ fun HomeScreen(
             paddingValues = innerPadding,
             reorderableListState = reorderableListState,
             reorderableGridState = reorderableGridState,
+            isSearching = homeViewModel.showSearchBar,
             gridLayout = homeViewModel.gridLayout,
             labels = homeViewModel.labels,
             labelFilters = homeViewModel.labelFilters,
@@ -245,6 +246,7 @@ private fun HomeScreen(
     reorderableGridState: ReorderableLazyGridState = rememberReorderableLazyGridState(
         onMove = { _, _ -> }
     ),
+    isSearching: Boolean = false,
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     labelFilters: List<Int> = emptyList(),
@@ -263,6 +265,11 @@ private fun HomeScreen(
         option: ActiveBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
+    val allowDrag = selectedSortingOption == null
+            && labelFilters.isEmpty()
+            && !isSearching
+
+
     LaunchedEffect(reorderableListState.draggingItemKey) {
         if (reorderableListState.draggingItemKey == null
             || selectedSortingOption != null) return@LaunchedEffect
@@ -280,7 +287,7 @@ private fun HomeScreen(
         .padding(paddingValues)) {
         BoardLayout(
             gridLayout = gridLayout,
-            allowDrag = selectedSortingOption == null,
+            allowDrag = allowDrag,
             reorderableGridState = reorderableGridState,
             reorderableListState = reorderableListState,
             labels = labels,

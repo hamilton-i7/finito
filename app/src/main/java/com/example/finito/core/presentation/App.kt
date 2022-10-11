@@ -465,6 +465,7 @@ fun App(
                 composable(
                     route = Screen.EditTask.route,
                     arguments = Screen.EditTask.arguments,
+                    deepLinks = Screen.EditTask.deepLinks,
                     enterTransition = childScreenEnterTransition,
                     exitTransition = childScreenExitTransition
                 ) {

@@ -1,7 +1,6 @@
 package com.example.finito.features.boards.utils
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -20,6 +19,7 @@ class DeletePastWeekBoardsWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val boards = findBoardsToDelete()
+        if (boards.isEmpty()) return Result.success()
         boardUseCases.deleteBoard(*boards.toTypedArray())
         return Result.success()
     }
@@ -27,8 +27,8 @@ class DeletePastWeekBoardsWorker @AssistedInject constructor(
     private suspend fun findBoardsToDelete(): List<Board> {
         return boardUseCases.findDeletedBoardsAsync().data.let { boards ->
             val trashLimit = LocalDate.now().minusDays(6)
-            boards.filter { it.removedAt!!.toLocalDate().isBefore(trashLimit) }.takeLast(2)
-        }.also { Log.d(TAG, it.toString()) }
+            boards.filter { it.removedAt!!.toLocalDate().isBefore(trashLimit) }
+        }
     }
 
     companion object {

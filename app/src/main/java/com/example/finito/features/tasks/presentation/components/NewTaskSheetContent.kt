@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.presentation.components
 
 import android.app.Activity
+import android.os.Build
 import android.view.WindowManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import com.example.finito.core.presentation.components.textfields.BasicTextField
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 
+@Suppress("DEPRECATION")
 @Composable
 fun NewTaskSheetContent(
     nameTextFieldState: TextFieldState,
@@ -35,7 +37,11 @@ fun NewTaskSheetContent(
 
     LaunchedEffect(focused) {
         if (focused) {
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+            } else {
+                window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            }
             return@LaunchedEffect
         }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)

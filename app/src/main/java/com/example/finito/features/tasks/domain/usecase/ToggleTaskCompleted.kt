@@ -30,14 +30,14 @@ class ToggleTaskCompleted(
             return Result.Error(ErrorMessages.DIFFERENT_SUBTASKS_ORIGIN)
         }
 
-        val positionedTask = taskRepository.findOne(task.taskId)?.let {
+        val positionedTask = taskRepository.findOne(task.taskId)?.run {
             if (task.completed) {
                 markSubtasksAsCompleted(subtasks)
                 arrangeTasks(tasks.filter { it.taskId != task.taskId && !it.completed })
-                return@let task.copy(boardPosition = null)
+                return@run task.copy(boardPosition = null)
             }
             markSubtasksAsUncompleted(subtasks)
-            return@let task.copy(boardPosition = if (undoingToggle) {
+            return@run task.copy(boardPosition = if (undoingToggle) {
                 arrangeTasks(
                     tasks = tasks.filter { !it.completed }.toMutableList().apply {
                         add(index = task.boardPosition!!, element = task)

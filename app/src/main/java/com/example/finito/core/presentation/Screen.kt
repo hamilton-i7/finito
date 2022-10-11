@@ -1,14 +1,13 @@
 package com.example.finito.core.presentation
 
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import androidx.navigation.*
 import com.example.finito.features.boards.domain.entity.BoardState
 
 sealed class Screen(
     val route: String,
     val prefix: String? = null,
     val arguments: List<NamedNavArgument> = emptyList(),
+    val deepLinks: List<NavDeepLink> = emptyList(),
 ) {
     object Home : Screen(route = "home") {
         val childRoutes = listOf(
@@ -96,10 +95,13 @@ sealed class Screen(
     )
 
     object EditTask : Screen(
-        route = "edit_task/{$EDIT_TASK_ROUTE_ID_ARGUMENT}",
+        route = "edit_task/{$TASK_ID_ARGUMENT}",
         prefix = "edit_task",
         arguments = listOf(
-            navArgument(EDIT_TASK_ROUTE_ID_ARGUMENT) { type = NavType.IntType },
+            navArgument(TASK_ID_ARGUMENT) { type = NavType.IntType },
+        ),
+        deepLinks = listOf(
+            navDeepLink { uriPattern = "$URI/$TASK_ID_ARGUMENT={$TASK_ID_ARGUMENT}" }
         )
     )
 
@@ -119,10 +121,11 @@ sealed class Screen(
         const val BOARD_ID_ARGUMENT = "boardId"
         const val BOARD_STATE_ARGUMENT = "boardState"
         const val LABEL_ID_ARGUMENT = "labelId"
-        const val EDIT_TASK_ROUTE_ID_ARGUMENT = "taskId"
+        const val TASK_ID_ARGUMENT = "taskId"
         const val TASK_NAME_ARGUMENT = "taskName"
         const val DATE_ARGUMENT = "includeDate"
         const val IS_URGENT_ARGUMENT = "isUrgent"
         const val SUBTASK_ID_ARGUMENT = "subtaskId"
+        const val URI = "https://example.com"
     }
 }

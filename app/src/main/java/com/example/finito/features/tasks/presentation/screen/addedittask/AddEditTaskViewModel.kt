@@ -1,5 +1,11 @@
 package com.example.finito.features.tasks.presentation.screen.addedittask
 
+import android.app.AlarmManager
+import android.app.Application
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,8 +18,10 @@ import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.Reminder
 import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.RequestCodes
 import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.core.presentation.util.TextFieldState
+import com.example.finito.core.presentation.util.hasNotificationPermission
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -21,6 +29,7 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
+import com.example.finito.features.tasks.presentation.util.TaskReminderAlarmReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,10 +41,12 @@ import org.burnoutcrew.reorderable.ItemPosition
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class AddEditTaskViewModel @Inject constructor(
+    private val application: Application,
     private val taskUseCases: TaskUseCases,
     private val boardUseCases: BoardUseCases,
     private val savedStateHandle: SavedStateHandle,
@@ -235,7 +246,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun onCreateTask() = viewModelScope.launch {
-        TaskWithSubtasks(
+        val createdTask = TaskWithSubtasks(
             task = Task(
                 boardId = selectedBoard!!.boardId,
                 name = nameState.value,
@@ -246,18 +257,79 @@ class AddEditTaskViewModel @Inject constructor(
                 priority = selectedPriority,
             ),
             subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map { Subtask(name = it.value) }
-        ).let {
-            when (taskUseCases.createTask(it)) {
-                is Result.Error -> {
-                    fireEvents(
-                        Event.ShowError(
-                            error = R.string.create_task_error
-                        )
+        )
+        when (val result = taskUseCases.createTask(createdTask)) {
+            is Result.Error -> {
+                fireEvents(
+                    Event.ShowError(
+                        error = R.string.create_task_error
                     )
+                )
+            }
+            is Result.Success -> {
+                if (!canCreateReminder()) {
+                    fireEvents(Event.NavigateBack)
+                    return@launch
                 }
-                is Result.Success -> fireEvents(Event.NavigateBack)
+                onCreateTaskReminder(createdTask.task.copy(taskId = result.data))
+                fireEvents(Event.NavigateBack)
             }
         }
+    }
+
+    private fun canCreateReminder(): Boolean {
+        if (!hasNotificationPermission(application.applicationContext)) return false
+
+        if (selectedDate == null) return false
+        if (selectedTime == null) {
+            val today = LocalDate.now()
+            if (selectedDate!!.isEqual(today) || selectedDate!!.isBefore(today)) return false
+        }
+        val reminderDateTime = LocalDateTime.of(selectedDate, selectedTime)
+        val now = LocalDateTime.now()
+        if (reminderDateTime.isEqual(now) || reminderDateTime.isBefore(now)) {
+            return false
+        }
+        return true
+    }
+
+    private fun onCreateTaskReminder(task: Task) {
+        val alarmManager = application.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(
+            application.applicationContext,
+            TaskReminderAlarmReceiver::class.java
+        ).apply {
+            Log.d("AddEditTaskViewModel", "TASK ID FROM VM: ${task.taskId}")
+            putExtra(TaskReminderAlarmReceiver.EXTRA_TASK, task)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            application.applicationContext,
+            RequestCodes.ALARM_REQUEST_CODE + task.taskId,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or Intent.FILL_IN_DATA
+        )
+        val localDateTime = LocalDateTime.of(
+            task.date,
+            task.time ?: LocalTime.MIDNIGHT
+        )
+        val reminderDateTime = selectedReminder?.let {
+            when (it) {
+                Reminder.FIVE_MINUTES -> localDateTime.minusMinutes(5)
+                Reminder.TEN_MINUTES -> localDateTime.minusMinutes(10)
+                Reminder.FIFTEEN_MINUTES -> localDateTime.minusMinutes(15)
+                Reminder.THIRTY_MINUTES -> localDateTime.minusMinutes(30)
+            }
+        } ?: localDateTime
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_YEAR, reminderDateTime.dayOfYear)
+            set(Calendar.HOUR_OF_DAY, reminderDateTime.hour)
+            set(Calendar.MINUTE, reminderDateTime.minute)
+        }
+        alarmManager.setExact(
+            AlarmManager.RTC,
+            calendar.timeInMillis,
+            pendingIntent
+        )
     }
 
     private fun onCreateSubtask() {
@@ -269,7 +341,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun fetchTask() {
-        savedStateHandle.get<Int>(Screen.EDIT_TASK_ROUTE_ID_ARGUMENT)?.let { taskId ->
+        savedStateHandle.get<Int>(Screen.TASK_ID_ARGUMENT)?.let { taskId ->
             viewModelScope.launch {
                 when (val result = taskUseCases.findOneTask(taskId)) {
                     is Result.Error -> {
@@ -375,6 +447,8 @@ class AddEditTaskViewModel @Inject constructor(
         data class ShowError(@StringRes val error: Int) : Event()
 
         object NavigateBack : Event()
+
+//        data class CreateTaskReminder(val task: Task) : Event()
 
         sealed class Snackbar(
             @StringRes open val message: Int,

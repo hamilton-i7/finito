@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         DynamicColors.applyToActivityIfAvailable(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setupDeletePastWeekBoardsWorker()
+        // TODO 11/10/2022: Create Splash screen
         setContent {
             FinitoTheme {
                 App { finish() }

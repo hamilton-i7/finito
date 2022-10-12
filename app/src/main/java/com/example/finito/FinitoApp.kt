@@ -33,7 +33,7 @@ class FinitoApp : Application(), Configuration.Provider {
     private fun createNotificationChannel() {
         val name = getString(R.string.task_reminder_channel)
         val description = getString(R.string.task_reminder_channel_description)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel(
             TaskReminderAlarmReceiver.TASK_REMINDER_CHANNEL_ID,
             name,

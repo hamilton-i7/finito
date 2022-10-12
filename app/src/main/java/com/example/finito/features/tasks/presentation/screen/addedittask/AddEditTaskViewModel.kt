@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
@@ -14,14 +15,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.core.domain.Priority
-import com.example.finito.core.domain.Reminder
 import com.example.finito.core.domain.Result
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.RequestCodes
 import com.example.finito.core.presentation.util.SubtaskTextField
 import com.example.finito.core.presentation.util.TextFieldState
-import com.example.finito.core.presentation.util.hasNotificationPermission
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -29,6 +27,7 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.tasks.presentation.util.TaskReminderAlarmReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -67,9 +66,6 @@ class AddEditTaskViewModel @Inject constructor(
     var selectedBoard by mutableStateOf<SimpleBoard?>(null)
         private set
 
-    var selectedReminder by mutableStateOf<Reminder?>(null)
-        private set
-
     var selectedPriority by mutableStateOf<Priority?>(null)
         private set
 
@@ -85,9 +81,6 @@ class AddEditTaskViewModel @Inject constructor(
     var subtaskNameStates by mutableStateOf<List<SubtaskTextField>>(emptyList())
         private set
 
-    var showReminders by mutableStateOf(false)
-        private set
-
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -95,6 +88,15 @@ class AddEditTaskViewModel @Inject constructor(
         private set
 
     private var subtaskNameStateId = -1
+
+    private val postNotificationsPermissionGranted =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            mutableStateOf(false)
+        else
+            null
+
+    private var shouldCheckPostNotificationsPermission =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     init {
         fetchTask()
@@ -107,14 +109,13 @@ class AddEditTaskViewModel @Inject constructor(
     fun onEvent(event: AddEditTaskEvent) {
         when (event) {
             is AddEditTaskEvent.ChangeBoard -> selectedBoard = event.board
-            is AddEditTaskEvent.ChangeDate -> selectedDate = event.date
+            is AddEditTaskEvent.ChangeDate -> onChangeDate(event.date)
             is AddEditTaskEvent.ChangeTime -> selectedTime = event.time
             is AddEditTaskEvent.ChangeName -> nameState = nameState.copy(value = event.name)
             is AddEditTaskEvent.ChangeDescription -> {
                 descriptionState = descriptionState.copy(value = event.description)
             }
             is AddEditTaskEvent.ChangePriority -> selectedPriority = event.priority
-            is AddEditTaskEvent.ChangeReminder -> selectedReminder = event.reminder
             AddEditTaskEvent.CreateSubtask -> onCreateSubtask()
             is AddEditTaskEvent.RemoveSubtask -> onRemoveSubtask(event.state)
             AddEditTaskEvent.CreateTask -> onCreateTask()
@@ -123,9 +124,23 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ReorderSubtasks -> onReorderSubtasks(event.from, event.to)
             is AddEditTaskEvent.ShowDialog -> dialogType = event.type
             AddEditTaskEvent.ToggleCompleted -> onToggleCompleted()
-            is AddEditTaskEvent.ShowReminders -> showReminders = event.show
             is AddEditTaskEvent.ChangeSubtaskName -> onChangeSubtaskName(event.id, event.name)
             AddEditTaskEvent.RefreshTask -> fetchTask()
+            AddEditTaskEvent.AllowReminder -> onAllowReminder()
+        }
+    }
+
+    private fun onAllowReminder() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            postNotificationsPermissionGranted!!.value = true
+        }
+    }
+
+    private fun onChangeDate(date: LocalDate?) = viewModelScope.launch {
+        selectedDate = date
+        if (date != null && shouldCheckPostNotificationsPermission) {
+            shouldCheckPostNotificationsPermission = false
+            fireEvents(Event.CheckNotificationsPermission)
         }
     }
 
@@ -219,7 +234,6 @@ class AddEditTaskViewModel @Inject constructor(
                     description = descriptionState.value.ifBlank { null },
                     date = selectedDate,
                     time = selectedTime,
-                    reminder = selectedReminder,
                     priority = selectedPriority,
                 ),
                 subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map {
@@ -253,7 +267,6 @@ class AddEditTaskViewModel @Inject constructor(
                 description = descriptionState.value.ifBlank { null },
                 date = selectedDate,
                 time = selectedTime,
-                reminder = selectedReminder,
                 priority = selectedPriority,
             ),
             subtasks = subtaskNameStates.filter { it.value.isNotBlank() }.map { Subtask(name = it.value) }
@@ -278,8 +291,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun canCreateReminder(): Boolean {
-        if (!hasNotificationPermission(application.applicationContext)) return false
-
+        if (postNotificationsPermissionGranted?.value == false) return false
         if (selectedDate == null) return false
         if (selectedTime == null) {
             val today = LocalDate.now()
@@ -308,22 +320,11 @@ class AddEditTaskViewModel @Inject constructor(
             intent,
             PendingIntent.FLAG_IMMUTABLE or Intent.FILL_IN_DATA
         )
-        val localDateTime = LocalDateTime.of(
-            task.date,
-            task.time ?: LocalTime.MIDNIGHT
-        )
-        val reminderDateTime = selectedReminder?.let {
-            when (it) {
-                Reminder.FIVE_MINUTES -> localDateTime.minusMinutes(5)
-                Reminder.TEN_MINUTES -> localDateTime.minusMinutes(10)
-                Reminder.FIFTEEN_MINUTES -> localDateTime.minusMinutes(15)
-                Reminder.THIRTY_MINUTES -> localDateTime.minusMinutes(30)
-            }
-        } ?: localDateTime
+        val localDateTime = LocalDateTime.of(task.date, task.time ?: LocalTime.MIDNIGHT)
         val calendar = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_YEAR, reminderDateTime.dayOfYear)
-            set(Calendar.HOUR_OF_DAY, reminderDateTime.hour)
-            set(Calendar.MINUTE, reminderDateTime.minute)
+            set(Calendar.DAY_OF_YEAR, localDateTime.dayOfYear)
+            set(Calendar.HOUR_OF_DAY, localDateTime.hour)
+            set(Calendar.MINUTE, localDateTime.minute)
         }
         alarmManager.setExact(
             AlarmManager.RTC,
@@ -406,7 +407,6 @@ class AddEditTaskViewModel @Inject constructor(
         }
         selectedDate = taskWithSubtasks.task.date
         selectedTime = taskWithSubtasks.task.time
-        selectedReminder = taskWithSubtasks.task.reminder
         selectedPriority = taskWithSubtasks.task.priority
         subtaskNameStates = taskWithSubtasks.subtasks.map {
             SubtaskTextField(
@@ -448,7 +448,7 @@ class AddEditTaskViewModel @Inject constructor(
 
         object NavigateBack : Event()
 
-//        data class CreateTaskReminder(val task: Task) : Event()
+        object CheckNotificationsPermission : Event()
 
         sealed class Snackbar(
             @StringRes open val message: Int,

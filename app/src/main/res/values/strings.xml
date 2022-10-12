@@ -152,4 +152,5 @@
     <string name="recover_subtask_error">There was an error while trying to recover this subtask</string>
     <string name="task_reminder_channel">Task reminders</string>
     <string name="task_reminder_channel_description">Used to remind on incoming tasks</string>
+    <string name="notifications_permission"><em>Notifications</em> are required to show task reminders. Please grant the permission</string>
 </resources>

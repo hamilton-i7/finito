@@ -1,6 +1,7 @@
 package com.example.finito.features.tasks.presentation.screen.addedittask
 
 import android.app.Activity
+import android.os.Build
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -45,8 +46,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
-import com.example.finito.core.domain.Priority
-import com.example.finito.core.domain.Reminder
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
@@ -55,17 +54,20 @@ import com.example.finito.core.presentation.components.textfields.FinitoTextFiel
 import com.example.finito.core.presentation.components.textfields.PriorityChips
 import com.example.finito.core.presentation.components.textfields.TimeTextField
 import com.example.finito.core.presentation.util.*
-import com.example.finito.core.presentation.util.menu.TaskReminderOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.components.BoardsListSheetContent
 import com.example.finito.features.boards.presentation.components.SelectedBoardIndicator
 import com.example.finito.features.subtasks.presentation.components.SubtaskTextFieldItem
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskDialogs
 import com.example.finito.features.tasks.presentation.screen.addedittask.components.AddEditTaskTopBar
-import com.example.finito.features.tasks.presentation.screen.addedittask.components.ReminderDropdownTextField
 import com.example.finito.ui.theme.FinitoTheme
 import com.example.finito.ui.theme.finitoColors
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.ReorderableLazyListState
@@ -74,7 +76,22 @@ import org.burnoutcrew.reorderable.reorderable
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+private fun handleBackNavigation(
+    previousRoute: String,
+    onNavigateToBoard: (boardId: Int, BoardState) -> Unit,
+    onNavigateBack: () -> Unit,
+    addEditTaskViewModel: AddEditTaskViewModel
+) {
+    if (previousRoute == Screen.Board.route) {
+        onNavigateToBoard(
+            addEditTaskViewModel.originalRelatedBoard!!.boardId,
+            addEditTaskViewModel.originalRelatedBoard!!.state
+        )
+    } else { onNavigateBack() }
+}
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalPermissionsApi::class)
 @Composable
 fun AddEditTaskScreen(
     createMode: Boolean,
@@ -93,6 +110,11 @@ fun AddEditTaskScreen(
     val scope = rememberCoroutineScope()
     val focusManager: FocusManager = LocalFocusManager.current
     var focusDirectionToMove by remember { mutableStateOf<FocusDirection?>(null) }
+    val postNotificationsPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            permission = android.Manifest.permission.POST_NOTIFICATIONS
+        )
+    } else null
 
     val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -118,14 +140,7 @@ fun AddEditTaskScreen(
             scope.launch { bottomSheetState.hide() }
             return@BackHandler
         }
-        if (previousRoute == Screen.Board.route) {
-            onNavigateToBoard(
-                addEditTaskViewModel.originalRelatedBoard!!.boardId,
-                addEditTaskViewModel.originalRelatedBoard!!.state
-            )
-            return@BackHandler
-        }
-        onNavigateBack()
+        handleBackNavigation(previousRoute, onNavigateToBoard, onNavigateBack, addEditTaskViewModel)
     }
 
     LaunchedEffect(addEditTaskViewModel.subtaskNameStates) {
@@ -137,14 +152,7 @@ fun AddEditTaskScreen(
         addEditTaskViewModel.eventFlow.collect { event ->
             when (event) {
                 is AddEditTaskViewModel.Event.NavigateBack -> {
-                    if (previousRoute == Screen.Board.route) {
-                        onNavigateToBoard(
-                            addEditTaskViewModel.originalRelatedBoard!!.boardId,
-                            addEditTaskViewModel.originalRelatedBoard!!.state
-                        )
-                        return@collect
-                    }
-                    onNavigateBack()
+                    handleBackNavigation(previousRoute, onNavigateToBoard, onNavigateBack, addEditTaskViewModel)
                 }
                 is AddEditTaskViewModel.Event.ShowError -> {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
@@ -161,6 +169,26 @@ fun AddEditTaskScreen(
                         is AddEditTaskViewModel.Event.Snackbar.TaskStateChanged -> {
                             onShowSnackbar(event.message, event.actionLabel) {
                                 appViewModel.onEvent(AppEvent.UndoTaskCompletedToggle(task = event.task))
+                            }
+                        }
+                    }
+                }
+                AddEditTaskViewModel.Event.CheckNotificationsPermission -> {
+                    if (postNotificationsPermissionState == null) return@collect
+
+                    when (postNotificationsPermissionState.status) {
+                        PermissionStatus.Granted -> {
+                            addEditTaskViewModel.onEvent(AddEditTaskEvent.AllowReminder)
+                        }
+                        is PermissionStatus.Denied -> {
+                            // If the user has denied the permission but the rationale can be shown,
+                            // then gently explain why the app requires this permission
+                            if (postNotificationsPermissionState.status.shouldShowRationale) {
+                                addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
+                                    type = AddEditTaskEvent.DialogType.NotificationsPermission
+                                ))
+                            } else {
+                                postNotificationsPermissionState.launchPermissionRequest()
                             }
                         }
                     }
@@ -200,15 +228,8 @@ fun AddEditTaskScreen(
                 AddEditTaskTopBar(
                     createMode = createMode,
                     taskCompleted = addEditTaskViewModel.task?.task?.completed ?: false,
-                    onNavigationIconClick = onNavigationIconClick@{
-                        if (previousRoute == Screen.Board.route) {
-                            onNavigateToBoard(
-                                addEditTaskViewModel.originalRelatedBoard!!.boardId,
-                                addEditTaskViewModel.originalRelatedBoard!!.state
-                            )
-                            return@onNavigationIconClick
-                        }
-                        onNavigateBack()
+                    onNavigationIconClick = {
+                        handleBackNavigation(previousRoute, onNavigateToBoard, onNavigateBack, addEditTaskViewModel)
                     },
                     onToggleTaskCompleted = {
                         addEditTaskViewModel.onEvent(AddEditTaskEvent.ToggleCompleted)
@@ -223,7 +244,7 @@ fun AddEditTaskScreen(
                 .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
                 .noRippleClickable { focusManager.clearFocus() }
         ) { innerPadding ->
-            AddEditTaskDialogs(addEditTaskViewModel)
+            AddEditTaskDialogs(addEditTaskViewModel, postNotificationsPermissionState)
 
             AddEditTaskScreen(
                 paddingValues = innerPadding,
@@ -255,7 +276,6 @@ fun AddEditTaskScreen(
                 onDateRemove = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeDate(date = null))
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeTime(time = null))
-                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeReminder(reminder = null))
                 },
                 time = addEditTaskViewModel.selectedTime,
                 onTimeClick = {
@@ -265,28 +285,6 @@ fun AddEditTaskScreen(
                 },
                 onTimeRemove = {
                     addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeTime(time = null))
-                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ChangeReminder(reminder = null))
-                },
-                reminder = addEditTaskViewModel.selectedReminder,
-                onReminderTextFieldClick = {
-                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowReminders(show = true))
-                },
-                showReminderDropdown = addEditTaskViewModel.showReminders,
-                onDismissReminderDropdown = {
-                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowReminders(show = false))
-                },
-                onReminderOptionClick = {
-                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowReminders(show = false))
-                    addEditTaskViewModel.onEvent(
-                        AddEditTaskEvent.ChangeReminder(
-                            when (it) {
-                                TaskReminderOption.FiveMinutes -> Reminder.FIVE_MINUTES
-                                TaskReminderOption.TenMinutes -> Reminder.TEN_MINUTES
-                                TaskReminderOption.FifteenMinutes -> Reminder.FIFTEEN_MINUTES
-                                TaskReminderOption.ThirtyMinutes -> Reminder.THIRTY_MINUTES
-                            }
-                        )
-                    )
                 },
                 priority = addEditTaskViewModel.selectedPriority,
                 onPriorityClick = onPriorityClick@{
@@ -369,11 +367,6 @@ private fun AddEditTaskScreen(
     time: LocalTime? = null,
     onTimeClick: () -> Unit = {},
     onTimeRemove: () -> Unit = {},
-    reminder: Reminder? = null,
-    onReminderTextFieldClick: () -> Unit = {},
-    showReminderDropdown: Boolean = false,
-    onDismissReminderDropdown: () -> Unit = {},
-    onReminderOptionClick: (TaskReminderOption) -> Unit = {},
     priority: Priority? = null,
     onPriorityClick: (Priority) -> Unit = {},
     subtaskTextFields: List<SubtaskTextField> = emptyList(),
@@ -400,12 +393,9 @@ private fun AddEditTaskScreen(
                     expanded = showBoardsMenu,
                     onIndicatorClick = onBoardIndicatorClick,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier
-                    .height(16.dp)
-                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.NAME_TEXT_FIELD,
@@ -416,16 +406,13 @@ private fun AddEditTaskScreen(
                     onValueChange = nameState.onValueChange,
                     label = { Text(text = stringResource(id = R.string.name)) },
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                         .animateItemPlacement(),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
                         imeAction = ImeAction.Next
                     ),
                 )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.DESCRIPTION_TEXT_FIELD,
@@ -437,12 +424,9 @@ private fun AddEditTaskScreen(
                     singleLine = false,
                     label = { Text(text = stringResource(id = R.string.description)) },
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                         .animateItemPlacement(),
                 )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_DATE_TEXT_FIELD,
@@ -453,12 +437,9 @@ private fun AddEditTaskScreen(
                     onClick = onDateClick,
                     onDateRemove = onDateRemove,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                         .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
             }
             item(
                 key = LazyListKeys.TASK_TIME_TEXT_FIELD,
@@ -470,31 +451,9 @@ private fun AddEditTaskScreen(
                     onTimeRemove = onTimeRemove,
                     enabled = date != null,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                         .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
-            }
-            item(
-                key = LazyListKeys.REMINDER_TEXT_FIELD,
-                contentType = ContentTypes.TEXT_FIELDS
-            ) {
-                ReminderDropdownTextField(
-                    selectedReminder = reminder,
-                    enabled = time != null,
-                    onReminderClick = onReminderTextFieldClick,
-                    showDropdown = showReminderDropdown,
-                    onDismissDropdown = onDismissReminderDropdown,
-                    onOptionClick = onReminderOptionClick,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
-                )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
             }
 
             item(
@@ -505,12 +464,9 @@ private fun AddEditTaskScreen(
                     selectedPriority = priority,
                     onPriorityClick = onPriorityClick,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                         .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier
-                    .height(24.dp)
-                    .animateItemPlacement())
             }
 
             item(

@@ -17,13 +17,4 @@ object PreferencesModule {
     fun providedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
         return context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     }
-
-    enum class TAG {
-        EXPAND_BOARDS,
-        EXPAND_LABELS,
-        GRID_LAYOUT,
-        BOARDS_ORDER,
-        SHOW_COMPLETED_TASKS,
-        TASKS_ORDER
-    }
 }

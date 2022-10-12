@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)

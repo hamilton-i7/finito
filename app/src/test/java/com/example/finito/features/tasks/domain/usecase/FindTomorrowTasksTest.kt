@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
@@ -86,14 +86,14 @@ class FindTomorrowTasksTest {
     @Test
     fun `Should return tomorrow's tasks when asked`() = runTest {
         val tomorrow = LocalDate.now().plusDays(1)
-        val tasks = findTomorrowTasks().first()
+        val tasks = findTomorrowTasks().data.first()
         assertThat(tasks).isNotEmpty()
         assertThat(tasks.all { it.task.date != null && it.task.date!!.isEqual(tomorrow) }).isTrue()
     }
 
     @Test
     fun `Should return tomorrow's tasks sorted by time descending when asked`() = runTest {
-        val tasks = findTomorrowTasks().first()
+        val tasks = findTomorrowTasks().data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task
@@ -106,7 +106,7 @@ class FindTomorrowTasksTest {
 
     @Test
     fun `Should return tomorrow's tasks sorted by most urgent & time descending when asked for MOST_URGENT`() = runTest {
-        val tasks = findTomorrowTasks(SortingOption.Priority.MostUrgent).first()
+        val tasks = findTomorrowTasks(SortingOption.Priority.MostUrgent).data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task
@@ -125,7 +125,7 @@ class FindTomorrowTasksTest {
 
     @Test
     fun `Should return tomorrow's tasks sorted by least urgent & time descending when asked for LEAST_URGENT`() = runTest {
-        val tasks = findTomorrowTasks(SortingOption.Priority.LeastUrgent).first()
+        val tasks = findTomorrowTasks(SortingOption.Priority.LeastUrgent).data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task

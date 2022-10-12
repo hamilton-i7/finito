@@ -8,10 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.core.di.PreferencesModule
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.PreferencesKeys
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
@@ -55,7 +55,7 @@ class TomorrowViewModel @Inject constructor(
 
     var sortingOption by mutableStateOf(
         value = preferences.getString(
-            PreferencesModule.TAG.TASKS_ORDER.name,
+            PreferencesKeys.TASKS_ORDER,
             null
         )?.let {
             when (it) {
@@ -70,7 +70,7 @@ class TomorrowViewModel @Inject constructor(
         private set
 
     var showCompletedTasks by mutableStateOf(preferences.getBoolean(
-        PreferencesModule.TAG.SHOW_COMPLETED_TASKS.name,
+        PreferencesKeys.SHOW_COMPLETED_TASKS,
         true
     )); private set
 
@@ -156,7 +156,7 @@ class TomorrowViewModel @Inject constructor(
     private fun onSortByPriority(option: SortingOption.Priority?) {
         sortingOption = option
         with(preferences.edit()) {
-            putString(PreferencesModule.TAG.TASKS_ORDER.name, option?.name)
+            putString(PreferencesKeys.TASKS_ORDER, option?.name)
             apply()
         }
         fetchTasks()
@@ -221,7 +221,7 @@ class TomorrowViewModel @Inject constructor(
     private fun onShowCompletedTasksChange() {
         showCompletedTasks = !showCompletedTasks
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.SHOW_COMPLETED_TASKS.name, showCompletedTasks)
+            putBoolean(PreferencesKeys.SHOW_COMPLETED_TASKS, showCompletedTasks)
             apply()
         }
     }

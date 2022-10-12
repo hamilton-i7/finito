@@ -8,10 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
+import com.example.finito.core.presentation.util.PreferencesKeys
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -57,7 +57,7 @@ class ArchiveViewModel @Inject constructor(
 
     var boardsOrder by mutableStateOf(
         preferences.getString(
-            PreferencesModule.TAG.BOARDS_ORDER.name,
+            PreferencesKeys.BOARDS_ORDER,
             null
         )?.let {
             when (it) {
@@ -71,7 +71,7 @@ class ArchiveViewModel @Inject constructor(
     ); private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
-        PreferencesModule.TAG.GRID_LAYOUT.name,
+        PreferencesKeys.GRID_LAYOUT,
         true
     )); private set
 
@@ -124,7 +124,7 @@ class ArchiveViewModel @Inject constructor(
     private fun onSortBoards(sortingOption: SortingOption.Common?) {
         boardsOrder = sortingOption
         with(preferences.edit()) {
-            putString(PreferencesModule.TAG.BOARDS_ORDER.name, sortingOption?.name)
+            putString(PreferencesKeys.BOARDS_ORDER, sortingOption?.name)
             apply()
         }
         fetchBoards()
@@ -225,7 +225,7 @@ class ArchiveViewModel @Inject constructor(
     private fun onToggleLayout() {
         gridLayout = !gridLayout
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.GRID_LAYOUT.name, gridLayout)
+            putBoolean(PreferencesKeys.GRID_LAYOUT, gridLayout)
             apply()
         }
     }

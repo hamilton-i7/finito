@@ -1,4 +1,4 @@
-package com.example.finito.core.domain
+package com.example.finito.features.tasks.domain.util
 
 import androidx.annotation.StringRes
 import com.example.finito.R

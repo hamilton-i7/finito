@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.domain.repository
 
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import kotlinx.coroutines.flow.Flow

@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.finito.core.di.PreferencesModule
+import com.example.finito.core.presentation.util.PreferencesKeys
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
 import com.example.finito.features.labels.domain.entity.SimpleLabel
@@ -31,14 +31,14 @@ class DrawerViewModel @Inject constructor(
         private set
 
     var boardsExpanded by mutableStateOf(
-        preferences.getBoolean(PreferencesModule.TAG.EXPAND_BOARDS.name, true)
+        preferences.getBoolean(PreferencesKeys.EXPAND_BOARDS, true)
     ); private set
 
     var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
         private set
 
     var labelsExpanded by mutableStateOf(
-        preferences.getBoolean(PreferencesModule.TAG.EXPAND_LABELS.name, true)
+        preferences.getBoolean(PreferencesKeys.EXPAND_LABELS, true)
     ); private set
 
     init {
@@ -73,7 +73,7 @@ class DrawerViewModel @Inject constructor(
     private fun toggleBoardsExpanded() {
         boardsExpanded = !boardsExpanded
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.EXPAND_BOARDS.name, boardsExpanded)
+            putBoolean(PreferencesKeys.EXPAND_BOARDS, boardsExpanded)
             apply()
         }
     }
@@ -81,7 +81,7 @@ class DrawerViewModel @Inject constructor(
     private fun toggleLabelsExpanded() {
         labelsExpanded = !labelsExpanded
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.EXPAND_LABELS.name, labelsExpanded)
+            putBoolean(PreferencesKeys.EXPAND_LABELS, labelsExpanded)
             apply()
         }
     }

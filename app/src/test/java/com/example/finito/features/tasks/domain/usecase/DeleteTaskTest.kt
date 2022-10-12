@@ -1,11 +1,11 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.util.Priority
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -112,7 +112,7 @@ class DeleteTaskTest {
             with(fakeTaskRepository.findTasksByBoard(it)) {
                 for (i in 0..size - 2) {
                     assertThat(
-                        this[i].boardPosition + 1 == this[i+1].boardPosition
+                        this[i].boardPosition!! + 1 == this[i+1].boardPosition
                     ).isTrue()
                 }
             }

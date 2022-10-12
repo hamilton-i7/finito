@@ -9,11 +9,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.core.di.PreferencesModule
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.presentation.Screen
+import com.example.finito.core.presentation.util.PreferencesKeys
 import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -78,7 +78,7 @@ class BoardViewModel @Inject constructor(
         private set
 
     var showCompletedTasks by mutableStateOf(preferences.getBoolean(
-        PreferencesModule.TAG.SHOW_COMPLETED_TASKS.name,
+        PreferencesKeys.SHOW_COMPLETED_TASKS,
         true
     )); private set
 
@@ -689,7 +689,7 @@ class BoardViewModel @Inject constructor(
     private fun onShowCompletedTasksChange() {
         showCompletedTasks = !showCompletedTasks
         with(preferences.edit()) {
-            putBoolean(PreferencesModule.TAG.SHOW_COMPLETED_TASKS.name, showCompletedTasks)
+            putBoolean(PreferencesKeys.SHOW_COMPLETED_TASKS, showCompletedTasks)
             apply()
         }
     }

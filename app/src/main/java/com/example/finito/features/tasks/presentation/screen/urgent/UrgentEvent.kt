@@ -1,7 +1,7 @@
 package com.example.finito.features.tasks.presentation.screen.urgent
 
 import androidx.annotation.StringRes
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task

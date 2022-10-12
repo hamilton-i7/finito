@@ -1,6 +1,5 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
 import com.example.finito.features.boards.domain.entity.Board
@@ -8,6 +7,7 @@ import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.util.Priority
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -88,14 +88,14 @@ class FindUrgentTasksTest {
 
     @Test
     fun `Should return urgent tasks when asked`() = runTest {
-        val tasks = findUrgentTasks().first().values.flatten()
+        val tasks = findUrgentTasks().data.first().values.flatten()
         assertThat(tasks).isNotEmpty()
         assertThat(tasks.all { it.task.priority == Priority.URGENT }).isTrue()
     }
 
     @Test
     fun `Should return tasks grouped by date descending when asked`() = runTest {
-        val dates = findUrgentTasks().first().keys
+        val dates = findUrgentTasks().data.first().keys
         assertThat(dates).isNotEmpty()
 
         for (i in 0..dates.size - 2) {
@@ -107,7 +107,7 @@ class FindUrgentTasksTest {
 
     @Test
     fun `Should return urgent tasks sorted by date & time descending when asked`() = runTest {
-        val tasks = findUrgentTasks().first().values.flatten()
+        val tasks = findUrgentTasks().data.first().values.flatten()
         assertThat(tasks).isNotEmpty()
 
         for (i in 0..tasks.size - 2) {

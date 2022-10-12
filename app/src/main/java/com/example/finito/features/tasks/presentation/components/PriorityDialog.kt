@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.finito.R
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.presentation.components.FinitoDivider
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.ui.theme.FinitoTheme

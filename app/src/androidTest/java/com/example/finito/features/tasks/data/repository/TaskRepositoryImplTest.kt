@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.finito.core.data.FinitoDatabase
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.tasks.domain.entity.Task

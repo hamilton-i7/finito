@@ -1,6 +1,6 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.subtasks.domain.repository.SubtaskRepository

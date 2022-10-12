@@ -1,6 +1,5 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.ResourceException
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
@@ -8,6 +7,7 @@ import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.util.Priority
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -165,7 +165,7 @@ class UpdateTaskTest {
             // [0, 1, 2, 3...]
             for (i in 0..startBoardTasks.size - 2) {
                 assertThat(
-                    startBoardTasks[i].boardPosition + 1 == startBoardTasks[i+1].boardPosition
+                    startBoardTasks[i].boardPosition!! + 1 == startBoardTasks[i+1].boardPosition
                 ).isTrue()
             }
 
@@ -173,7 +173,7 @@ class UpdateTaskTest {
             // [0, 1, 2, 3...]
             for (i in 0..endBoardTasks.size - 2) {
                 assertThat(
-                    endBoardTasks[i].boardPosition + 1 == endBoardTasks[i+1].boardPosition
+                    endBoardTasks[i].boardPosition!! + 1 == endBoardTasks[i+1].boardPosition
                 ).isTrue()
             }
 
@@ -204,7 +204,7 @@ class UpdateTaskTest {
 
             for (i in 0..size - 2) {
                 assertThat(
-                    this[i].boardPosition + 1 == this[i+1].boardPosition
+                    this[i].boardPosition!! + 1 == this[i+1].boardPosition
                 ).isTrue()
             }
         }

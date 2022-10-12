@@ -1,6 +1,5 @@
 package com.example.finito.features.tasks.domain.usecase
 
-import com.example.finito.core.domain.Priority
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.features.boards.data.repository.FakeBoardLabelRepository
 import com.example.finito.features.boards.data.repository.FakeBoardRepository
@@ -9,6 +8,7 @@ import com.example.finito.features.labels.data.repository.FakeLabelRepository
 import com.example.finito.features.subtasks.data.repository.FakeSubtaskRepository
 import com.example.finito.features.tasks.data.repository.FakeTaskRepository
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.util.Priority
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -84,14 +84,14 @@ class FindTodayTasksTest {
     @Test
     fun `Should return today's tasks when asked`() = runTest {
         val today = LocalDate.now()
-        val tasks = findTodayTasks().first()
+        val tasks = findTodayTasks().data.first()
         assertThat(tasks).isNotEmpty()
         assertThat(tasks.all { it.task.date != null && it.task.date!!.isEqual(today) }).isTrue()
     }
 
     @Test
     fun `Should return today's tasks sorted by time descending when asked`() = runTest {
-        val tasks = findTodayTasks().first()
+        val tasks = findTodayTasks().data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task
@@ -104,7 +104,7 @@ class FindTodayTasksTest {
 
     @Test
     fun `Should return today's tasks sorted by most urgent & time descending when asked for MOST_URGENT`() = runTest {
-        val tasks = findTodayTasks(SortingOption.Priority.MostUrgent).first()
+        val tasks = findTodayTasks(SortingOption.Priority.MostUrgent).data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task
@@ -123,7 +123,7 @@ class FindTodayTasksTest {
 
     @Test
     fun `Should return today's tasks sorted by least urgent & time descending when asked for LEAST_URGENT`() = runTest {
-        val tasks = findTodayTasks(SortingOption.Priority.LeastUrgent).first()
+        val tasks = findTodayTasks(SortingOption.Priority.LeastUrgent).data.first()
 
         for (i in 0..tasks.size - 2) {
             val currentTask = tasks[i].task

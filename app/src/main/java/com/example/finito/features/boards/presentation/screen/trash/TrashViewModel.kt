@@ -8,8 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.core.di.PreferencesModule
 import com.example.finito.core.domain.Result
+import com.example.finito.core.presentation.util.PreferencesKeys
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
@@ -33,7 +33,7 @@ class TrashViewModel @Inject constructor(
         private set
 
     val gridLayout = preferences.getBoolean(
-        PreferencesModule.TAG.GRID_LAYOUT.name,
+        PreferencesKeys.GRID_LAYOUT,
         true
     )
 

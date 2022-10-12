@@ -54,7 +54,7 @@ class TaskReminderAlarmReceiver : BroadcastReceiver() {
             addNextIntentWithParentStack(editTaskIntent)
             getPendingIntent(
                 RequestCodes.EDIT_TASK_PENDING_INTENT_REQUEST_CODE + task.taskId,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_ONE_SHOT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
         val markTaskAsCompletedIntent = Intent(

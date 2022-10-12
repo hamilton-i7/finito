@@ -5,11 +5,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -36,7 +37,7 @@ fun FinitoTextField(
     ),
     keyboardActions: KeyboardActions = KeyboardActions()
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
         readOnly = readOnly,
@@ -51,7 +52,9 @@ fun FinitoTextField(
         colors = colors,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = Modifier.fillMaxWidth().then(modifier)
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier)
     )
 }
 
@@ -60,29 +63,37 @@ object FinitoTextFieldDefaults {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun textFieldColors() = TextFieldDefaults.outlinedTextFieldColors(
-        containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+    fun textFieldColors() = TextFieldDefaults.textFieldColors(
+        containerColor = finitoColors.surfaceColorAtElevation(8.dp),
+        unfocusedIndicatorColor = Color.Transparent,
+        focusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent,
     )
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun clickableTextFieldColors(enabled: Boolean = true): TextFieldColors {
         return if (enabled) {
-            TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = finitoColors.surfaceColorAtElevation(1.dp),
+            TextFieldDefaults.textFieldColors(
+                containerColor = finitoColors.surfaceColorAtElevation(8.dp),
                 disabledTextColor = finitoColors.onSurface,
                 disabledLeadingIconColor = finitoColors.onSurfaceVariant,
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant,
                 disabledPlaceholderColor = finitoColors.onSurfaceVariant,
                 disabledLabelColor = finitoColors.onSurfaceVariant,
-                disabledBorderColor = finitoColors.outline,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
             )
         } else {
-            TextFieldDefaults.outlinedTextFieldColors(
+            TextFieldDefaults.textFieldColors(
                 containerColor = finitoColors.surfaceColorAtElevation(1.dp),
                 disabledTextColor = finitoColors.onSurface.copy(alpha = DisabledAlpha),
                 disabledLeadingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
                 disabledTrailingIconColor = finitoColors.onSurfaceVariant.copy(alpha = DisabledAlpha),
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
             )
         }
     }

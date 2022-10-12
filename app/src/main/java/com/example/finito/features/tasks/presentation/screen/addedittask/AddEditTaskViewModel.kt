@@ -324,9 +324,10 @@ class AddEditTaskViewModel @Inject constructor(
             set(Calendar.DAY_OF_YEAR, localDateTime.dayOfYear)
             set(Calendar.HOUR_OF_DAY, localDateTime.hour)
             set(Calendar.MINUTE, localDateTime.minute)
+            set(Calendar.SECOND, 0)
         }
-        alarmManager.setExact(
-            AlarmManager.RTC,
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
             pendingIntent
         )

@@ -173,26 +173,33 @@ fun AddEditTaskScreen(
                         }
                     }
                 }
-                AddEditTaskViewModel.Event.CheckNotificationsPermission -> {
-                    if (postNotificationsPermissionState == null) return@collect
+            }
+        }
+    }
 
-                    when (postNotificationsPermissionState.status) {
-                        PermissionStatus.Granted -> {
-                            addEditTaskViewModel.onEvent(AddEditTaskEvent.AllowReminder)
-                        }
-                        is PermissionStatus.Denied -> {
-                            // If the user has denied the permission but the rationale can be shown,
-                            // then gently explain why the app requires this permission
-                            if (postNotificationsPermissionState.status.shouldShowRationale) {
-                                addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
-                                    type = AddEditTaskEvent.DialogType.NotificationsPermission
-                                ))
-                            } else {
-                                postNotificationsPermissionState.launchPermissionRequest()
-                            }
-                        }
-                    }
+    LaunchedEffect(
+        key1 = postNotificationsPermissionState?.status,
+        key2 = addEditTaskViewModel.shouldCheckPostNotificationsPermission
+    ) {
+        if (postNotificationsPermissionState == null) return@LaunchedEffect
+        if (!addEditTaskViewModel.shouldCheckPostNotificationsPermission) return@LaunchedEffect
+
+        when (postNotificationsPermissionState.status) {
+            PermissionStatus.Granted -> {
+                addEditTaskViewModel.onEvent(AddEditTaskEvent.AllowReminder)
+            }
+            is PermissionStatus.Denied -> {
+                if (!addEditTaskViewModel.firstTimeAskingNotificationsPermission) return@LaunchedEffect
+                // If the user has denied the permission but the rationale can be shown,
+                // then gently explain why the app requires this permission
+                if (postNotificationsPermissionState.status.shouldShowRationale) {
+                    addEditTaskViewModel.onEvent(AddEditTaskEvent.ShowDialog(
+                        type = AddEditTaskEvent.DialogType.NotificationsPermission
+                    ))
+                } else {
+                    postNotificationsPermissionState.launchPermissionRequest()
                 }
+                addEditTaskViewModel.onEvent(AddEditTaskEvent.SkipNotificationsPermissionCheck)
             }
         }
     }

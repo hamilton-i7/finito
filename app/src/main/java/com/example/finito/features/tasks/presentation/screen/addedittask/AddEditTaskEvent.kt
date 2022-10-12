@@ -43,6 +43,8 @@ sealed class AddEditTaskEvent {
 
     object AllowReminder : AddEditTaskEvent()
 
+    object SkipNotificationsPermissionCheck : AddEditTaskEvent()
+
     sealed class DialogType {
         object Date : DialogType()
 

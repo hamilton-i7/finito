@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,8 +94,13 @@ class AddEditTaskViewModel @Inject constructor(
         else
             null
 
-    private var shouldCheckPostNotificationsPermission =
+    var shouldCheckPostNotificationsPermission by mutableStateOf(false)
+        private set
+
+    var firstTimeAskingNotificationsPermission by mutableStateOf(
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    ); private set
+
 
     init {
         fetchTask()
@@ -127,21 +131,17 @@ class AddEditTaskViewModel @Inject constructor(
             is AddEditTaskEvent.ChangeSubtaskName -> onChangeSubtaskName(event.id, event.name)
             AddEditTaskEvent.RefreshTask -> fetchTask()
             AddEditTaskEvent.AllowReminder -> onAllowReminder()
+            AddEditTaskEvent.SkipNotificationsPermissionCheck -> firstTimeAskingNotificationsPermission = false
         }
     }
 
     private fun onAllowReminder() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            postNotificationsPermissionGranted!!.value = true
-        }
+        postNotificationsPermissionGranted!!.value = true
     }
 
     private fun onChangeDate(date: LocalDate?) = viewModelScope.launch {
         selectedDate = date
-        if (date != null && shouldCheckPostNotificationsPermission) {
-            shouldCheckPostNotificationsPermission = false
-            fireEvents(Event.CheckNotificationsPermission)
-        }
+        shouldCheckPostNotificationsPermission = date != null && firstTimeAskingNotificationsPermission
     }
 
     private fun onChangeSubtaskName(stateId: Int, name: String) {
@@ -311,7 +311,6 @@ class AddEditTaskViewModel @Inject constructor(
             application.applicationContext,
             TaskReminderAlarmReceiver::class.java
         ).apply {
-            Log.d("AddEditTaskViewModel", "TASK ID FROM VM: ${task.taskId}")
             putExtra(TaskReminderAlarmReceiver.EXTRA_TASK, task)
         }
         val pendingIntent = PendingIntent.getBroadcast(
@@ -447,8 +446,6 @@ class AddEditTaskViewModel @Inject constructor(
         data class ShowError(@StringRes val error: Int) : Event()
 
         object NavigateBack : Event()
-
-        object CheckNotificationsPermission : Event()
 
         sealed class Snackbar(
             @StringRes open val message: Int,

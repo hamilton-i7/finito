@@ -47,8 +47,6 @@ fun AddEditBoardScreen(
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
     onNavigateBackTwice: () -> Unit = {},
-//    onNavigateToArchive: () -> Unit = {},
-//    onNavigateToTrash: () -> Unit = {},
     onNavigateToBoardFlow: (boardId: Int) -> Unit = {},
     onNavigateToBoard: (boardId: Int, BoardState) -> Unit = {_, _ -> },
 ) {
@@ -94,12 +92,6 @@ fun AddEditBoardScreen(
                         type = AddEditBoardEvent.DialogType.Error(message = event.error)
                     ))
                 }
-//                AddEditBoardViewModel.Event.NavigateToTrash -> onNavigateToTrash()
-//                AddEditBoardViewModel.Event.NavigateToArchive -> onNavigateToArchive()
-//                AddEditBoardViewModel.Event.NavigateToHome -> onNavigateToHome()
-//                AddEditBoardViewModel.Event.NavigateToLabel -> onNavigateToLabel(
-//                    addEditBoardViewModel.labelOriginId!!
-//                )
                 AddEditBoardViewModel.Event.NavigateBackTwice -> onNavigateBackTwice()
             }
         }

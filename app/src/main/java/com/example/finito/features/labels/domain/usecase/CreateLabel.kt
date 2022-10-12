@@ -1,6 +1,7 @@
 package com.example.finito.features.labels.domain.usecase
 
-import com.example.finito.core.domain.util.ResourceException
+import com.example.finito.core.domain.ErrorMessages
+import com.example.finito.core.domain.Result
 import com.example.finito.features.labels.domain.entity.Label
 import com.example.finito.features.labels.domain.repository.LabelRepository
 
@@ -8,11 +9,12 @@ class CreateLabel(
     private val repository: LabelRepository
 ) {
 
-    @Throws(ResourceException::class)
-    suspend operator fun invoke(label: Label) {
+    suspend operator fun invoke(label: Label): Result<Unit, String> {
         if (label.name.isBlank()) {
-            throw ResourceException.EmptyException
+            return Result.Error(message = ErrorMessages.EMPTY_NAME)
         }
-        return repository.create(label.copy(name = label.name.trim()))
+        return Result.Success(
+            data = repository.create(label.copy(name = label.name.trim()))
+        )
     }
 }

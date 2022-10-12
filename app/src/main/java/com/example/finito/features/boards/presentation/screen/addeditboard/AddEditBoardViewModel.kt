@@ -44,9 +44,6 @@ class AddEditBoardViewModel @Inject constructor(
     var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
         private set
 
-    var labelOriginId by mutableStateOf<Int?>(null)
-        private set
-
     var selectedLabels by mutableStateOf<List<SimpleLabel>>(emptyList())
         private set
 
@@ -69,7 +66,6 @@ class AddEditBoardViewModel @Inject constructor(
         fetchBoard()
         fetchLabels()
         fetchBoardState()
-        fetchFromLabelState()
     }
 
     fun onEvent(event: AddEditBoardEvent) {
@@ -227,8 +223,15 @@ class AddEditBoardViewModel @Inject constructor(
             board = Board(name = nameState.value),
             labels = selectedLabels
         )
-        boardUseCases.createBoard(board).also {
-            fireEvents(Event.NavigateToCreatedBoard(it))
+        when (val result = boardUseCases.createBoard(board)) {
+            is Result.Error -> {
+                fireEvents(Event.ShowError(
+                    error = R.string.create_board_error
+                ))
+            }
+            is Result.Success -> {
+                fireEvents(Event.NavigateToCreatedBoard(result.data))
+            }
         }
     }
 
@@ -290,13 +293,6 @@ class AddEditBoardViewModel @Inject constructor(
                 BoardState.DELETED.name -> BoardState.DELETED
                 else -> BoardState.ACTIVE
             }
-        }
-    }
-
-    private fun fetchFromLabelState() {
-        savedStateHandle.get<Int>(Screen.LABEL_ID_ARGUMENT)?.let { labelId ->
-            if (labelId == -1) return
-            labelOriginId = labelId
         }
     }
 

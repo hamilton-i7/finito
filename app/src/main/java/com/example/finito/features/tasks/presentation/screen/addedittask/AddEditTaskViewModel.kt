@@ -314,7 +314,7 @@ class AddEditTaskViewModel @Inject constructor(
             application.applicationContext,
             TaskReminderAlarmReceiver::class.java
         ).apply {
-            putExtra(TaskReminderAlarmReceiver.EXTRA_TASK, task)
+            putExtra(TaskReminderAlarmReceiver.EXTRA_TASK_ID, task.taskId)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             application.applicationContext,

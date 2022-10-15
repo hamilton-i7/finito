@@ -1,11 +1,9 @@
 package com.example.finito.features.tasks.domain.entity
 
-import android.os.Parcelable
 import androidx.room.*
 import com.example.finito.core.domain.util.normalize
 import com.example.finito.features.boards.domain.entity.Board
 import com.example.finito.features.tasks.domain.util.Priority
-import kotlinx.parcelize.Parcelize
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -27,7 +25,6 @@ import java.time.LocalTime
         )
     ]
 )
-@Parcelize
 data class Task(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "task_id") val taskId: Int = 0,
@@ -44,7 +41,7 @@ data class Task(
     val completedAt: LocalDateTime? = null,
     @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
     val createdAt: LocalDateTime = LocalDateTime.now(),
-) : Parcelable {
+) {
     companion object {
         val dummyTasks = ('A'..'Z').mapIndexed { index, c ->
             Task(

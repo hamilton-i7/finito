@@ -114,7 +114,7 @@ class AddEditTaskViewModel @Inject constructor(
         when (event) {
             is AddEditTaskEvent.ChangeBoard -> selectedBoard = event.board
             is AddEditTaskEvent.ChangeDate -> onChangeDate(event.date)
-            is AddEditTaskEvent.ChangeTime -> selectedTime = event.time
+            is AddEditTaskEvent.ChangeTime -> onChangeTime(event.time)
             is AddEditTaskEvent.ChangeName -> nameState = nameState.copy(value = event.name)
             is AddEditTaskEvent.ChangeDescription -> {
                 descriptionState = descriptionState.copy(value = event.description)
@@ -139,9 +139,14 @@ class AddEditTaskViewModel @Inject constructor(
         postNotificationsPermissionGranted!!.value = true
     }
 
-    private fun onChangeDate(date: LocalDate?) = viewModelScope.launch {
+    private fun onChangeDate(date: LocalDate?) {
         selectedDate = date
         shouldCheckPostNotificationsPermission = date != null && firstTimeAskingNotificationsPermission
+    }
+
+    private fun onChangeTime(time: LocalTime?) {
+        selectedTime = time
+        shouldCheckPostNotificationsPermission = time != null && firstTimeAskingNotificationsPermission
     }
 
     private fun onChangeSubtaskName(stateId: Int, name: String) {
@@ -161,35 +166,28 @@ class AddEditTaskViewModel @Inject constructor(
     private fun onToggleCompleted() = viewModelScope.launch {
         if (task == null) return@launch
         with(task!!) {
-            boardUseCases.findOneBoard(task.boardId).let {
-                if (it is Result.Error) return@launch
-                val board = (it as Result.Success).data
-                val uncompletedTasksAmount = board.tasks.count { task -> !task.task.completed }
-                val completed = !task.completed
-                val updatedTask = copy(task = task.copy(
-                    completed = completed,
-                    completedAt = if (completed) LocalDateTime.now() else null,
-                    boardPosition = if (completed) null else uncompletedTasksAmount
-                ))
-
-                when (taskUseCases.updateTask(updatedTask)) {
-                    is Result.Error -> {
-                        fireEvents(Event.ShowError(
-                            error = R.string.update_task_error
-                        ))
-                    }
-                    is Result.Success -> {
-                        fireEvents(
-                            Event.Snackbar.TaskStateChanged(
-                                message = if (completed)
-                                    R.string.task_marked_as_completed
-                                else
-                                    R.string.task_marked_as_uncompleted,
-                                task = this@with
-                            ),
-                            Event.NavigateBack
-                        )
-                    }
+            val completed = !task.completed
+            val updatedTask = copy(task = task.copy(
+                completed = completed,
+                completedAt = if (completed) LocalDateTime.now() else null,
+            ))
+            when (taskUseCases.toggleTaskCompleted(updatedTask)) {
+                is Result.Error -> {
+                    fireEvents(Event.ShowError(
+                        error = R.string.update_task_error
+                    ))
+                }
+                is Result.Success -> {
+                    fireEvents(
+                        Event.Snackbar.TaskStateChanged(
+                            message = if (completed)
+                                R.string.task_marked_as_completed
+                            else
+                                R.string.task_marked_as_uncompleted,
+                            task = this@with
+                        ),
+                        Event.NavigateBack
+                    )
                 }
             }
         }
@@ -227,7 +225,7 @@ class AddEditTaskViewModel @Inject constructor(
     private fun onEditTask() = viewModelScope.launch {
         if (task == null) return@launch
         with(task!!) {
-            TaskWithSubtasks(
+            val updatedTask = TaskWithSubtasks(
                 task = task.copy(
                     boardId = selectedBoard!!.boardId,
                     name = nameState.value,
@@ -244,19 +242,18 @@ class AddEditTaskViewModel @Inject constructor(
                     }
                     subtasks.first { subtask -> subtask.subtaskId == it.id }.copy(name = it.value)
                 }
-            ).let {
-                when (taskUseCases.updateTask(it)) {
-                    is Result.Error -> {
-                        fireEvents(
-                            Event.ShowError(
-                                error = R.string.update_task_error
-                            )
+            )
+            when (taskUseCases.updateTask(updatedTask)) {
+                is Result.Error -> {
+                    fireEvents(
+                        Event.ShowError(
+                            error = R.string.update_task_error
                         )
-                    }
-                    is Result.Success -> {
-                        // TODO 13/10/2022: Create reminders if need be
-                        fireEvents(Event.NavigateBack)
-                    }
+                    )
+                }
+                is Result.Success -> {
+                    onUpdateTaskReminder(updatedTask.task)
+                    fireEvents(Event.NavigateBack)
                 }
             }
         }
@@ -334,6 +331,42 @@ class AddEditTaskViewModel @Inject constructor(
             calendar.timeInMillis,
             pendingIntent
         )
+    }
+
+    private fun onUpdateTaskReminder(task: Task) {
+        val alarmManager = application.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(
+            application.applicationContext,
+            TaskReminderAlarmReceiver::class.java
+        ).apply {
+            putExtra(TaskReminderAlarmReceiver.EXTRA_TASK_ID, task.taskId)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            application.applicationContext,
+            RequestCodes.ALARM_REQUEST_CODE + task.taskId,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or Intent.FILL_IN_DATA
+        )
+        if (!canCreateReminder()) {
+            alarmManager.cancel(pendingIntent)
+            return
+        }
+
+        val localDateTime = LocalDateTime.of(task.date, task.time ?: LocalTime.MIDNIGHT)
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_YEAR, localDateTime.dayOfYear)
+            set(Calendar.HOUR_OF_DAY, localDateTime.hour)
+            set(Calendar.MINUTE, localDateTime.minute)
+            set(Calendar.SECOND, 0)
+        }
+        with(alarmManager) {
+            cancel(pendingIntent)
+            setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
+        }
     }
 
     private fun onCreateSubtask() {

@@ -253,7 +253,10 @@ class AddEditTaskViewModel @Inject constructor(
                             )
                         )
                     }
-                    is Result.Success -> fireEvents(Event.NavigateBack)
+                    is Result.Success -> {
+                        // TODO 13/10/2022: Create reminders if need be
+                        fireEvents(Event.NavigateBack)
+                    }
                 }
             }
         }

@@ -17,7 +17,14 @@ fun TimePickerDialog(
     onDismissClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val time = initialTime ?: LocalTime.now()
+    val time = initialTime ?: LocalTime.now().run {
+        // Set default time to be either o'clock or half hour
+        if (minute > 30) {
+            LocalTime.of(plusHours(1).hour, 0)
+        } else {
+            LocalTime.of(hour, 30)
+        }
+    }
     val picker = MaterialTimePicker.Builder()
         .setTimeFormat(if (is24HourFormat(context)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H)
         .setHour(time.hour)

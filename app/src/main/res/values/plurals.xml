@@ -4,4 +4,8 @@
         <item quantity="one">+%d subtask</item>
         <item quantity="other">+%d subtasks</item>
     </plurals>
+    <plurals name="plural_task_due">
+        <item quantity="one">%d task due to complete</item>
+        <item quantity="other">%d tasks due to complete</item>
+    </plurals>
 </resources>

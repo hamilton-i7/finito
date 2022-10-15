@@ -33,6 +33,10 @@ class MarkTaskAsCompletedReceiver : BroadcastReceiver() {
         val taskId = intent.getIntExtra(EXTRA_TASK_ID, 0)
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val activeNotifications = notificationManager.activeNotifications.filter {
+            it.notification.group == TaskReminderAlarmReceiver.GROUP_KEY && it.id != TaskReminderAlarmReceiver.SUMMARY_NOTIFICATION_ID
+        }
+
         scope.launch(Dispatchers.Default) {
             try {
                 when (val result = taskUseCases.findOneTask(taskId)) {
@@ -52,6 +56,12 @@ class MarkTaskAsCompletedReceiver : BroadcastReceiver() {
             } finally {
                 pendingResult.finish()
             }
+        }
+        if (activeNotifications.size == 1) {
+            notificationManager.cancel(
+                TaskReminderAlarmReceiver.TAG,
+                TaskReminderAlarmReceiver.SUMMARY_NOTIFICATION_ID
+            )
         }
         notificationManager.cancel(TaskReminderAlarmReceiver.TAG, taskId)
     }

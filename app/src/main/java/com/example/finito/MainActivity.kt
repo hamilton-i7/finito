@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -20,11 +21,12 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
+
         DynamicColors.applyToActivityIfAvailable(this)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setupDeletePastWeekBoardsWorker()
-        // TODO 11/10/2022: Create Splash screen
         setContent {
             FinitoTheme {
                 App { finish() }

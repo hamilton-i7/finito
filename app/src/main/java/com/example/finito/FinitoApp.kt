@@ -38,7 +38,11 @@ class FinitoApp : Application(), Configuration.Provider {
             TaskReminderAlarmReceiver.TASK_REMINDER_CHANNEL_ID,
             name,
             importance
-        ).apply { this.description = description }
+        ).apply {
+            this.description = description
+            enableLights(true)
+            enableVibration(true)
+        }
         val notificationManager: NotificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)

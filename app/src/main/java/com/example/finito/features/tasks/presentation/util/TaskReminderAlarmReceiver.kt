@@ -6,18 +6,19 @@ import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
+import android.graphics.Typeface
 import android.os.Build
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
 import com.example.finito.MainActivity
 import com.example.finito.R
-import com.example.finito.core.presentation.NOTIFICATION_LED_OFF_MS
-import com.example.finito.core.presentation.NOTIFICATION_LED_ON_MS
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.util.RequestCodes
 import com.example.finito.features.tasks.domain.entity.Task
-import com.example.finito.features.tasks.domain.util.formatted
 
 class TaskReminderAlarmReceiver : BroadcastReceiver() {
 
@@ -25,6 +26,8 @@ class TaskReminderAlarmReceiver : BroadcastReceiver() {
         const val TASK_REMINDER_CHANNEL_ID = "TASK_REMINDER_CHANNEL_ID"
         const val EXTRA_TASK = "TASK_EXTRA"
         const val TAG = "TaskReminderAlarmReceiver"
+        const val GROUP_KEY = "TASK_REMINDERS_GROUP"
+        const val SUMMARY_NOTIFICATION_ID = 0
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -39,10 +42,6 @@ class TaskReminderAlarmReceiver : BroadcastReceiver() {
             intent.getParcelableExtra(EXTRA_TASK, Task::class.java)!!
         } else {
             intent.getParcelableExtra(EXTRA_TASK)!!
-        }
-        val actionColor = when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
-            Configuration.UI_MODE_NIGHT_YES -> context.getColor(R.color.md_theme_dark_primary)
-            else -> context.getColor(R.color.md_theme_light_primary)
         }
         val editTaskIntent = Intent(
             Intent.ACTION_VIEW,
@@ -69,29 +68,58 @@ class TaskReminderAlarmReceiver : BroadcastReceiver() {
             markTaskAsCompletedIntent,
             PendingIntent.FLAG_IMMUTABLE or Intent.FILL_IN_DATA
         )
-        val notification = NotificationCompat.Builder(context, TASK_REMINDER_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(task.name)
-            .setContentText(task.time!!.formatted())
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setContentIntent(editTaskPendingIntent)
-            .setLights(
-                context.getColor(R.color.md_theme_light_primary),
-                NOTIFICATION_LED_ON_MS,
-                NOTIFICATION_LED_OFF_MS
-            )
-            .setColor(actionColor)
-            .addAction(
-                R.drawable.ic_baseline_done_all_24,
+        val name = SpannableStringBuilder(task.name).apply {
+            setSpan(Typeface.BOLD, 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        val description = task.description?.let {
+            SpannableString(it).apply {
+                setSpan(
+                    ForegroundColorSpan(context.getColor(R.color.md_theme_light_outline)),
+                    0,
+                    length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
+        }
+
+        val taskNotification = NotificationCompat.Builder(context, TASK_REMINDER_CHANNEL_ID).apply {
+            setSmallIcon(R.drawable.ic_round_done_all_24)
+            setContentTitle(name)
+            setContentIntent(editTaskPendingIntent)
+            addAction(
+                R.drawable.ic_round_done_all_24,
                 context.getString(R.string.mark_as_completed),
                 markTaskAsCompletedPendingIntent
             )
-            .setAutoCancel(true)
-            .let {
-                if (task.description != null)
-                    it.setStyle(NotificationCompat.BigTextStyle().bigText(task.description))
-                else it
-            }.build()
-        notificationManager.notify(TAG, task.taskId, notification)
+            setAutoCancel(true)
+            setCategory(NotificationCompat.CATEGORY_REMINDER)
+            if (description != null) {
+                setContentText(description)
+                setStyle(NotificationCompat.BigTextStyle().bigText(description))
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                color = context.getColor(R.color.md_theme_light_primary)
+            }
+            setGroup(GROUP_KEY)
+        }.build()
+        notificationManager.notify(TAG, task.taskId, taskNotification)
+
+        val summaryNotification = NotificationCompat.Builder(context, TASK_REMINDER_CHANNEL_ID).apply {
+            val activeNotifications = notificationManager.activeNotifications.filter {
+                it.notification.group == GROUP_KEY && it.id != SUMMARY_NOTIFICATION_ID
+            }
+            val summary = context.resources.getQuantityString(
+                R.plurals.plural_task_due,
+                activeNotifications.size,
+                activeNotifications.size
+            )
+
+            setSmallIcon(R.drawable.ic_round_done_all_24)
+            setStyle(NotificationCompat.InboxStyle().setSummaryText(summary))
+            setGroup(GROUP_KEY)
+            setGroupSummary(true)
+        }.build()
+
+        notificationManager.notify(TAG, SUMMARY_NOTIFICATION_ID, summaryNotification)
     }
 }

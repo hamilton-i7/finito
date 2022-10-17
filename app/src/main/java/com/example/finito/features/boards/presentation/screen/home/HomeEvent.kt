@@ -6,17 +6,11 @@ import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import org.burnoutcrew.reorderable.ItemPosition
 
 sealed class HomeEvent {
-    data class SortBoards(val sortingOption: SortingOption.Common?) : HomeEvent()
-
-    data class SelectFilter(val labelId: Int) : HomeEvent()
-
-    object RemoveFilters : HomeEvent()
+    data class SortBoards(val sortingOption: SortingOption.Common) : HomeEvent()
 
     data class ArchiveBoard(val board: BoardWithLabelsAndTasks) : HomeEvent()
 
     data class MoveBoardToTrash(val board: BoardWithLabelsAndTasks) : HomeEvent()
-
-    data class SearchBoards(val query: String) : HomeEvent()
 
     data class ReorderTasks(val from: ItemPosition, val to: ItemPosition) : HomeEvent()
 
@@ -24,11 +18,11 @@ sealed class HomeEvent {
 
     object ToggleLayout : HomeEvent()
 
-    data class ShowSearchBar(val show: Boolean) : HomeEvent()
-
     data class ShowCardMenu(val boardId: Int = 0, val show: Boolean) : HomeEvent()
 
     data class ShowDialog(val type: DialogType? = null) : HomeEvent()
+
+    object EnableSearch : HomeEvent()
 
     sealed class DialogType {
         data class Error(@StringRes val message: Int) : DialogType()

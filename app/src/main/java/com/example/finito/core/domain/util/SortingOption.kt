@@ -9,9 +9,10 @@ sealed class SortingOption(@StringRes val label: Int) {
         object NameZA : Common(R.string.z_a, name = "Z_A")
         object Newest : Common(R.string.newest, name = "NEWEST")
         object Oldest : Common(R.string.oldest, name = "OLDEST")
+        object Custom : Common(R.string.custom, name = "CUSTOM")
 
         companion object {
-            val Default = Newest
+            val Default = Custom
         }
     }
 
@@ -20,13 +21,6 @@ sealed class SortingOption(@StringRes val label: Int) {
         object LeastUrgent : Priority(R.string.least_urgent, name = "LEAST_URGENT")
     }
 }
-
-val commonSortingOptions = listOf(
-    SortingOption.Common.Newest,
-    SortingOption.Common.Oldest,
-    SortingOption.Common.NameAZ,
-    SortingOption.Common.NameZA
-)
 
 val prioritySortingOptions = listOf(
     SortingOption.Priority.MostUrgent,

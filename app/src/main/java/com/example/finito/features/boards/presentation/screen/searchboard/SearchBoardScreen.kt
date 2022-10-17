@@ -1,5 +1,6 @@
 package com.example.finito.features.boards.presentation.screen.searchboard
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
@@ -10,16 +11,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
+import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardCard
@@ -35,15 +42,30 @@ fun SearchBoardScreen(
     searchBoardViewModel: SearchBoardViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
 ) {
+    val focusManager = LocalFocusManager.current
     val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val hapticFeedback = LocalHapticFeedback.current
+    var performedFeedback by rememberSaveable { mutableStateOf(false) }
 
     BackHandler {
         if (searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT) {
             searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
                 mode = SearchBoardEvent.Mode.IDLE
             ))
+            return@BackHandler
         }
         onNavigateBack()
+    }
+
+    LaunchedEffect(searchBoardViewModel.mode) {
+        if (searchBoardViewModel.mode != SearchBoardEvent.Mode.SELECT) {
+            performedFeedback = false
+            return@LaunchedEffect
+        }
+        if (performedFeedback) return@LaunchedEffect
+
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+        performedFeedback = true
     }
 
     Scaffold(
@@ -73,20 +95,38 @@ fun SearchBoardScreen(
                                     searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(it))
                                 }
                             ),
-                            scrollBehavior = topBarScrollBehavior
+                            scrollBehavior = topBarScrollBehavior,
+                            onBackClick = onNavigateBack
                         )
                     }
                 }
             }
         },
-        modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+        modifier = Modifier
+            .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+            .noRippleClickable { focusManager.clearFocus() }
     ) { innerPadding ->
         SearchBoardScreen(
             paddingValues = innerPadding,
             mode = searchBoardViewModel.mode,
             labels = searchBoardViewModel.labels,
             selectedLabels = searchBoardViewModel.labelFilters,
-            boards = searchBoardViewModel.boards
+            boards = searchBoardViewModel.boards,
+            onEnableSearchMode = {
+                searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
+                    mode = SearchBoardEvent.Mode.SEARCH
+                ))
+                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
+            },
+            onEnableSelectMode = {
+                searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
+                    mode = SearchBoardEvent.Mode.SELECT
+                ))
+                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
+            },
+            onSelectLabel = {
+                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
+            }
         )
     }
 }
@@ -106,8 +146,16 @@ private fun SearchBoardScreen(
     onMenuItemClick: (
         board: BoardWithLabelsAndTasks,
         option: ActiveBoardCardMenuOption,
-    ) -> Unit = { _, _ -> }
+    ) -> Unit = { _, _ -> },
+    onEnableSelectMode: (SimpleLabel) -> Unit = {},
+    onEnableSearchMode: (SimpleLabel) -> Unit = {},
+    onSelectLabel: (SimpleLabel) -> Unit = {},
 ) {
+    val configuration = LocalConfiguration.current
+    val minSize = when (configuration.orientation) {
+        Configuration.ORIENTATION_LANDSCAPE -> 150.dp
+        else -> 120.dp
+    }
     val selectedLabelsMap = selectedLabels.groupBy { it.labelId }
     val options = listOf(
         ActiveBoardCardMenuOption.Archive,
@@ -126,7 +174,7 @@ private fun SearchBoardScreen(
                     }
                 } else {
                     LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 96.dp),
+                        columns = GridCells.Adaptive(minSize),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -136,6 +184,17 @@ private fun SearchBoardScreen(
                             SelectableLabel(
                                 label,
                                 selected = selectedLabelsMap[label.labelId] != null,
+                                onClick = onClick@{
+                                    if (mode == SearchBoardEvent.Mode.SELECT) {
+                                        onSelectLabel(label)
+                                        return@onClick
+                                    }
+                                    onEnableSearchMode(label)
+                                },
+                                onLongClick = onLongClick@{
+                                    if (mode == SearchBoardEvent.Mode.SELECT) return@onLongClick
+                                    onEnableSelectMode(label)
+                                }
                             )
                         }
                     }

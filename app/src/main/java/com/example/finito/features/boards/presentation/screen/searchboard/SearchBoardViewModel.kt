@@ -68,6 +68,9 @@ class SearchBoardViewModel @Inject constructor(
 
     private fun onChangeMode(mode: SearchBoardEvent.Mode) {
         this.mode = mode
+        if (mode == SearchBoardEvent.Mode.IDLE) {
+            labelFilters = emptyList()
+        }
     }
 
     private fun onConfirmSelectedLabels() {

@@ -1,10 +1,9 @@
 package com.example.finito.core.presentation.components.bars
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
@@ -22,7 +21,7 @@ fun DialogTopBar(
         navigationIcon = {
             IconButton(onClick = onCloseClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Close,
+                    painter = painterResource(id = R.drawable.close),
                     contentDescription = stringResource(id = R.string.close_dialog)
                 )
             }

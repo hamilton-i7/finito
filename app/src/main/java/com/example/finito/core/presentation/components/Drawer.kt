@@ -1,18 +1,17 @@
 package com.example.finito.core.presentation.components
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
@@ -24,29 +23,29 @@ import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 
 private data class NavigationItem(
-    val icon: ImageVector,
+    @DrawableRes val icon: Int,
     @StringRes val label: Int,
     val screen: Screen,
 )
 
 private val mainScreens = listOf(
     NavigationItem(
-        icon = Icons.Outlined.Home,
+        icon = R.drawable.home,
         label = R.string.home,
         screen = Screen.Home
     ),
     NavigationItem(
-        icon = Icons.Outlined.Today,
+        icon = R.drawable.today,
         label = R.string.today,
         screen = Screen.Today
     ),
     NavigationItem(
-        icon = Icons.Outlined.DateRange,
+        icon = R.drawable.plus_1_day,
         label = R.string.tomorrow,
         screen = Screen.Tomorrow
     ),
     NavigationItem(
-        icon = Icons.Outlined.LabelImportant,
+        icon = R.drawable.high_priority,
         label = R.string.urgent,
         screen = Screen.Urgent
     ),
@@ -54,12 +53,12 @@ private val mainScreens = listOf(
 
 private val otherScreens = listOf(
     NavigationItem(
-        icon = Icons.Outlined.Archive,
+        icon = R.drawable.archive,
         label = R.string.archive,
         screen = Screen.Archive
     ),
     NavigationItem(
-        icon = Icons.Outlined.Delete,
+        icon = R.drawable.trash,
         label = R.string.trash,
         screen = Screen.Trash
     ),
@@ -137,7 +136,7 @@ private fun DrawerContent(
 
             items(mainScreens) { screen ->
                 NavigationDrawerItem(
-                    icon = { Icon(imageVector = screen.icon, contentDescription = null) },
+                    icon = { Icon(painter = painterResource(id = screen.icon), contentDescription = null) },
                     label = { Text(text = stringResource(id = screen.label)) },
                     selected = isSelectedScreen(screen.screen.route),
                     onClick = { onStaticItemSelected(screen.screen.route) },
@@ -158,7 +157,12 @@ private fun DrawerContent(
                     val route = "${Screen.Board.prefix}/${board.boardId}"
 
                     NavigationDrawerItem(
-                        icon = { Icon(imageVector = Icons.Outlined.NoteAlt, contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.page),
+                                contentDescription = null
+                            )
+                        },
                         label = { Text(text = board.name) },
                         selected = isSelectedScreen(route),
                         onClick = { onBoardSelected(board.boardId) },
@@ -190,7 +194,12 @@ private fun DrawerContent(
                     val route = "${Screen.Label.prefix}/${label.labelId}"
 
                     NavigationDrawerItem(
-                        icon = { Icon(imageVector = Icons.Outlined.Label, contentDescription = null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.tag_window),
+                                contentDescription = null
+                            )
+                        },
                         label = { Text(text = label.name) },
                         selected = isSelectedScreen(route),
                         onClick = { onLabelSelected(label.labelId) },
@@ -209,7 +218,7 @@ private fun DrawerContent(
 
             items(otherScreens) { screen ->
                 NavigationDrawerItem(
-                    icon = { Icon(imageVector = screen.icon, contentDescription = null) },
+                    icon = { Icon(painter = painterResource(id = screen.icon), contentDescription = null) },
                     label = { Text(text = stringResource(id = screen.label)) },
                     selected = isSelectedScreen(screen.screen.route),
                     onClick = { onStaticItemSelected(screen.screen.route) },
@@ -250,14 +259,14 @@ private fun DrawerSectionHeader(
         badge = {
             if (expanded) {
                 Icon(
-                    imageVector = Icons.Outlined.ExpandLess,
+                    painter = painterResource(id = R.drawable.collapse_arrow),
                     contentDescription = hideContentDescription?.let {
                         stringResource(id = it)
                     }
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Outlined.ExpandMore,
+                    painter = painterResource(id = R.drawable.expand_arrow),
                     contentDescription = showContentDescription?.let {
                         stringResource(id = it)
                     }
@@ -277,7 +286,12 @@ private fun DrawerItemButton(
     onClick: () -> Unit,
 ) {
     NavigationDrawerItem(
-        icon = { Icon(imageVector = Icons.Outlined.Add, contentDescription = null) },
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.plus_math),
+                contentDescription = null
+            )
+        },
         label = { Text(text = stringResource(id = text)) },
         selected = false,
         onClick = onClick,

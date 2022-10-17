@@ -1,14 +1,12 @@
 package com.example.finito.core.presentation.components.textfields
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.features.tasks.domain.util.isCurrentYear
@@ -39,12 +37,12 @@ fun DateTextField(
         onClick = onClick,
         value = formattedDate,
         leadingIcon = {
-            Icon(imageVector = Icons.Outlined.CalendarToday, contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.calendar), contentDescription = null)
         },
         trailingIcon = {
             IconButton(onClick = onDateRemove, enabled = enabled) {
                 Icon(
-                    imageVector = Icons.Outlined.Close,
+                    painter = painterResource(id = R.drawable.close),
                     contentDescription = stringResource(id = R.string.remove_date)
                 )
             }

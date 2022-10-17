@@ -1,11 +1,9 @@
 package com.example.finito.core.presentation.components.bars
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.components.menu.FinitoMenu
@@ -28,7 +26,7 @@ fun <M: MenuOption> SmallTopBarWithMenu(
         navigationIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Menu,
+                    painter = painterResource(id = R.drawable.menu),
                     contentDescription = stringResource(id = R.string.open_menu)
                 )
             }
@@ -37,7 +35,7 @@ fun <M: MenuOption> SmallTopBarWithMenu(
             Box {
                 IconButton(onClick = onMoreOptionsClick) {
                     Icon(
-                        imageVector = Icons.Outlined.MoreVert,
+                        painter = painterResource(id = R.drawable.menu_vertical),
                         contentDescription = stringResource(id = R.string.more_options)
                     )
                 }

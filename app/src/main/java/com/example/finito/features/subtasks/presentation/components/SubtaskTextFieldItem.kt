@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -22,6 +19,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -73,7 +71,7 @@ fun SubtaskTextFieldItem(
                 modifier = Modifier.detectReorderAfterLongPress(reorderableState)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.DragIndicator,
+                    painter = painterResource(id = R.drawable.drag_reorder),
                     contentDescription = null
                 )
             }
@@ -84,7 +82,7 @@ fun SubtaskTextFieldItem(
             trailingIcon = {
                 IconButton(onClick = onRemoveSubtask) {
                     Icon(
-                        imageVector = Icons.Outlined.Close,
+                        painter = painterResource(id = R.drawable.close),
                         contentDescription = stringResource(id = R.string.remove_subtask)
                     )
                 }

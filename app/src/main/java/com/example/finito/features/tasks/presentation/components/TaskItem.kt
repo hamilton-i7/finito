@@ -7,9 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.DragIndicator
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,15 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.finito.R
-import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.presentation.util.preview.ThemePreviews
 import com.example.finito.features.tasks.domain.entity.Task
+import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.tasks.domain.util.isPast
 import com.example.finito.features.tasks.domain.util.toFormattedChipDate
 import com.example.finito.ui.theme.DisabledAlpha
@@ -82,7 +80,7 @@ fun TaskItem(
                         modifier = if (isSimpleTask) Modifier else Modifier.offset(y = (-12).dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Check,
+                            painter = painterResource(id = R.drawable.done),
                             contentDescription = stringResource(id = R.string.mark_as_uncompleted),
                             tint = if (enabled) finitoColors.primary
                             else finitoColors.primary.copy(alpha = DisabledAlpha),
@@ -247,7 +245,7 @@ fun TaskItem(
                 }
                 if (showDragIndicator && enabled) {
                     Icon(
-                        imageVector = Icons.Outlined.DragIndicator,
+                        painter = painterResource(id = R.drawable.drag_reorder),
                         contentDescription = stringResource(id = R.string.reorder_task)
                     )
                 }

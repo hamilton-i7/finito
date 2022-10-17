@@ -1,12 +1,11 @@
 package com.example.finito.features.labels.presentation.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
@@ -28,7 +27,7 @@ fun EditLabelDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
-            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+            Icon(painter = painterResource(id = R.drawable.edit), contentDescription = null)
         },
         title = { Text(text = stringResource(id = R.string.rename_label)) },
         text = {

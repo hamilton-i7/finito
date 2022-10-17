@@ -6,8 +6,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +17,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,14 +40,19 @@ import kotlinx.coroutines.flow.collectLatest
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditBoardScreen(
-    appViewModel: AppViewModel,
     createMode: Boolean,
-    onShowSnackbar: (message: Int, actionLabel: Int?, onActionClick: () -> Unit) -> Unit,
+    appViewModel: AppViewModel = hiltViewModel(),
     addEditBoardViewModel: AddEditBoardViewModel = hiltViewModel(),
+    previousRoute: String? = null,
     onNavigateBack: () -> Unit = {},
     onNavigateBackTwice: () -> Unit = {},
     onNavigateToBoardFlow: (boardId: Int) -> Unit = {},
     onNavigateToBoard: (boardId: Int, BoardState) -> Unit = {_, _ -> },
+    onShowSnackbar: (
+        message: Int,
+        actionLabel: Int?,
+        onActionClick: () -> Unit,
+    ) -> Unit = {_, _, _ -> },
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val focusManager = LocalFocusManager.current
@@ -93,6 +97,7 @@ fun AddEditBoardScreen(
                     ))
                 }
                 AddEditBoardViewModel.Event.NavigateBackTwice -> onNavigateBackTwice()
+                AddEditBoardViewModel.Event.NavigateBack -> onNavigateBack()
             }
         }
     }
@@ -183,7 +188,7 @@ fun AddEditBoardScreen(
             },
             onButtonClick = onButtonClick@{
                 if (createMode) {
-                    addEditBoardViewModel.onEvent(AddEditBoardEvent.CreateBoard)
+                    addEditBoardViewModel.onEvent(AddEditBoardEvent.CreateBoard(previousRoute))
                     return@onButtonClick
                 }
                 addEditBoardViewModel.onEvent(AddEditBoardEvent.EditBoard)
@@ -238,7 +243,9 @@ private fun AddEditBoardScreen(
                         .focusRequester(focusRequester)
                         .animateItemPlacement()
                 )
-                Spacer(modifier = Modifier.height(32.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(32.dp)
+                    .animateItemPlacement())
             }
             item(contentType = ContentTypes.LABELS_TOGGLE) {
                 RowToggle(
@@ -267,7 +274,9 @@ private fun AddEditBoardScreen(
                 }
             }
             item(key = LazyListKeys.PRIMARY_BUTTON) {
-                Spacer(modifier = Modifier.height(40.dp).animateItemPlacement())
+                Spacer(modifier = Modifier
+                    .height(40.dp)
+                    .animateItemPlacement())
                 AnimatedContent(
                     targetState = nameState.value.isNotBlank(),
                     transitionSpec = { fadeIn() with fadeOut() },
@@ -282,7 +291,10 @@ private fun AddEditBoardScreen(
                             .fillMaxWidth()
                     ) {
                         if (createMode) {
-                            Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+                            Icon(
+                                painter = painterResource(id = R.drawable.plus_math),
+                                contentDescription = null
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         Text(text = stringResource(

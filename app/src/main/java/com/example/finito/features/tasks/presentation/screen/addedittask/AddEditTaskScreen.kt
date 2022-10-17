@@ -14,8 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +37,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -546,7 +545,10 @@ private fun AddEditTaskScreen(
                         .padding(horizontal = 16.dp)
                         .animateItemPlacement()
                 ) {
-                    Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+                    Icon(
+                        painter = painterResource(id = R.drawable.plus_math),
+                        contentDescription = null
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(id = R.string.create_subtask))
                 }
@@ -575,7 +577,10 @@ private fun AddEditTaskScreen(
                                 .align(Alignment.CenterHorizontally)
                         ) {
                             if (createMode) {
-                                Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.plus_math),
+                                    contentDescription = null
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                             Text(text = stringResource(

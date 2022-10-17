@@ -1,28 +1,26 @@
 package com.example.finito.core.presentation.components.bars
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
-import com.example.finito.core.presentation.util.menu.MenuOption
 import com.example.finito.core.presentation.components.menu.FinitoMenu
 import com.example.finito.core.presentation.util.TestTags
+import com.example.finito.core.presentation.util.menu.MenuOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <M: MenuOption> MediumTopBarWithMenu(
     title: String,
     onNavigationIconClick: () -> Unit = {},
-    navigationIcon: ImageVector = Icons.Outlined.Menu,
+    @DrawableRes navigationIcon: Int = R.drawable.menu,
     @StringRes navigationIconDescription: Int = R.string.open_menu,
     onMoreOptionsClick: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -36,7 +34,7 @@ fun <M: MenuOption> MediumTopBarWithMenu(
         navigationIcon = {
             IconButton(onClick = onNavigationIconClick) {
                 Icon(
-                    imageVector = navigationIcon,
+                    painter = painterResource(id = navigationIcon),
                     contentDescription = stringResource(id = navigationIconDescription)
                 )
             }
@@ -49,7 +47,7 @@ fun <M: MenuOption> MediumTopBarWithMenu(
                     modifier = Modifier.testTag(TestTags.MENU_BUTTON)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.MoreVert,
+                        painter = painterResource(id = R.drawable.menu_vertical),
                         contentDescription = stringResource(id = R.string.more_options)
                     )
                 }

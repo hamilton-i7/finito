@@ -2,8 +2,7 @@ package com.example.finito.features.labels.presentation.screen.createlabel
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,7 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
@@ -53,7 +55,7 @@ fun CreateLabelContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Icon(
-                imageVector = Icons.Outlined.Add,
+                painter = painterResource(id = R.drawable.plus_math),
                 contentDescription = null,
                 tint = finitoColors.secondary
             )
@@ -71,6 +73,10 @@ fun CreateLabelContent(
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     unfocusedLabelColor = finitoColors.onSurfaceVariant.copy(alpha = 0.60f)
+                ),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Done,
                 ),
                 modifier = Modifier.testTag(TestTags.NAME_TEXT_FIELD)
             )

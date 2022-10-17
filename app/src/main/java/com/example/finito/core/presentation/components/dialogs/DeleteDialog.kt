@@ -1,12 +1,11 @@
 package com.example.finito.core.presentation.components.dialogs
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
@@ -23,7 +22,12 @@ fun DeleteDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(imageVector = Icons.Outlined.ErrorOutline, contentDescription = null) },
+        icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.warning_shield),
+                contentDescription = null
+            )
+        },
         title = title@{
             if (title == null) return@title
             Text(text = stringResource(id = title))

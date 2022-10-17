@@ -1,16 +1,12 @@
 package com.example.finito.features.boards.presentation.screen.addeditboard.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -34,7 +30,7 @@ fun AddEditBoardTopBar(
 ) {
     TopBar(
         title = if (createMode) R.string.create_board else R.string.edit_board,
-        navigationIcon = Icons.Outlined.ArrowBack,
+        navigationIcon = R.drawable.back,
         navigationIconDescription = R.string.go_back,
         scrollBehavior = scrollBehavior,
         onNavigationIconClick = onNavigationIconClick,
@@ -45,7 +41,7 @@ fun AddEditBoardTopBar(
                 BoardState.ACTIVE, BoardState.ARCHIVED -> {
                     IconButton(onClick = onMoveToTrashClick) {
                         Icon(
-                            imageVector = Icons.Outlined.Delete,
+                            painter = painterResource(id = R.drawable.trash),
                             contentDescription = stringResource(id = R.string.move_to_trash)
                         )
                     }
@@ -53,14 +49,14 @@ fun AddEditBoardTopBar(
                 BoardState.DELETED -> {
                     IconButton(onClick = onRestoreBoardClick) {
                         Icon(
-                            imageVector = Icons.Outlined.Restore,
+                            painter = painterResource(id = R.drawable.restore),
                             contentDescription = stringResource(id = R.string.restore_board)
                         )
                     }
                     Box {
                         IconButton(onClick = onMoreOptionsClick) {
                             Icon(
-                                imageVector = Icons.Outlined.MoreVert,
+                                painter = painterResource(id = R.drawable.menu_vertical),
                                 contentDescription = stringResource(id = R.string.more_options)
                             )
                         }

@@ -3,9 +3,6 @@ package com.example.finito.features.tasks.presentation.screen.urgent.components
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -13,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TabOption
@@ -27,8 +25,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 private val tabOptions = listOf(
-    TabOption(icon = Icons.Outlined.Event, contentDescription = R.string.with_date),
-    TabOption(icon = Icons.Outlined.EventBusy, contentDescription = R.string.without_date),
+    TabOption(icon = R.drawable.time_limit, contentDescription = R.string.with_date),
+    TabOption(icon = R.drawable.calendar_free, contentDescription = R.string.without_date),
 )
 
 @OptIn(ExperimentalPagerApi::class)
@@ -45,7 +43,7 @@ fun UrgentTabs(
                 onClick = { scope.launch { state.animateScrollToPage(index) } },
                 icon = {
                     Icon(
-                        imageVector = tabOption.icon,
+                        painter = painterResource(id = tabOption.icon),
                         contentDescription = stringResource(id = tabOption.contentDescription)
                     )
                 }

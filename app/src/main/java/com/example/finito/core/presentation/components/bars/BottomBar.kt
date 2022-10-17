@@ -1,15 +1,11 @@
 package com.example.finito.core.presentation.components.bars
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ViewStream
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
@@ -28,7 +24,7 @@ fun BottomBar(
         actions = {
             IconButton(onClick = onSearchClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Search,
+                    painter = painterResource(id = R.drawable.search),
                     contentDescription = stringResource(id = searchDescription)
                 )
             }
@@ -38,12 +34,12 @@ fun BottomBar(
             ) {
                 if (gridLayout) {
                     Icon(
-                        imageVector = Icons.Outlined.ViewStream,
+                        painter = painterResource(id = R.drawable.rows),
                         contentDescription = stringResource(id = R.string.list_view)
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Outlined.GridView,
+                        painter = painterResource(id = R.drawable.grip_vertical),
                         contentDescription = stringResource(id = R.string.grid_view)
                     )
                 }
@@ -57,7 +53,7 @@ fun BottomBar(
                     elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Add,
+                        painter = painterResource(id = R.drawable.plus_math),
                         contentDescription = stringResource(id = fabDescription)
                     )
                 }

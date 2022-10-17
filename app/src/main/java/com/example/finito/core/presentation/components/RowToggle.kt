@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -16,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.finito.R
 import com.example.finito.ui.theme.DisabledAlpha
 import com.example.finito.ui.theme.finitoColors
 
@@ -48,7 +48,7 @@ fun RowToggle(
         ) {
             Text(text = label)
             Icon(
-                imageVector = Icons.Outlined.ExpandLess,
+                painter = painterResource(id = R.drawable.collapse_arrow),
                 contentDescription = stringResource(
                     id = if (showContent)
                         hideContentDescription

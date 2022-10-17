@@ -1,17 +1,14 @@
 package com.example.finito.features.boards.presentation.screen.board.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import com.example.finito.R
+import com.example.finito.core.presentation.components.bars.MediumTopBarWithMenu
 import com.example.finito.core.presentation.util.menu.ActiveBoardScreenOption
 import com.example.finito.core.presentation.util.menu.ArchivedBoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.BoardScreenMenuOption
 import com.example.finito.core.presentation.util.menu.DeletedBoardScreenMenuOption
-import com.example.finito.core.presentation.components.bars.MediumTopBarWithMenu
 import com.example.finito.features.boards.domain.entity.BoardState
 
 private val activeBoardOptions = listOf(
@@ -52,9 +49,9 @@ fun BoardTopBar(
        title = boardName,
        onNavigationIconClick = onNavigationClick,
        navigationIcon = if (boardState == BoardState.ACTIVE)
-           Icons.Outlined.Menu
+           R.drawable.menu
        else
-           Icons.Outlined.ArrowBack,
+           R.drawable.back,
        navigationIconDescription = if (boardState == BoardState.ACTIVE)
            R.string.open_menu
        else

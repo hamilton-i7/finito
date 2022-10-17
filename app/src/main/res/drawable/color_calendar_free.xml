@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M2.5,19L2.5,7L21.5,7L21.5,19C21.5,20.102 20.602,21 19.5,21L4.5,21C3.398,21 2.5,20.102 2.5,19ZM2.5,19"
+      android:fillColor="#CFD8DC"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M21.5,5L21.5,8L2.5,8L2.5,5C2.5,3.898 3.398,3 4.5,3L19.5,3C20.602,3 21.5,3.898 21.5,5ZM21.5,5"
+      android:fillColor="#F44336"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M16.5,3.5C15.672,3.5 15,4.172 15,5C15,5.828 15.672,6.5 16.5,6.5C17.328,6.5 18,5.828 18,5C18,4.172 17.328,3.5 16.5,3.5ZM7.5,3.5C6.672,3.5 6,4.172 6,5C6,5.828 6.672,6.5 7.5,6.5C8.328,6.5 9,5.828 9,5C9,4.172 8.328,3.5 7.5,3.5ZM7.5,3.5"
+      android:fillColor="#B71C1C"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M16.5,1.5C15.949,1.5 15.5,1.949 15.5,2.5L15.5,5C15.5,5.551 15.949,6 16.5,6C17.051,6 17.5,5.551 17.5,5L17.5,2.5C17.5,1.949 17.051,1.5 16.5,1.5ZM7.5,1.5C6.949,1.5 6.5,1.949 6.5,2.5L6.5,5C6.5,5.551 6.949,6 7.5,6C8.051,6 8.5,5.551 8.5,5L8.5,2.5C8.5,1.949 8.051,1.5 7.5,1.5ZM7.5,1.5"
+      android:fillColor="#B0BEC5"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M6.5,10L8.5,10L8.5,12L6.5,12ZM9.5,10L11.5,10L11.5,12L9.5,12ZM12.5,10L14.5,10L14.5,12L12.5,12ZM15.5,10L17.5,10L17.5,12L15.5,12ZM6.5,13L8.5,13L8.5,15L6.5,15ZM9.5,13L11.5,13L11.5,15L9.5,15ZM12.5,13L14.5,13L14.5,15L12.5,15ZM15.5,13L17.5,13L17.5,15L15.5,15ZM6.5,16L8.5,16L8.5,18L6.5,18ZM9.5,16L11.5,16L11.5,18L9.5,18ZM12.5,16L14.5,16L14.5,18L12.5,18ZM15.5,16L17.5,16L17.5,18L15.5,18ZM15.5,16"
+      android:fillColor="#90A4AE"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M24,16.75L22.25,15L19.5,17.75L16.75,15L15,16.75L17.75,19.5L15,22.25L16.75,24L19.5,21.25L22.25,24L24,22.25L21.25,19.5ZM24,16.75"
+      android:fillColor="#FF3D00"
+      android:fillType="nonZero"
+      android:strokeColor="#00000000"/>
+</vector>

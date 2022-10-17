@@ -2,8 +2,6 @@ package com.example.finito.core.presentation.components.bars
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +10,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
@@ -55,7 +54,7 @@ fun SearchTopBar(
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
+                    painter = painterResource(id = R.drawable.back),
                     contentDescription = stringResource(id = backIconDescription)
                 )
             }

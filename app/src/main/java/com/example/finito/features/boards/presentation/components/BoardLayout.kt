@@ -33,7 +33,7 @@ fun BoardLayout(
 ) {
     val contentPadding = PaddingValues(
         vertical = 12.dp,
-        horizontal = 16.dp
+        horizontal = 12.dp
     )
 
     if (gridLayout) {

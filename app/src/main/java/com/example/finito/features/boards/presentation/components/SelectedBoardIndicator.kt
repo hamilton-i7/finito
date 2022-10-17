@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.components
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ fun SelectedBoardIndicator(
             contentDescription = stringResource(
                 id = if (expanded) R.string.hide_boards_menu else R.string.show_boards_menu
             ),
+            modifier = Modifier.size(12.dp)
         )
     }
 }

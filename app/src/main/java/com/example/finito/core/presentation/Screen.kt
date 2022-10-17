@@ -34,6 +34,8 @@ sealed class Screen(
         )
     )
 
+    object SearchBoards : Screen(route = "search_boards")
+
     object CreateBoard : Screen(route = "create_board")
 
     object EditBoard : Screen(

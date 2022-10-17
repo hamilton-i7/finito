@@ -25,6 +25,7 @@ import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.presentation.screen.addeditboard.AddEditBoardScreen
 import com.example.finito.features.boards.presentation.screen.archive.ArchiveScreen
 import com.example.finito.features.boards.presentation.screen.home.HomeScreen
+import com.example.finito.features.boards.presentation.screen.searchboard.SearchBoardScreen
 import com.example.finito.features.boards.presentation.screen.trash.TrashScreen
 import com.example.finito.features.labels.presentation.screen.createlabel.CreateLabelContent
 import com.example.finito.features.labels.presentation.screen.label.LabelScreen
@@ -81,12 +82,16 @@ fun App(
     val snackbarModifier = when(currentRoute) {
         Screen.Today.route, Screen.Tomorrow.route,
         Screen.Urgent.route, Screen.Home.route,
-        Screen.Archive.route, Screen.Label.route -> Modifier.navigationBarsPadding().padding(bottom = FabPadding)
+        Screen.Archive.route, Screen.Label.route -> Modifier
+            .navigationBarsPadding()
+            .padding(bottom = FabPadding)
         Screen.Board.route -> {
             if (navController.previousBackStackEntry?.destination?.route == Screen.Trash.route) {
                 Modifier.navigationBarsPadding()
             } else {
-                Modifier.navigationBarsPadding().padding(bottom = FabPadding)
+                Modifier
+                    .navigationBarsPadding()
+                    .padding(bottom = FabPadding)
             }
         }
         else -> Modifier.navigationBarsPadding()
@@ -197,7 +202,8 @@ fun App(
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar,
                         onNavigateToCreateBoard = { navController.navigateToCreateBoard() },
-                        onNavigateToBoard = { navController.navigateToBoardFlow(it) }
+                        onNavigateToBoard = { navController.navigateToBoardFlow(it) },
+                        onNavigateToSearchBoards = { navController.navigateToSearchBoards() }
                     )
                 }
 
@@ -206,7 +212,7 @@ fun App(
                     enterTransition = {
                         when(initialState.destination.route) {
                             Screen.CreateTask.route, Screen.EditTask.route,
-                            Screen.EditSubtask.route -> {
+                            Screen.EditSubtask.route, Screen.CreateBoard.route -> {
                                 childScreenPopEnterTransition()
                             }
                             else -> peerScreenEnterTransition()
@@ -215,7 +221,7 @@ fun App(
                     exitTransition = {
                         when(targetState.destination.route) {
                             Screen.CreateTask.route, Screen.EditTask.route,
-                            Screen.EditSubtask.route -> {
+                            Screen.EditSubtask.route, Screen.CreateBoard.route -> {
                                 childScreenExitTransition()
                             }
                             else -> peerScreenExitTransition()
@@ -236,6 +242,9 @@ fun App(
                         },
                         onNavigateToEditSubtask = { boardId, subtaskId ->
                             navController.navigateToEditSubtask(boardId, subtaskId)
+                        },
+                        onNavigateToCreateBoard = {
+                            navController.navigateToCreateBoard()
                         },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
@@ -278,6 +287,9 @@ fun App(
                         onNavigateToEditSubtask = { boardId, subtaskId ->
                             navController.navigateToEditSubtask(boardId, subtaskId)
                         },
+                        onNavigateToCreateBoard = {
+                            navController.navigateToCreateBoard()
+                        },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
                     )
@@ -317,6 +329,9 @@ fun App(
                         },
                         onNavigateToEditSubtask = { boardId, subtaskId ->
                             navController.navigateToEditSubtask(boardId, subtaskId)
+                        },
+                        onNavigateToCreateBoard = {
+                            navController.navigateToCreateBoard()
                         },
                         finishActivity = finishActivity,
                         onShowSnackbar = onShowSnackbar
@@ -393,6 +408,17 @@ fun App(
                 )
 
                 composable(
+                    route = Screen.SearchBoards.route,
+                    enterTransition = childScreenEnterTransition,
+                    exitTransition = childScreenExitTransition,
+                    popExitTransition = childScreenPopExitTransition
+                ) {
+                    SearchBoardScreen(
+                        onNavigateBack = { navController.navigateUp() }
+                    )
+                }
+
+                composable(
                     route = Screen.CreateBoard.route,
                     enterTransition = childScreenEnterTransition,
                     exitTransition = childScreenExitTransition,
@@ -402,6 +428,7 @@ fun App(
                         onShowSnackbar = onShowSnackbar,
                         appViewModel = appViewModel,
                         createMode = true,
+                        previousRoute = navController.previousBackStackEntry?.destination?.route,
                         onNavigateBack = { navController.navigateUp() },
                         onNavigateToBoardFlow = { navController.navigateToBoardFlow(it) }
                     )

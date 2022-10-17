@@ -11,7 +11,7 @@ sealed class LabelEvent {
 
     object DeleteLabel : LabelEvent()
 
-    data class SortBoards(val sortingOption: SortingOption.Common?) : LabelEvent()
+    data class SortBoards(val sortingOption: SortingOption.Common) : LabelEvent()
 
     data class ArchiveBoard(val board: BoardWithLabelsAndTasks) :LabelEvent()
 

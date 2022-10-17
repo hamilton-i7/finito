@@ -25,6 +25,10 @@ fun NavController.navigateToBoardFlow(boardId: Int, state: BoardState = BoardSta
     navigate(route)
 }
 
+fun NavController.navigateToSearchBoards() {
+    navigate(Screen.SearchBoards.route)
+}
+
 fun NavController.navigateToBoard(boardId: Int, state: BoardState = BoardState.ACTIVE) {
     val route = "${Screen.Board.prefix}/$boardId" +
             "?${Screen.BOARD_STATE_ARGUMENT}" +

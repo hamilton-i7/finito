@@ -9,12 +9,7 @@ sealed class Screen(
     val arguments: List<NamedNavArgument> = emptyList(),
     val deepLinks: List<NavDeepLink> = emptyList(),
 ) {
-    object Home : Screen(route = "home") {
-        val childRoutes = listOf(
-            Board.route,
-            CreateBoard.route
-        )
-    }
+    object Home : Screen(route = "home")
 
     object Today : Screen(route = "today")
 

@@ -180,16 +180,18 @@ fun App(
                 composable(
                     route = Screen.Home.route,
                     enterTransition = {
-                        when {
-                            Screen.Home.childRoutes.contains(initialState.destination.route) -> {
+                        when (initialState.destination.route) {
+                            Screen.Board.route, Screen.CreateBoard.route,
+                            Screen.SearchBoards.route -> {
                                 childScreenPopEnterTransition()
                             }
                             else -> peerScreenEnterTransition()
                         }
                     },
                     exitTransition = {
-                        when {
-                            Screen.Home.childRoutes.contains(targetState.destination.route) -> {
+                        when (targetState.destination.route) {
+                            Screen.Board.route, Screen.CreateBoard.route,
+                            Screen.SearchBoards.route -> {
                                 childScreenExitTransition()
                             }
                             else -> peerScreenExitTransition()

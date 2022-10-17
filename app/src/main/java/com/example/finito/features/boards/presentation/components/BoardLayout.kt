@@ -6,7 +6,6 @@ import androidx.compose.ui.unit.dp
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.menu.BoardCardMenuOption
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.labels.domain.entity.SimpleLabel
 import org.burnoutcrew.reorderable.ReorderableLazyGridState
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.rememberReorderableLazyGridState
@@ -22,14 +21,9 @@ fun BoardLayout(
     ),
     allowDrag: Boolean = false,
     gridLayout: Boolean = true,
-    labels: List<SimpleLabel> = emptyList(),
-    labelFilters: List<Int> = emptyList(),
-    onLabelClick: (labelId: Int) -> Unit = {},
-    onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    sortingOptions: List<SortingOption.Common> = emptyList(),
     selectedSortingOption: SortingOption.Common? = null,
-    onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
+    onSortOptionClick: () -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean,
     onDismissMenu: (boardId: Int) -> Unit = {},
@@ -39,7 +33,7 @@ fun BoardLayout(
 ) {
     val contentPadding = PaddingValues(
         vertical = 12.dp,
-        horizontal = 8.dp
+        horizontal = 16.dp
     )
 
     if (gridLayout) {
@@ -47,11 +41,6 @@ fun BoardLayout(
             contentPadding = contentPadding,
             reorderableState = reorderableGridState,
             allowDrag = allowDrag,
-            labels = labels,
-            labelFilters = labelFilters,
-            onLabelClick = onLabelClick,
-            onRemoveFiltersClick = onRemoveFiltersClick,
-            sortingOptions = sortingOptions,
             selectedSortingOption = selectedSortingOption,
             onSortOptionClick = onSortOptionClick,
             boards = boards,
@@ -67,11 +56,6 @@ fun BoardLayout(
             contentPadding = contentPadding,
             allowDrag = allowDrag,
             reorderableState = reorderableListState,
-            labels = labels,
-            labelFilters = labelFilters,
-            onLabelClick = onLabelClick,
-            onRemoveFiltersClick = onRemoveFiltersClick,
-            sortingOptions = sortingOptions,
             selectedSortingOption = selectedSortingOption,
             onSortOptionClick = onSortOptionClick,
             boards = boards,

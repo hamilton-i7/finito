@@ -88,6 +88,16 @@ fun TodayDialogs(todayViewModel: TodayViewModel) {
                 }
             )
         }
+        TodayEvent.DialogType.CreateBoard -> {
+            SimpleDialog(
+                onDismiss = { todayViewModel.onEvent(TodayEvent.ShowDialog()) },
+                description = R.string.create_board_first,
+                dismissButtonText = R.string.cancel,
+                onDismissClick = { todayViewModel.onEvent(TodayEvent.ShowDialog()) },
+                confirmButtonText = R.string.create,
+                onConfirmClick = { todayViewModel.onEvent(TodayEvent.CreateBoard) },
+            )
+        }
         null -> Unit
     }
 }

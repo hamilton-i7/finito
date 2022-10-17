@@ -74,7 +74,7 @@ class AddEditBoardViewModel @Inject constructor(
             is AddEditBoardEvent.ChangeName -> nameState = nameState.copy(
                 value = event.name
             )
-            AddEditBoardEvent.CreateBoard -> onCreateBoard()
+            is AddEditBoardEvent.CreateBoard -> onCreateBoard(event.previousRoute)
             is AddEditBoardEvent.MoveBoardToTrash -> onMoveToTrash()
             AddEditBoardEvent.EditBoard -> onEditBoard()
             AddEditBoardEvent.ToggleLabelsVisibility -> showLabels = !showLabels
@@ -218,7 +218,7 @@ class AddEditBoardViewModel @Inject constructor(
         }
     }
 
-    private fun onCreateBoard() = viewModelScope.launch {
+    private fun onCreateBoard(previousRoute: String?) = viewModelScope.launch {
         val board = BoardWithLabelsAndTasks(
             board = Board(name = nameState.value),
             labels = selectedLabels
@@ -230,7 +230,15 @@ class AddEditBoardViewModel @Inject constructor(
                 ))
             }
             is Result.Success -> {
-                fireEvents(Event.NavigateToCreatedBoard(result.data))
+                when (previousRoute) {
+                    Screen.Today.route, Screen.Tomorrow.route,
+                    Screen.Urgent.route -> {
+                        fireEvents(Event.NavigateBack)
+                    }
+                    else -> {
+                        fireEvents(Event.NavigateToCreatedBoard(result.data))
+                    }
+                }
             }
         }
     }
@@ -317,13 +325,7 @@ class AddEditBoardViewModel @Inject constructor(
 
         data class ShowError(@StringRes val error: Int) : Event()
 
-//        object NavigateToTrash : Event()
-//
-//        object NavigateToHome : Event()
-//
-//        object NavigateToLabel : Event()
-//
-//        object NavigateToArchive : Event()
+        object NavigateBack : Event()
 
         object NavigateBackTwice : Event()
 

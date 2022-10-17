@@ -16,8 +16,8 @@ data class Label(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
     companion object {
-        val dummyLabels  = ('A'..'Z').map {
-            Label(name = "Label $it")
+        val dummyLabels  = ('A'..'Z').mapIndexed { index, char ->
+            Label(labelId = index + 1, name = "Label $char")
         }
     }
 }

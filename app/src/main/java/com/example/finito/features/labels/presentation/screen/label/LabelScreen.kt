@@ -2,6 +2,7 @@ package com.example.finito.features.labels.presentation.screen.label
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,9 +20,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
+import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.TestTags
@@ -170,17 +171,18 @@ fun LabelScreen(
 
         LabelScreen(
             paddingValues = innerPadding,
+            isSearching = labelViewModel.showSearchBar,
             gridLayout = labelViewModel.gridLayout,
             boards = labelViewModel.boards,
             onBoardClick = onNavigateToBoardFlow,
-            selectedSortingOption = labelViewModel.boardsOrder,
-            onSortOptionClick = onSortOptionClick@{
-                if (labelViewModel.boardsOrder == it) {
-                    labelViewModel.onEvent(LabelEvent.SortBoards(sortingOption = null))
-                    return@onSortOptionClick
-                }
-                labelViewModel.onEvent(LabelEvent.SortBoards(it))
-            },
+//            selectedSortingOption = labelViewModel.boardsOrder,
+//            onSortOptionClick = onSortOptionClick@{
+//                if (labelViewModel.boardsOrder == it) {
+//                    labelViewModel.onEvent(LabelEvent.SortBoards(sortingOption = null))
+//                    return@onSortOptionClick
+//                }
+//                labelViewModel.onEvent(LabelEvent.SortBoards(it))
+//            },
             onCardOptionsClick = {
                 labelViewModel.onEvent(LabelEvent.ShowCardMenu(boardId = it, show = true))
             },
@@ -210,10 +212,11 @@ fun LabelScreen(
 @Composable
 private fun LabelScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    isSearching: Boolean = false,
     gridLayout: Boolean = true,
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common? = null,
-    onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
+    selectedSortingOption: SortingOption.Common = SortingOption.Common.Default,
+    onSortOptionClick: () -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
     onDismissMenu: (boardId: Int) -> Unit = {},
@@ -229,21 +232,32 @@ private fun LabelScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        BoardLayout(
-            gridLayout = gridLayout,
-            boards = boards,
-            sortingOptions = commonSortingOptions,
-            selectedSortingOption = selectedSortingOption,
-            onSortOptionClick = onSortOptionClick,
-            onBoardClick = onBoardClick,
-            showCardMenu = showCardMenu,
-            onDismissMenu = onDismissMenu,
-            options = options,
-            onCardOptionsClick = onCardOptionsClick,
-            onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
-            },
-        )
+        Crossfade(targetState = !isSearching && boards.isEmpty()) {
+            when (it) {
+                true -> {
+                    EmptyContent(
+                        icon = R.drawable.tags,
+                        title = R.string.no_boards_with_label_title,
+                    )
+                }
+                false -> {
+                    BoardLayout(
+                        gridLayout = gridLayout,
+                        boards = boards,
+                        selectedSortingOption = selectedSortingOption,
+                        onSortOptionClick = onSortOptionClick,
+                        onBoardClick = onBoardClick,
+                        showCardMenu = showCardMenu,
+                        onDismissMenu = onDismissMenu,
+                        options = options,
+                        onCardOptionsClick = onCardOptionsClick,
+                        onMenuItemClick = { boardId, option ->
+                            onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 

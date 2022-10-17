@@ -1,9 +1,7 @@
 package com.example.finito.features.boards.presentation.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -38,6 +36,7 @@ fun BoardsListSheetContent(
                     color = finitoColors.outline,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
+                Spacer(modifier = Modifier.height(8.dp))
             }
             items(boards) { board ->
                 val selected = board.boardId == selectedBoard?.boardId

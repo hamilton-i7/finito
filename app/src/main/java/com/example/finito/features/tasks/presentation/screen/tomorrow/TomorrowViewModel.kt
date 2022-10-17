@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
-import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.core.domain.Result
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.PreferencesKeys
@@ -22,6 +21,7 @@ import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
 import com.example.finito.features.tasks.domain.entity.filterCompleted
 import com.example.finito.features.tasks.domain.usecase.TaskUseCases
+import com.example.finito.features.tasks.domain.util.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -130,7 +130,12 @@ class TomorrowViewModel @Inject constructor(
             TomorrowEvent.ResetBottomSheetContent -> onResetBottomSheetContent()
             is TomorrowEvent.ChangeBottomSheetContent -> onShowBottomSheetContent(event.content)
             TomorrowEvent.DismissBottomSheet -> onDismissBottomSheet()
+            TomorrowEvent.CreateBoard -> onCreateBoard()
         }
+    }
+
+    private fun onCreateBoard() = viewModelScope.launch {
+        _eventFlow.emit(Event.NavigateToCreateBoard)
     }
 
     private fun onDismissBottomSheet() {
@@ -142,7 +147,7 @@ class TomorrowViewModel @Inject constructor(
         bottomSheetContent = content
         if (content !is TomorrowEvent.BottomSheetContent.BoardsList) return
         selectedBoard = content.task?.let { task ->
-            boards.first { it.boardId == task.boardId }
+            boards.find { it.boardId == task.boardId }
         } ?: selectedBoard
     }
 
@@ -163,7 +168,7 @@ class TomorrowViewModel @Inject constructor(
     }
 
     private fun onResetBottomSheetContent() {
-        selectedBoard = boards.first()
+        selectedBoard = boards.firstOrNull()
         newTaskNameState = newTaskNameState.copy(value = "")
     }
 
@@ -246,7 +251,7 @@ class TomorrowViewModel @Inject constructor(
             task = Task(
                 boardId = selectedBoard!!.boardId,
                 name = newTaskNameState.value,
-                date = LocalDate.now()
+                date = LocalDate.now().plusDays(1)
             )
         ).let {
             when (taskUseCases.createTask(it)) {
@@ -312,7 +317,7 @@ class TomorrowViewModel @Inject constructor(
     private fun fetchBoards() = viewModelScope.launch {
         boardUseCases.findSimpleBoards().data.onEach { boards ->
             this@TomorrowViewModel.boards = boards
-            selectedBoard = boards.first()
+            selectedBoard = boards.firstOrNull()
             boardNamesMap = mutableMapOf<Int, String>().apply {
                 boards.forEach { board ->
                     set(board.boardId, board.name)
@@ -323,6 +328,8 @@ class TomorrowViewModel @Inject constructor(
 
     sealed class Event {
         data class ShowError(@StringRes val error: Int) : Event()
+
+        object NavigateToCreateBoard : Event()
 
         sealed class Snackbar : Event() {
             data class UndoTaskChange(

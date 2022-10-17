@@ -88,6 +88,16 @@ fun UrgentDialogs(urgentViewModel: UrgentViewModel) {
                 }
             )
         }
+        UrgentEvent.DialogType.CreateBoard -> {
+            SimpleDialog(
+                onDismiss = { urgentViewModel.onEvent(UrgentEvent.ShowDialog()) },
+                description = R.string.create_board_first,
+                dismissButtonText = R.string.cancel,
+                onDismissClick = { urgentViewModel.onEvent(UrgentEvent.ShowDialog()) },
+                confirmButtonText = R.string.create,
+                onConfirmClick = { urgentViewModel.onEvent(UrgentEvent.CreateBoard) },
+            )
+        }
         null -> Unit
     }
 }

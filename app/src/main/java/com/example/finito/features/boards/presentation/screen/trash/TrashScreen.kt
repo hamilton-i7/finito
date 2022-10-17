@@ -1,6 +1,7 @@
 package com.example.finito.features.boards.presentation.screen.trash
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,8 +12,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.finito.R
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
+import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.util.menu.DeletedBoardCardMenuOption
 import com.example.finito.core.presentation.util.menu.TrashScreenMenuOption
 import com.example.finito.core.presentation.util.preview.CompletePreviews
@@ -140,19 +143,34 @@ private fun TrashScreen(
         option: DeletedBoardCardMenuOption,
     ) -> Unit = { _, _ ->}
 ) {
-    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-        BoardLayout(
-            gridLayout = gridLayout,
-            boards = boards,
-            onBoardClick = onBoardClick,
-            showCardMenu = showCardMenu,
-            onDismissMenu = onDismissMenu,
-            options = options,
-            onCardOptionsClick = onCardOptionsClick,
-            onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as DeletedBoardCardMenuOption)
-            },
-        )
+    Surface(modifier = Modifier
+        .fillMaxSize()
+        .padding(paddingValues)) {
+        Crossfade(targetState = boards.isEmpty()) {
+            when (it) {
+                true -> {
+                    EmptyContent(
+                        icon = R.drawable.full_trash,
+                        title = R.string.no_boards_deleted_title,
+                        contentText = R.string.no_boards_deleted_content
+                    )
+                }
+                false -> {
+                    BoardLayout(
+                        gridLayout = gridLayout,
+                        boards = boards,
+                        onBoardClick = onBoardClick,
+                        showCardMenu = showCardMenu,
+                        onDismissMenu = onDismissMenu,
+                        options = options,
+                        onCardOptionsClick = onCardOptionsClick,
+                        onMenuItemClick = { boardId, option ->
+                            onMenuItemClick(boardId, option as DeletedBoardCardMenuOption)
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 

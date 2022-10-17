@@ -38,6 +38,7 @@ import com.example.finito.core.domain.util.prioritySortingOptions
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.components.CreateFab
+import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.components.SortingChips
 import com.example.finito.core.presentation.components.bars.SmallTopBarWithMenu
@@ -77,6 +78,7 @@ fun TodayScreen(
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
+    onNavigateToCreateBoard: () -> Unit = {},
     finishActivity: () -> Unit = {},
     onShowSnackbar: (
         message: Int,
@@ -144,6 +146,7 @@ fun TodayScreen(
                         ))
                     }
                 }
+                TodayViewModel.Event.NavigateToCreateBoard -> onNavigateToCreateBoard()
             }
         }
     }
@@ -273,7 +276,13 @@ fun TodayScreen(
                 floatingActionButton = {
                     CreateFab(
                         text = R.string.create_task,
-                        onClick = {
+                        onClick = onClick@{
+                            if (todayViewModel.boards.isEmpty()) {
+                                todayViewModel.onEvent(TodayEvent.ShowDialog(
+                                    type = TodayEvent.DialogType.CreateBoard
+                                ))
+                                return@onClick
+                            }
                             creatingTask = true
                             todayViewModel.onEvent(TodayEvent.ChangeBottomSheetContent(
                                 TodayEvent.BottomSheetContent.NewTask
@@ -422,168 +431,182 @@ private fun TodayScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
-            state = listState
-        ) {
-            item {
-                SortingChips(
-                    options = prioritySortingOptions,
-                    selectedOption = selectedSortingOption,
-                    onOptionClick = onSortingOptionClick,
-                    modifier = Modifier.padding(
-                        bottom = 24.dp,
-                        start = 16.dp,
-                        end = 16.dp
+        Crossfade(targetState = tasks.isEmpty()) { isEmpty ->
+            when (isEmpty) {
+                true -> {
+                    EmptyContent(
+                        icon = R.drawable.color_today,
+                        title = R.string.no_today_tasks_title,
+                        contentText = R.string.no_today_tasks_content,
+                        modifier = Modifier.padding(bottom = 120.dp),
                     )
-                )
-            }
-            item {
-                Text(
-                    text = LocalDate.now().toFullFormat(locale, complete = true),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(
-                        bottom = 12.dp,
-                        start = 16.dp,
-                        end = 16.dp
-                    )
-                )
-            }
+                }
+                false -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
+                        state = listState
+                    ) {
+                        item {
+                            SortingChips(
+                                options = prioritySortingOptions,
+                                selectedOption = selectedSortingOption,
+                                onOptionClick = onSortingOptionClick,
+                                modifier = Modifier.padding(
+                                    bottom = 24.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                )
+                            )
+                        }
+                        item {
+                            Text(
+                                text = LocalDate.now().toFullFormat(locale, complete = true),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(
+                                    bottom = 12.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                )
+                            )
+                        }
 
-            tasksWithNoCompletedSubtasks.forEach { (task, subtasks) ->
-                item(key = task.taskId) {
-                    TaskItem(
-                        task = task,
-                        boardName = boardNamesMap[task.boardId],
-                        onTaskClick = { onTaskClick(task) },
-                        onCompletedToggle = {
-                            onToggleTaskCompleted(TaskWithSubtasks(task, subtasks))
-                        },
-                        onPriorityClick = { onPriorityClick(task) },
-                        onBoardNameClick = { onBoardNameClick(task) },
-                        onDateTimeClick = { onDateTimeClick(task) },
-                        modifier = Modifier.animateItemPlacement()
-                    )
-                }
-                items(
-                    items = subtasks,
-                    key = { it.subtaskId }
-                ) {
-                    SubtaskItem(
-                        subtask = it,
-                        onSubtaskClick = { onSubtaskClick(it) },
-                        onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                        modifier = Modifier.animateItemPlacement()
-                    )
-                }
-            }
+                        tasksWithNoCompletedSubtasks.forEach { (task, subtasks) ->
+                            item(key = task.taskId) {
+                                TaskItem(
+                                    task = task,
+                                    boardName = boardNamesMap[task.boardId],
+                                    onTaskClick = { onTaskClick(task) },
+                                    onCompletedToggle = {
+                                        onToggleTaskCompleted(TaskWithSubtasks(task, subtasks))
+                                    },
+                                    onPriorityClick = { onPriorityClick(task) },
+                                    onBoardNameClick = { onBoardNameClick(task) },
+                                    onDateTimeClick = { onDateTimeClick(task) },
+                                    modifier = Modifier.animateItemPlacement()
+                                )
+                            }
+                            items(
+                                items = subtasks,
+                                key = { it.subtaskId }
+                            ) {
+                                SubtaskItem(
+                                    subtask = it,
+                                    onSubtaskClick = { onSubtaskClick(it) },
+                                    onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                    modifier = Modifier.animateItemPlacement()
+                                )
+                            }
+                        }
 
-            if (completedTasksAmount == 0) return@LazyColumn
+                        if (completedTasksAmount == 0) return@LazyColumn
 
-            item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
-                RowToggle(
-                    showContent = showCompletedTasks,
-                    onShowContentToggle = onToggleShowCompletedTasks,
-                    label = stringResource(id = R.string.completed, completedTasksAmount),
-                    showContentDescription = R.string.show_completed_tasks,
-                    hideContentDescription = R.string.hide_completed_tasks,
-                    modifier = Modifier.animateItemPlacement()
-                )
-            }
-            tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
-                item(key = "${task.taskId} GHOST") {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks,
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = LongDurationMillis,
-                                delayMillis = ShortestDurationMillis
+                        item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
+                            RowToggle(
+                                showContent = showCompletedTasks,
+                                onShowContentToggle = onToggleShowCompletedTasks,
+                                label = stringResource(id = R.string.completed, completedTasksAmount),
+                                showContentDescription = R.string.show_completed_tasks,
+                                hideContentDescription = R.string.hide_completed_tasks,
+                                modifier = Modifier.animateItemPlacement()
                             )
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(durationMillis = RegularDurationMillis)
-                        ),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        TaskItem(
-                            task = task,
-                            boardName = boardNamesMap[task.boardId],
-                            enabled = false,
-                            onTaskClick = { onTaskClick(task) },
-                        )
-                    }
-                }
-                items(
-                    items = subtasks,
-                    key = { "${it.subtaskId} GHOST COMPLETED" }
-                ) {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks,
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = LongDurationMillis,
-                                delayMillis = ShortestDurationMillis
-                            )
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(durationMillis = RegularDurationMillis)
-                        ),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        SubtaskItem(
-                            subtask = it,
-                            onSubtaskClick = { onSubtaskClick(it) },
-                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                        )
-                    }
-                }
-            }
-            completedTasks.forEach { (task, subtasks) ->
-                item(key = "${task.taskId} COMPLETED") {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks,
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = LongDurationMillis,
-                                delayMillis = ShortestDurationMillis
-                            )
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(durationMillis = RegularDurationMillis)
-                        ),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        TaskItem(
-                            task = task,
-                            onCompletedToggle = {
-                                onToggleTaskCompleted(TaskWithSubtasks(task, subtasks))
-                            },
-                            onTaskClick = { onTaskClick(task) },
-                        )
-                    }
-                }
-                items(
-                    items = subtasks,
-                    key = { subtask -> "${subtask.subtaskId} COMPLETED" }
-                ) {
-                    AnimatedVisibility(
-                        visible = showCompletedTasks,
-                        enter = fadeIn(
-                            animationSpec = tween(
-                                durationMillis = LongDurationMillis,
-                                delayMillis = ShortestDurationMillis
-                            )
-                        ),
-                        exit = fadeOut(
-                            animationSpec = tween(durationMillis = RegularDurationMillis)
-                        ),
-                        modifier = Modifier.animateItemPlacement()
-                    ) {
-                        SubtaskItem(
-                            subtask = it,
-                            onSubtaskClick = { onSubtaskClick(it) },
-                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                        )
+                        }
+                        tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
+                            item(key = "${task.taskId} GHOST") {
+                                AnimatedVisibility(
+                                    visible = showCompletedTasks,
+                                    enter = fadeIn(
+                                        animationSpec = tween(
+                                            durationMillis = LongDurationMillis,
+                                            delayMillis = ShortestDurationMillis
+                                        )
+                                    ),
+                                    exit = fadeOut(
+                                        animationSpec = tween(durationMillis = RegularDurationMillis)
+                                    ),
+                                    modifier = Modifier.animateItemPlacement()
+                                ) {
+                                    TaskItem(
+                                        task = task,
+                                        boardName = boardNamesMap[task.boardId],
+                                        enabled = false,
+                                        onTaskClick = { onTaskClick(task) },
+                                    )
+                                }
+                            }
+                            items(
+                                items = subtasks,
+                                key = { "${it.subtaskId} GHOST COMPLETED" }
+                            ) {
+                                AnimatedVisibility(
+                                    visible = showCompletedTasks,
+                                    enter = fadeIn(
+                                        animationSpec = tween(
+                                            durationMillis = LongDurationMillis,
+                                            delayMillis = ShortestDurationMillis
+                                        )
+                                    ),
+                                    exit = fadeOut(
+                                        animationSpec = tween(durationMillis = RegularDurationMillis)
+                                    ),
+                                    modifier = Modifier.animateItemPlacement()
+                                ) {
+                                    SubtaskItem(
+                                        subtask = it,
+                                        onSubtaskClick = { onSubtaskClick(it) },
+                                        onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                    )
+                                }
+                            }
+                        }
+                        completedTasks.forEach { (task, subtasks) ->
+                            item(key = "${task.taskId} COMPLETED") {
+                                AnimatedVisibility(
+                                    visible = showCompletedTasks,
+                                    enter = fadeIn(
+                                        animationSpec = tween(
+                                            durationMillis = LongDurationMillis,
+                                            delayMillis = ShortestDurationMillis
+                                        )
+                                    ),
+                                    exit = fadeOut(
+                                        animationSpec = tween(durationMillis = RegularDurationMillis)
+                                    ),
+                                    modifier = Modifier.animateItemPlacement()
+                                ) {
+                                    TaskItem(
+                                        task = task,
+                                        onCompletedToggle = {
+                                            onToggleTaskCompleted(TaskWithSubtasks(task, subtasks))
+                                        },
+                                        onTaskClick = { onTaskClick(task) },
+                                    )
+                                }
+                            }
+                            items(
+                                items = subtasks,
+                                key = { subtask -> "${subtask.subtaskId} COMPLETED" }
+                            ) {
+                                AnimatedVisibility(
+                                    visible = showCompletedTasks,
+                                    enter = fadeIn(
+                                        animationSpec = tween(
+                                            durationMillis = LongDurationMillis,
+                                            delayMillis = ShortestDurationMillis
+                                        )
+                                    ),
+                                    exit = fadeOut(
+                                        animationSpec = tween(durationMillis = RegularDurationMillis)
+                                    ),
+                                    modifier = Modifier.animateItemPlacement()
+                                ) {
+                                    SubtaskItem(
+                                        subtask = it,
+                                        onSubtaskClick = { onSubtaskClick(it) },
+                                        onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

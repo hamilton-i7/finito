@@ -75,9 +75,9 @@ class LabelViewModel @Inject constructor(
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
                 SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
-                else -> null
+                else -> SortingOption.Common.Custom
             }
-        }
+        } ?: SortingOption.Common.Default
     ); private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -149,10 +149,10 @@ class LabelViewModel @Inject constructor(
         }
     }
 
-    private fun onSortBoards(sortingOption: SortingOption.Common?) {
+    private fun onSortBoards(sortingOption: SortingOption.Common) {
         boardsOrder = sortingOption
         with(preferences.edit()) {
-            putString(PreferencesKeys.BOARDS_ORDER, sortingOption?.name)
+            putString(PreferencesKeys.BOARDS_ORDER, sortingOption.name)
             apply()
         }
         label?.let { fetchBoards(it.labelId) }
@@ -257,6 +257,7 @@ class LabelViewModel @Inject constructor(
                     }
                     is Result.Success -> {
                         label = result.data
+                        labelNameState = TextFieldState(value = result.data.name)
                         fetchBoards(result.data.labelId)
                     }
                 }

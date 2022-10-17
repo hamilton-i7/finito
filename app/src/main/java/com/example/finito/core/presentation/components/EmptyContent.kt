@@ -2,8 +2,8 @@ package com.example.finito.core.presentation.components
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,10 +31,9 @@ fun EmptyContent(
             .padding(32.dp)
             .then(modifier)
     ) {
-        Icon(
+        Image(
             painter = painterResource(id = icon),
             contentDescription = null,
-            tint = finitoColors.onSurfaceVariant,
             modifier = Modifier.size(75.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))

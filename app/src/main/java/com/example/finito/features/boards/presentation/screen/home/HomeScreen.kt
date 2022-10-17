@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -32,7 +31,6 @@ import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
-import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
@@ -64,7 +62,6 @@ fun HomeScreen(
         onActionClick: () -> Unit
     ) -> Unit = {_, _, _ -> },
 ) {
-    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val homeTopBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val hapticFeedback = LocalHapticFeedback.current
@@ -164,7 +161,6 @@ fun HomeScreen(
             },
             modifier = Modifier
                 .nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection)
-                .noRippleClickable { focusManager.clearFocus() }
                 .testTag(TestTags.HOME_SCREEN),
         ) { innerPadding ->
             HomeDialogs(homeViewModel)

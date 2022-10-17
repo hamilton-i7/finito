@@ -61,13 +61,12 @@ class ArchiveViewModel @Inject constructor(
             null
         )?.let {
             when (it) {
-                SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
                 SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
-                else -> null
+                else -> SortingOption.Common.NameZA
             }
-        }
+        } ?: SortingOption.Common.Default
     ); private set
 
     var gridLayout by mutableStateOf(preferences.getBoolean(
@@ -121,10 +120,10 @@ class ArchiveViewModel @Inject constructor(
         }
     }
 
-    private fun onSortBoards(sortingOption: SortingOption.Common?) {
+    private fun onSortBoards(sortingOption: SortingOption.Common) {
         boardsOrder = sortingOption
         with(preferences.edit()) {
-            putString(PreferencesKeys.BOARDS_ORDER, sortingOption?.name)
+            putString(PreferencesKeys.BOARDS_ORDER, sortingOption.name)
             apply()
         }
         fetchBoards()

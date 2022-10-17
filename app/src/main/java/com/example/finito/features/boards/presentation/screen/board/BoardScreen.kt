@@ -30,6 +30,7 @@ import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
 import com.example.finito.core.presentation.Screen
 import com.example.finito.core.presentation.components.CreateFab
+import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.RowToggle
 import com.example.finito.core.presentation.util.ContentTypes
 import com.example.finito.core.presentation.util.LazyListKeys
@@ -489,188 +490,202 @@ private fun BoardScreen(
             )
         }
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
-            state = reorderableState.listState,
-            modifier = Modifier.reorderable(reorderableState),
-        ) {
-            item(contentType = ContentTypes.PROGRESS_BAR) {
-                CompletedTasksProgressBar(
-                    totalTasks = totalTasksAmount,
-                    completedTasks = completedTasksAmount,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
+        Crossfade(
+            targetState = draggableTasks.isEmpty() && tasks.isEmpty()
+        ) { isEmpty ->
+            when (isEmpty) {
+                true -> EmptyContent(
+                    icon = R.drawable.todo_list,
+                    title = R.string.no_tasks_title,
+                    contentText = if (!isDeleted) R.string.no_tasks_content else null,
+                    modifier = Modifier.padding(bottom = 120.dp),
                 )
-            }
-
-            items(
-                items = draggableTasks,
-                key = {
-                    if (it is Task) it.taskId
-                    else (it as Subtask).subtaskId
-                }
-            ) {
-                when (it) {
-                    is Task -> {
-                        val subtasksAmount = tasks.flatMap {
-                                subtasks -> subtasks.subtasks
-                        }.count { subtask -> subtask.taskId == it.taskId && !subtask.completed }
-
-                        ReorderableItem(
-                            reorderableState = reorderableState,
-                            key = it.taskId,
-                        ) { isDragging ->
-                            TaskItem(
-                                task = it,
-                                subtasksAmount = subtasksAmount,
-                                enabled = !isDeleted,
-                                isDragging = isDragging,
-                                onPriorityClick = { onPriorityClick(it) },
-                                onCompletedToggle = {
-                                    val subtasks = draggableTasks.filterIsInstance<Subtask>().let { list ->
-                                        list.filter { subtask -> subtask.taskId == it.taskId }
-                                    }
-                                    onToggleTaskCompleted(
-                                        TaskWithSubtasks(
-                                            task = it,
-                                            subtasks = subtasks
-                                        )
-                                    )
-                                },
-                                onTaskClick = { onTaskClick(it) },
-                                onDateTimeClick = { onDateTimeClick(it) },
-                                showDragIndicator = !isDeleted,
-                                modifier = if (isDeleted) Modifier
-                                else Modifier.detectReorderAfterLongPress(reorderableState)
+                false -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(top = 12.dp, bottom = 120.dp),
+                        state = reorderableState.listState,
+                        modifier = Modifier.fillMaxSize().reorderable(reorderableState),
+                    ) {
+                        item(contentType = ContentTypes.PROGRESS_BAR) {
+                            CompletedTasksProgressBar(
+                                totalTasks = totalTasksAmount,
+                                completedTasks = completedTasksAmount,
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth()
+                                    .padding(bottom = 24.dp)
                             )
                         }
-                    }
-                    is Subtask -> {
-                        val draggingSubtask = reorderableState.draggingItemKey == it.subtaskId
 
-                        AnimatedVisibility(
-                            visible = reorderableState.draggingItemKey != it.taskId,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier
-                                .zIndex(if (draggingSubtask) 1f else -1f)
-                                .then(
-                                    // Remove duplicate animation while dragging among subtasks
-                                    other = if (!draggingSubtask)
-                                        Modifier.animateItemPlacement()
-                                    else
-                                        Modifier
-                                )
+                        items(
+                            items = draggableTasks,
+                            key = {
+                                if (it is Task) it.taskId
+                                else (it as Subtask).subtaskId
+                            }
                         ) {
-                            ReorderableItem(
-                                state = reorderableState,
-                                key = it.subtaskId,
-                            ) { isDragging ->
-                                SubtaskItem(
-                                    subtask = it,
-                                    isDragging = isDragging,
-                                    enabled = !isDeleted,
-                                    showDragIndicator = true,
-                                    onSubtaskClick = { onSubtaskClick(it) },
-                                    onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                                    modifier = Modifier.detectReorderAfterLongPress(reorderableState)
-                                )
+                            when (it) {
+                                is Task -> {
+                                    val subtasksAmount = tasks.flatMap {
+                                            subtasks -> subtasks.subtasks
+                                    }.count { subtask -> subtask.taskId == it.taskId && !subtask.completed }
+
+                                    ReorderableItem(
+                                        reorderableState = reorderableState,
+                                        key = it.taskId,
+                                    ) { isDragging ->
+                                        TaskItem(
+                                            task = it,
+                                            subtasksAmount = subtasksAmount,
+                                            enabled = !isDeleted,
+                                            isDragging = isDragging,
+                                            onPriorityClick = { onPriorityClick(it) },
+                                            onCompletedToggle = {
+                                                val subtasks = draggableTasks.filterIsInstance<Subtask>().let { list ->
+                                                    list.filter { subtask -> subtask.taskId == it.taskId }
+                                                }
+                                                onToggleTaskCompleted(
+                                                    TaskWithSubtasks(
+                                                        task = it,
+                                                        subtasks = subtasks
+                                                    )
+                                                )
+                                            },
+                                            onTaskClick = { onTaskClick(it) },
+                                            onDateTimeClick = { onDateTimeClick(it) },
+                                            showDragIndicator = !isDeleted,
+                                            modifier = if (isDeleted) Modifier
+                                            else Modifier.detectReorderAfterLongPress(reorderableState)
+                                        )
+                                    }
+                                }
+                                is Subtask -> {
+                                    val draggingSubtask = reorderableState.draggingItemKey == it.subtaskId
+
+                                    AnimatedVisibility(
+                                        visible = reorderableState.draggingItemKey != it.taskId,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                        modifier = Modifier
+                                            .zIndex(if (draggingSubtask) 1f else -1f)
+                                            .then(
+                                                // Remove duplicate animation while dragging among subtasks
+                                                other = if (!draggingSubtask)
+                                                    Modifier.animateItemPlacement()
+                                                else
+                                                    Modifier
+                                            )
+                                    ) {
+                                        ReorderableItem(
+                                            state = reorderableState,
+                                            key = it.subtaskId,
+                                        ) { isDragging ->
+                                            SubtaskItem(
+                                                subtask = it,
+                                                isDragging = isDragging,
+                                                enabled = !isDeleted,
+                                                showDragIndicator = true,
+                                                onSubtaskClick = { onSubtaskClick(it) },
+                                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                                modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            }
-            if (completedTasksAmount != 0) {
-                item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
-                    RowToggle(
-                        showContent = showCompletedTasks,
-                        onShowContentToggle = onToggleShowCompletedTasks,
-                        label = stringResource(id = R.string.completed, completedTasksAmount),
-                        showContentDescription = R.string.show_completed_tasks,
-                        hideContentDescription = R.string.hide_completed_tasks,
-                        modifier = Modifier.animateItemPlacement(),
-                        enabled = !isDeleted,
-                    )
-                }
-                tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
-                    item(key = "${task.taskId} GHOST") {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            TaskItem(
-                                task = task,
-                                enabled = false,
-                                onTaskClick = { onTaskClick(task) },
-                            )
+                        if (completedTasksAmount != 0) {
+                            item(key = LazyListKeys.SHOW_COMPLETED_TASKS_TOGGLE) {
+                                RowToggle(
+                                    showContent = showCompletedTasks,
+                                    onShowContentToggle = onToggleShowCompletedTasks,
+                                    label = stringResource(id = R.string.completed, completedTasksAmount),
+                                    showContentDescription = R.string.show_completed_tasks,
+                                    hideContentDescription = R.string.hide_completed_tasks,
+                                    modifier = Modifier.animateItemPlacement(),
+                                    enabled = !isDeleted,
+                                )
+                            }
+                            tasksWithCompletedSubtasks.forEach { (task, subtasks) ->
+                                item(key = "${task.taskId} GHOST") {
+                                    AnimatedVisibility(
+                                        visible = showCompletedTasks,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                        modifier = Modifier.animateItemPlacement()
+                                    ) {
+                                        TaskItem(
+                                            task = task,
+                                            enabled = false,
+                                            onTaskClick = { onTaskClick(task) },
+                                        )
+                                    }
+                                }
+                                items(
+                                    items = subtasks,
+                                    key = { "${it.subtaskId} GHOST COMPLETED" }
+                                ) {
+                                    AnimatedVisibility(
+                                        visible = showCompletedTasks,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                        modifier = Modifier.animateItemPlacement()
+                                    ) {
+                                        SubtaskItem(
+                                            subtask = it,
+                                            enabled = !isDeleted,
+                                            onSubtaskClick = { onSubtaskClick(it) },
+                                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                        )
+                                    }
+                                }
+                            }
+                            completedTasks.forEach {
+                                item(key = "${it.task.taskId} COMPLETED") {
+                                    AnimatedVisibility(
+                                        visible = showCompletedTasks,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                        modifier = Modifier.animateItemPlacement()
+                                    ) {
+                                        TaskItem(
+                                            task = it.task,
+                                            enabled = !isDeleted,
+                                            onCompletedToggle = { onToggleTaskCompleted(it) },
+                                            onTaskClick = { onTaskClick(it.task) },
+                                        )
+                                    }
+                                }
+                                items(
+                                    items = it.subtasks,
+                                    key = { subtask -> "${subtask.subtaskId} COMPLETED" }
+                                ) {
+                                    AnimatedVisibility(
+                                        visible = showCompletedTasks,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                        modifier = Modifier.animateItemPlacement()
+                                    ) {
+                                        SubtaskItem(
+                                            subtask = it,
+                                            enabled = !isDeleted,
+                                            onSubtaskClick = { onSubtaskClick(it) },
+                                            onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                        )
+                                    }
+                                }
+                            }
                         }
-                    }
-                    items(
-                        items = subtasks,
-                        key = { "${it.subtaskId} GHOST COMPLETED" }
-                    ) {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            SubtaskItem(
-                                subtask = it,
+                        item(contentType = ContentTypes.LABELS) {
+                            BoardLabels(
+                                labels = labels.sortedBy { it.normalizedName },
+                                onLabelClick = onLabelClick,
                                 enabled = !isDeleted,
-                                onSubtaskClick = { onSubtaskClick(it) },
-                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                     }
                 }
-                completedTasks.forEach {
-                    item(key = "${it.task.taskId} COMPLETED") {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            TaskItem(
-                                task = it.task,
-                                enabled = !isDeleted,
-                                onCompletedToggle = { onToggleTaskCompleted(it) },
-                                onTaskClick = { onTaskClick(it.task) },
-                            )
-                        }
-                    }
-                    items(
-                        items = it.subtasks,
-                        key = { subtask -> "${subtask.subtaskId} COMPLETED" }
-                    ) {
-                        AnimatedVisibility(
-                            visible = showCompletedTasks,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                            modifier = Modifier.animateItemPlacement()
-                        ) {
-                            SubtaskItem(
-                                subtask = it,
-                                enabled = !isDeleted,
-                                onSubtaskClick = { onSubtaskClick(it) },
-                                onCompletedToggle = { onToggleSubtaskCompleted(it) },
-                            )
-                        }
-                    }
-                }
-            }
-            item(contentType = ContentTypes.LABELS) {
-                BoardLabels(
-                    labels = labels.sortedBy { it.normalizedName },
-                    onLabelClick = onLabelClick,
-                    enabled = !isDeleted,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
             }
         }
     }

@@ -66,6 +66,7 @@ fun UrgentScreen(
     onNavigateToCreateTask: (boardId: Int, name: String?) -> Unit = {_, _ -> },
     onNavigateToEditTask: (taskId: Int) -> Unit = {},
     onNavigateToEditSubtask: (boardId: Int, subtaskId: Int) -> Unit = {_ , _ -> },
+    onNavigateToCreateBoard: () -> Unit = {},
     finishActivity: () -> Unit = {},
     onShowSnackbar: (
         message: Int,
@@ -143,6 +144,7 @@ fun UrgentScreen(
                         ))
                     }
                 }
+                UrgentViewModel.Event.NavigateToCreateBoard -> onNavigateToCreateBoard()
             }
         }
     }
@@ -297,7 +299,13 @@ fun UrgentScreen(
                     ) {
                         CreateFab(
                             text = R.string.create_task,
-                            onClick = {
+                            onClick = onClick@{
+                                if (urgentViewModel.boards.isEmpty()) {
+                                    urgentViewModel.onEvent(UrgentEvent.ShowDialog(
+                                        type = UrgentEvent.DialogType.CreateBoard
+                                    ))
+                                    return@onClick
+                                }
                                 creatingTask = true
                                 urgentViewModel.onEvent(UrgentEvent.ChangeBottomSheetContent(
                                     UrgentEvent.BottomSheetContent.NewTask

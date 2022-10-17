@@ -154,4 +154,25 @@
     <string name="task_reminder_channel_description">Used to remind on incoming tasks</string>
     <string name="notifications_permission"><em>Notifications</em> are required to show task reminders. Please grant the permission</string>
     <string name="create_board_error">There was a problem while trying to create this board</string>
+    <string name="no_boards_created_title">No boards created yet</string>
+    <string name="no_boards_created_content">Get started by tapping on the (+) button</string>
+    <string name="no_boards_archived_title">Archive is empty</string>
+    <string name="no_boards_archived_content">When you\'re done with a board, you may archive it to keep it deactivated</string>
+    <string name="no_boards_deleted_title">Nothing in trash</string>
+    <string name="no_boards_deleted_content">Boards in the trash are deleted after 7 days</string>
+    <string name="no_today_tasks_title">There are no tasks set for today</string>
+    <string name="no_today_tasks_content">Get started by tapping on the (+) button and setting the task for today</string>
+    <string name="create_board_first">There are no boards created yet. Start by creating one first</string>
+    <string name="no_tomorrow_tasks_title">There are no tasks set for tomorrow</string>
+    <string name="no_tomorrow_tasks_content">Get started by tapping on the (+) button and setting the task for tomorrow</string>
+    <string name="no_urgent_tasks_with_date_title">There are no urgent tasks with a due date</string>
+    <string name="no_urgent_tasks_content">Get started by tapping on the (+) button and setting the task as urgent</string>
+    <string name="no_urgent_tasks_without_date_title">There are no urgent tasks with unspecified due dates</string>
+    <string name="no_boards_with_label_title">No boards with this label</string>
+    <string name="no_tasks_title">There are not tasks yet</string>
+    <string name="no_tasks_content">Get started by tapping on the (+) button</string>
+    <string name="no_boards_found">No boards found</string>
+    <string name="find_boards">Find boards</string>
+    <string name="no_boards_match">No boards match the search</string>
+    <string name="custom">Custom</string>
 </resources>

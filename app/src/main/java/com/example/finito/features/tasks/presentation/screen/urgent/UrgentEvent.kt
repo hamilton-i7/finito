@@ -1,11 +1,11 @@
 package com.example.finito.features.tasks.presentation.screen.urgent
 
 import androidx.annotation.StringRes
-import com.example.finito.features.tasks.domain.util.Priority
 import com.example.finito.features.boards.domain.entity.SimpleBoard
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
+import com.example.finito.features.tasks.domain.util.Priority
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -46,6 +46,8 @@ sealed class UrgentEvent {
 
     object DismissBottomSheet : UrgentEvent()
 
+    object CreateBoard : UrgentEvent()
+
     sealed class DialogType {
         object DeleteCompleted : DialogType()
 
@@ -58,6 +60,8 @@ sealed class UrgentEvent {
         object DiscardChanges : DialogType()
 
         data class Error(@StringRes val message: Int) : DialogType()
+
+        object CreateBoard : DialogType()
     }
 
     sealed class BottomSheetContent {

@@ -10,7 +10,7 @@ sealed class AddEditBoardEvent {
 
     data class SelectLabel(val label: SimpleLabel) : AddEditBoardEvent()
 
-    object CreateBoard : AddEditBoardEvent()
+    data class CreateBoard(val previousRoute: String? = null) : AddEditBoardEvent()
 
     object EditBoard : AddEditBoardEvent()
 

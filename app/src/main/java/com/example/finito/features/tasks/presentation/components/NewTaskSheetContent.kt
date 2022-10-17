@@ -58,11 +58,7 @@ fun NewTaskSheetContent(
                 boardName = selectedBoardName,
                 expanded = boardsMenuExpanded,
                 onIndicatorClick = onBoardIndicatorClick,
-                modifier = Modifier.padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 8.dp
-                )
+                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
 

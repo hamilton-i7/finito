@@ -14,9 +14,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.domain.util.SortingOption
-import com.example.finito.core.domain.util.commonSortingOptions
 import com.example.finito.core.presentation.AppEvent
 import com.example.finito.core.presentation.AppViewModel
+import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.BottomBar
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.components.bars.TopBar
@@ -25,7 +25,6 @@ import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.screen.archive.components.ArchiveDialogs
-import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.ui.theme.FinitoTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -135,25 +134,18 @@ fun ArchiveScreen(
 
         ArchiveScreen(
             paddingValues = innerPadding,
+            isSearching = archiveViewModel.showSearchBar,
             gridLayout = archiveViewModel.gridLayout,
-            labels = archiveViewModel.labels,
-            labelFilters = archiveViewModel.labelFilters,
-            onLabelClick = {
-                archiveViewModel.onEvent(ArchiveEvent.AddFilter(it))
-            },
-            onRemoveFiltersClick = {
-                archiveViewModel.onEvent(ArchiveEvent.RemoveFilters)
-            },
             boards = archiveViewModel.boards,
             onBoardClick = onNavigateToBoardFlow,
-            selectedSortingOption = archiveViewModel.boardsOrder,
-            onSortOptionClick = onSortOptionClick@{
-                if (archiveViewModel.boardsOrder == it) {
-                    archiveViewModel.onEvent(ArchiveEvent.SortBoards(sortingOption = null))
-                    return@onSortOptionClick
-                }
-                archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))
-            },
+//            selectedSortingOption = archiveViewModel.boardsOrder,
+//            onSortOptionClick = onSortOptionClick@{
+//                if (archiveViewModel.boardsOrder == it) {
+//                    archiveViewModel.onEvent(ArchiveEvent.SortBoards(sortingOption = null))
+//                    return@onSortOptionClick
+//                }
+//                archiveViewModel.onEvent(ArchiveEvent.SortBoards(it))
+//            },
             onCardOptionsClick = {
                 archiveViewModel.onEvent(ArchiveEvent.ShowCardMenu(boardId = it, show = true))
             },
@@ -183,14 +175,11 @@ fun ArchiveScreen(
 @Composable
 private fun ArchiveScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    isSearching: Boolean = false,
     gridLayout: Boolean = true,
-    labels: List<SimpleLabel> = emptyList(),
-    labelFilters: List<Int> = emptyList(),
-    onLabelClick: (labelId: Int) -> Unit = {},
-    onRemoveFiltersClick: () -> Unit = {},
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
-    selectedSortingOption: SortingOption.Common? = null,
-    onSortOptionClick: (option: SortingOption.Common) -> Unit = {},
+    selectedSortingOption: SortingOption.Common = SortingOption.Common.Default,
+    onSortOptionClick: () -> Unit = {},
     onBoardClick: (boardId: Int) -> Unit = {},
     showCardMenu: (boardId: Int) -> Boolean = { false },
     onDismissMenu: (boardId: Int) -> Unit = {},
@@ -204,25 +193,33 @@ private fun ArchiveScreen(
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)) {
-        BoardLayout(
-            gridLayout = gridLayout,
-            labels = labels,
-            labelFilters = labelFilters,
-            onLabelClick = onLabelClick,
-            onRemoveFiltersClick = onRemoveFiltersClick,
-            boards = boards,
-            sortingOptions = commonSortingOptions,
-            selectedSortingOption = selectedSortingOption,
-            onSortOptionClick = onSortOptionClick,
-            onBoardClick = onBoardClick,
-            showCardMenu = showCardMenu,
-            onDismissMenu = onDismissMenu,
-            options = options,
-            onCardOptionsClick = onCardOptionsClick,
-            onMenuItemClick = { boardId, option ->
-                onMenuItemClick(boardId, option as ArchivedBoardCardMenuOption)
-            },
-        )
+        Crossfade(targetState = !isSearching && boards.isEmpty()) {
+            when (it) {
+                true -> {
+                    EmptyContent(
+                        icon = R.drawable.open_box,
+                        title = R.string.no_boards_archived_title,
+                        contentText = R.string.no_boards_archived_content
+                    )
+                }
+                false -> {
+                    BoardLayout(
+                        gridLayout = gridLayout,
+                        boards = boards,
+                        selectedSortingOption = selectedSortingOption,
+                        onSortOptionClick = onSortOptionClick,
+                        onBoardClick = onBoardClick,
+                        showCardMenu = showCardMenu,
+                        onDismissMenu = onDismissMenu,
+                        options = options,
+                        onCardOptionsClick = onCardOptionsClick,
+                        onMenuItemClick = { boardId, option ->
+                            onMenuItemClick(boardId, option as ArchivedBoardCardMenuOption)
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -232,7 +229,6 @@ private fun ArchiveScreenPreview() {
     FinitoTheme {
         Surface {
             ArchiveScreen(
-                labels = SimpleLabel.dummyLabels,
                 boards = BoardWithLabelsAndTasks.dummyBoards,
                 selectedSortingOption = SortingOption.Common.Newest
             )

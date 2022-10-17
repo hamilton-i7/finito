@@ -12,7 +12,7 @@ class FindActiveBoards(
     private val repository: BoardRepository
 ) {
     operator fun invoke(
-        boardOrder: SortingOption.Common? = null,
+        boardOrder: SortingOption.Common = SortingOption.Common.Default,
         searchQuery: String? = null,
         vararg labelIds: Int,
     ): Result.Success<Flow<List<BoardWithLabelsAndTasks>>> {
@@ -35,13 +35,13 @@ class FindActiveBoards(
     }
 
     private fun sortBoards(
-        boardOrder: SortingOption.Common?,
+        boardOrder: SortingOption.Common,
         boards: List<BoardWithLabelsAndTasks>,
     ): List<BoardWithLabelsAndTasks> = when (boardOrder) {
         SortingOption.Common.NameAZ -> boards.sortedBy { it.board.normalizedName }
         SortingOption.Common.NameZA -> boards.sortedByDescending { it.board.normalizedName }
         SortingOption.Common.Newest -> boards.sortedByDescending { it.board.createdAt }
         SortingOption.Common.Oldest -> boards.sortedBy { it.board.createdAt }
-        null -> boards.sortedBy { it.board.position }
+        SortingOption.Common.Custom -> boards.sortedBy { it.board.position }
     }
 }

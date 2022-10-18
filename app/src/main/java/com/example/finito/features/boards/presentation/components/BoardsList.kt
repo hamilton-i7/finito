@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ fun BoardsList(
     reorderableState: ReorderableLazyListState = rememberReorderableLazyListState(
         onMove = { _, _ -> }
     ),
+    listState: LazyListState? = null,
     allowDrag: Boolean = false,
     selectedSortingOption: SortingOption.Common? = null,
     onSortOptionClick: () -> Unit = {},
@@ -36,7 +38,7 @@ fun BoardsList(
     LazyColumn(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        state = reorderableState.listState,
+        state = listState ?: reorderableState.listState,
         modifier = Modifier.reorderable(reorderableState)
     ) {
         if (selectedSortingOption != null) {

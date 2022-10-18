@@ -10,3 +10,10 @@ fun CharSequence.normalize(): String {
         .replace(REGEX_NORMALIZE, "")
         .lowercase()
 }
+
+fun Char.normalize(): Char {
+    return Normalizer
+        .normalize(toString(), Normalizer.Form.NFD)
+        .replace(REGEX_NORMALIZE, "")[0]
+        .lowercaseChar()
+}

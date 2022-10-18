@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TestTags
 import com.example.finito.core.presentation.util.TextFieldState
@@ -21,7 +22,7 @@ import com.example.finito.core.presentation.util.TextFieldState
 fun SearchTopBar(
     onBackClick: () -> Unit = {},
     queryState: TextFieldState,
-    @StringRes placeholder: Int = R.string.search_boards,
+    placeholder: String = stringResource(id = R.string.search_boards),
     @StringRes backIconDescription: Int = R.string.close_search_bar,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     focusRequester: FocusRequester? = null,
@@ -35,7 +36,11 @@ fun SearchTopBar(
             value = queryState.value,
             onValueChange = queryState.onValueChange,
             placeholder = {
-                Text(text = stringResource(id = placeholder))
+                Text(
+                    text = placeholder,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
             },
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(

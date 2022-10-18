@@ -17,9 +17,11 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
+import com.example.finito.core.domain.util.normalize
 import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.header
@@ -27,9 +29,8 @@ import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
-import com.example.finito.features.boards.presentation.components.BoardCard
+import com.example.finito.features.boards.presentation.components.BoardLayout
 import com.example.finito.features.boards.presentation.screen.searchboard.components.SelectModeTopBar
-import com.example.finito.features.boards.utils.BOARD_COLUMNS
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.SelectableLabel
 import com.example.finito.ui.theme.FinitoTheme
@@ -42,12 +43,16 @@ fun SearchBoardScreen(
     onNavigateBack: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
-    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val hapticFeedback = LocalHapticFeedback.current
+    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
     var performedFeedback by rememberSaveable { mutableStateOf(false) }
+    var selectedLabelsAmount by remember { mutableStateOf(0) }
+    val selectModeEnabled = searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT
 
     BackHandler {
-        if (searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT) {
+        if (searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT
+            || searchBoardViewModel.mode == SearchBoardEvent.Mode.SEARCH) {
             searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
                 mode = SearchBoardEvent.Mode.IDLE
             ))
@@ -67,38 +72,62 @@ fun SearchBoardScreen(
         performedFeedback = true
     }
 
+    LaunchedEffect(searchBoardViewModel.labelFilters) {
+        if (searchBoardViewModel.labelFilters.isEmpty()) return@LaunchedEffect
+        selectedLabelsAmount = searchBoardViewModel.labelFilters.size
+    }
+
     Scaffold(
         topBar = {
-            Crossfade(targetState = searchBoardViewModel.mode) { mode ->
-                when (mode) {
-                    SearchBoardEvent.Mode.SELECT -> {
-                        SelectModeTopBar(
-                            selectedAmount = searchBoardViewModel.labelFilters.size,
-                            scrollBehavior = topBarScrollBehavior,
-                            onBackClick = {
-                                searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
-                                    mode = SearchBoardEvent.Mode.IDLE
-                                ))
-                            },
-                            onConfirmClick = {
-                                searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
-                                    mode = SearchBoardEvent.Mode.SEARCH
-                                ))
-                            },
-                        )
-                    }
-                    SearchBoardEvent.Mode.IDLE, SearchBoardEvent.Mode.SEARCH -> {
-                        SearchTopBar(
-                            queryState = searchBoardViewModel.searchQueryState.copy(
-                                onValueChange = {
-                                    searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(it))
-                                }
-                            ),
-                            scrollBehavior = topBarScrollBehavior,
-                            onBackClick = onNavigateBack
-                        )
-                    }
+            Crossfade(targetState = selectModeEnabled) { enabled ->
+                if (enabled) {
+                    SelectModeTopBar(
+                        selectedAmount = selectedLabelsAmount,
+                        scrollBehavior = topBarScrollBehavior,
+                        onBackClick = {
+                            searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
+                                mode = SearchBoardEvent.Mode.IDLE
+                            ))
+                        },
+                        onConfirmClick = {
+                            searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(query = ""))
+                            searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
+                                mode = SearchBoardEvent.Mode.SEARCH
+                            ))
+                        },
+                    )
+                    return@Crossfade
                 }
+
+                val placeholder = when {
+                    searchBoardViewModel.mode == SearchBoardEvent.Mode.SEARCH
+                            && searchBoardViewModel.labelFilters.isNotEmpty() -> {
+                        val labelNames = searchBoardViewModel.labelFilters.joinToString {
+                            "\"${it.name}\""
+                        }
+                        "${stringResource(id = R.string.search_in)} $labelNames"
+                    }
+                    else -> stringResource(id = R.string.search_boards)
+                }
+
+                SearchTopBar(
+                    queryState = searchBoardViewModel.searchQueryState.copy(
+                        onValueChange = {
+                            searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(it))
+                        }
+                    ),
+                    placeholder = placeholder,
+                    onBackClick = onBackClick@{
+                        if (searchBoardViewModel.mode == SearchBoardEvent.Mode.SEARCH) {
+                            searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
+                                mode = SearchBoardEvent.Mode.IDLE
+                            ))
+                            return@onBackClick
+                        }
+                        onNavigateBack()
+                    },
+                    scrollBehavior = topBarScrollBehavior,
+                )
             }
         },
         modifier = Modifier
@@ -110,18 +139,21 @@ fun SearchBoardScreen(
             mode = searchBoardViewModel.mode,
             labels = searchBoardViewModel.labels,
             selectedLabels = searchBoardViewModel.labelFilters,
+            showNoResults = searchBoardViewModel.showNoResults,
+            gridLayout = searchBoardViewModel.gridLayout,
             boards = searchBoardViewModel.boards,
             onEnableSearchMode = {
+                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
+                searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(query = ""))
                 searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
                     mode = SearchBoardEvent.Mode.SEARCH
                 ))
-                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
             },
             onEnableSelectMode = {
+                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
                 searchBoardViewModel.onEvent(SearchBoardEvent.ChangeMode(
                     mode = SearchBoardEvent.Mode.SELECT
                 ))
-                searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
             },
             onSelectLabel = {
                 searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
@@ -135,6 +167,7 @@ private fun SearchBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     mode: SearchBoardEvent.Mode = SearchBoardEvent.Mode.IDLE,
     showNoResults: Boolean = false,
+    gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     selectedLabels: List<SimpleLabel> = emptyList(),
     boards: List<BoardWithLabelsAndTasks> = emptyList(),
@@ -156,12 +189,10 @@ private fun SearchBoardScreen(
         else -> 120.dp
     }
     val selectedLabelsMap = selectedLabels.groupBy { it.labelId }
-    val options = listOf(
-        ActiveBoardCardMenuOption.Archive,
-        ActiveBoardCardMenuOption.Delete,
-    )
 
-    Surface(modifier = Modifier.padding(paddingValues)) {
+    Surface(modifier = Modifier
+        .imePadding()
+        .padding(paddingValues)) {
         when (mode) {
             SearchBoardEvent.Mode.IDLE, SearchBoardEvent.Mode.SELECT -> {
                 if (labels.isEmpty()) {
@@ -171,58 +202,50 @@ private fun SearchBoardScreen(
                     ) {
                         EmptyContent(icon = R.drawable.color_search, title = R.string.find_boards)
                     }
-                } else {
-                    val grouped = labels.groupBy { it.name[0].uppercase() }
+                    return@Surface
+                }
+                val grouped = labels.groupBy { it.name[0].normalize().uppercase() }
 
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize),
-                        contentPadding = PaddingValues(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        grouped.forEach { (initial, labelsForInitial) ->
-                            header {
-                                Text(
-                                    text = initial,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = finitoColors.primary,
-                                    modifier = Modifier.padding(start = 8.dp, top = 32.dp, bottom = 4.dp)
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize),
+                    contentPadding = PaddingValues(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    grouped.forEach { (initial, labelsForInitial) ->
+                        header {
+                            Text(
+                                text = initial,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = finitoColors.primary,
+                                modifier = Modifier.padding(
+                                    start = 8.dp,
+                                    top = 32.dp,
+                                    bottom = 4.dp
                                 )
-                            }
-                            items(labelsForInitial) { label ->
-                                SelectableLabel(
-                                    label,
-                                    selected = selectedLabelsMap[label.labelId] != null,
-                                    onClick = onClick@{
-                                        if (mode == SearchBoardEvent.Mode.SELECT) {
-                                            onSelectLabel(label)
-                                            return@onClick
-                                        }
-                                        onEnableSearchMode(label)
-                                    },
-                                    onLongClick = onLongClick@{
-                                        if (mode == SearchBoardEvent.Mode.SELECT) return@onLongClick
-                                        onEnableSelectMode(label)
+                            )
+                        }
+                        items(labelsForInitial) { label ->
+                            SelectableLabel(
+                                label,
+                                selected = selectedLabelsMap[label.labelId] != null,
+                                onClick = onClick@{
+                                    if (mode == SearchBoardEvent.Mode.SELECT) {
+                                        onSelectLabel(label)
+                                        return@onClick
                                     }
-                                )
-                            }
+                                    onEnableSearchMode(label)
+                                },
+                                onLongClick = onLongClick@{
+                                    if (mode == SearchBoardEvent.Mode.SELECT) return@onLongClick
+                                    onEnableSelectMode(label)
+                                }
+                            )
                         }
                     }
                 }
             }
             SearchBoardEvent.Mode.SEARCH -> {
-                if (boards.isEmpty()) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        EmptyContent(
-                            icon = R.drawable.todo_list,
-                            title = R.string.find_boards
-                        )
-                    }
-                    return@Surface
-                }
                 if (showNoResults) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -235,27 +258,33 @@ private fun SearchBoardScreen(
                     }
                     return@Surface
                 }
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(count = BOARD_COLUMNS),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(boards) {
-                        BoardCard(
-                            onClick = { onBoardClick(it.board.boardId) },
-                            board = it,
-                            onOptionsClick = { onCardOptionsClick(it.board.boardId) },
-                            showMenu = showCardMenu(it.board.boardId),
-                            onDismissMenu = { onDismissMenu(it.board.boardId) },
-                            options = options,
-                            onMenuItemClick = { option ->
-                                onMenuItemClick(it, option as ActiveBoardCardMenuOption)
-                            },
+                if (boards.isEmpty()) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        EmptyContent(
+                            icon = R.drawable.todo_list,
+                            title = R.string.find_boards
                         )
                     }
+                    return@Surface
                 }
+                BoardLayout(
+                    gridLayout = gridLayout,
+                    boards = boards,
+                    onBoardClick = onBoardClick,
+                    showCardMenu = showCardMenu,
+                    onCardOptionsClick = onCardOptionsClick,
+                    onDismissMenu = onDismissMenu,
+                    options = listOf(
+                        ActiveBoardCardMenuOption.Archive,
+                        ActiveBoardCardMenuOption.Delete,
+                    ),
+                    onMenuItemClick = { boardId, option ->
+                        onMenuItemClick(boardId, option as ActiveBoardCardMenuOption)
+                    },
+                )
             }
         }
     }

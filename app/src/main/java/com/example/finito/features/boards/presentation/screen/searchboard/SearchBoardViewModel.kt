@@ -52,6 +52,9 @@ class SearchBoardViewModel @Inject constructor(
     var mode by mutableStateOf(SearchBoardEvent.Mode.IDLE)
         private set
 
+    var showNoResults by mutableStateOf(false)
+        private set
+
     init {
         fetchLabels()
     }
@@ -70,6 +73,7 @@ class SearchBoardViewModel @Inject constructor(
         this.mode = mode
         if (mode == SearchBoardEvent.Mode.IDLE) {
             labelFilters = emptyList()
+            boards = emptyList()
         }
     }
 
@@ -97,11 +101,18 @@ class SearchBoardViewModel @Inject constructor(
 
     private fun onSearchBoards(query: String) {
         searchQueryState = searchQueryState.copy(value = query)
-
         searchJob?.cancel()
+
+        if (query.isBlank() && labelFilters.isEmpty()) {
+            mode = SearchBoardEvent.Mode.IDLE
+            return
+        }
         searchJob = viewModelScope.launch {
             delay(SEARCH_DELAY_MILLIS)
             fetchBoards()
+            if (mode != SearchBoardEvent.Mode.SEARCH) {
+                mode = SearchBoardEvent.Mode.SEARCH
+            }
         }
     }
 
@@ -118,6 +129,7 @@ class SearchBoardViewModel @Inject constructor(
             labelIds = labelFilters.map { it.labelId }.toIntArray()
         ).data.onEach { boards ->
             this@SearchBoardViewModel.boards = boards
+            showNoResults = boards.isEmpty() && searchQueryState.value.isNotBlank()
         }.launchIn(viewModelScope)
     }
 }

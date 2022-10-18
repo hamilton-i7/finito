@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import com.example.finito.R
 import com.example.finito.core.presentation.components.bars.SearchTopBar
 import com.example.finito.core.presentation.util.Keyboard
@@ -61,7 +62,7 @@ fun LabelsListFullDialog(
                     keyboardController?.hide()
                 },
                 scrollBehavior = scrollBehavior,
-                placeholder = R.string.search_labels,
+                placeholder = stringResource(id = R.string.search_labels),
                 backIconDescription = R.string.close_dialog,
             )
         }

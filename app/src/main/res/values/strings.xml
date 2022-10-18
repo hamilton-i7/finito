@@ -175,4 +175,5 @@
     <string name="find_boards">Find boards</string>
     <string name="no_boards_match">No boards match the search</string>
     <string name="custom">Custom</string>
+    <string name="search_in">Search in</string>
 </resources>

@@ -31,10 +31,7 @@ fun BoardLayout(
     onCardOptionsClick: (boardId: Int) -> Unit,
     onMenuItemClick: (board: BoardWithLabelsAndTasks, option: BoardCardMenuOption) -> Unit,
 ) {
-    val contentPadding = PaddingValues(
-        vertical = 12.dp,
-        horizontal = 12.dp
-    )
+    val contentPadding = PaddingValues(12.dp)
 
     if (gridLayout) {
         BoardsGrid(

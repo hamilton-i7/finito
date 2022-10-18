@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -25,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.finito.R
 import com.example.finito.core.presentation.components.EmptyContent
 import com.example.finito.core.presentation.components.bars.SearchTopBar
+import com.example.finito.core.presentation.util.header
 import com.example.finito.core.presentation.util.menu.ActiveBoardCardMenuOption
 import com.example.finito.core.presentation.util.noRippleClickable
 import com.example.finito.core.presentation.util.preview.CompletePreviews
@@ -35,6 +33,7 @@ import com.example.finito.features.boards.utils.BOARD_COLUMNS
 import com.example.finito.features.labels.domain.entity.SimpleLabel
 import com.example.finito.features.labels.presentation.components.SelectableLabel
 import com.example.finito.ui.theme.FinitoTheme
+import com.example.finito.ui.theme.finitoColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,29 +172,40 @@ private fun SearchBoardScreen(
                         EmptyContent(icon = R.drawable.color_search, title = R.string.find_boards)
                     }
                 } else {
+                    val grouped = labels.groupBy { it.name[0].uppercase() }
+
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(minSize),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(labels) { label ->
-                            SelectableLabel(
-                                label,
-                                selected = selectedLabelsMap[label.labelId] != null,
-                                onClick = onClick@{
-                                    if (mode == SearchBoardEvent.Mode.SELECT) {
-                                        onSelectLabel(label)
-                                        return@onClick
+                        grouped.forEach { (initial, labelsForInitial) ->
+                            header {
+                                Text(
+                                    text = initial,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = finitoColors.primary,
+                                    modifier = Modifier.padding(start = 8.dp, top = 32.dp, bottom = 4.dp)
+                                )
+                            }
+                            items(labelsForInitial) { label ->
+                                SelectableLabel(
+                                    label,
+                                    selected = selectedLabelsMap[label.labelId] != null,
+                                    onClick = onClick@{
+                                        if (mode == SearchBoardEvent.Mode.SELECT) {
+                                            onSelectLabel(label)
+                                            return@onClick
+                                        }
+                                        onEnableSearchMode(label)
+                                    },
+                                    onLongClick = onLongClick@{
+                                        if (mode == SearchBoardEvent.Mode.SELECT) return@onLongClick
+                                        onEnableSelectMode(label)
                                     }
-                                    onEnableSearchMode(label)
-                                },
-                                onLongClick = onLongClick@{
-                                    if (mode == SearchBoardEvent.Mode.SELECT) return@onLongClick
-                                    onEnableSelectMode(label)
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }

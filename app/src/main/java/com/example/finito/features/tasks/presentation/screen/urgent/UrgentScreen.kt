@@ -325,6 +325,7 @@ fun UrgentScreen(
 
                 UrgentScreen(
                     paddingValues = innerPadding,
+                    isOverlapping = topBarScrollBehavior.state.overlappedFraction > 0f,
                     pagerState = pagerState,
                     listStates = listStates,
                     boardNamesMap = urgentViewModel.boardNamesMap,
@@ -412,6 +413,7 @@ fun UrgentScreen(
 @Composable
 private fun UrgentScreen(
     paddingValues: PaddingValues = PaddingValues(),
+    isOverlapping: Boolean = false,
     pagerState: PagerState = rememberPagerState(),
     listStates: List<LazyListState> = emptyList(),
     boardNamesMap: Map<Int, String> = mapOf(),
@@ -432,7 +434,7 @@ private fun UrgentScreen(
             .padding(paddingValues)
     ) {
         Column {
-            UrgentTabs(state = pagerState)
+            UrgentTabs(state = pagerState, isTopBarCollapsed = isOverlapping)
             UrgentTabsContent(
                 state = pagerState,
                 listStates = listStates,

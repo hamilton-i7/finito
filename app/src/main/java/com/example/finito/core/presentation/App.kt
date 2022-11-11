@@ -367,7 +367,8 @@ fun App(
                         onShowSnackbar = onShowSnackbar,
                         onNavigateToBoardFlow = {
                             navController.navigateToBoardFlow(it, BoardState.ARCHIVED)
-                        }
+                        },
+                        onNavigateToSearchBoards = { navController.navigateToSearchBoards() }
                     )
                 }
 

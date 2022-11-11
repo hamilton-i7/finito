@@ -9,15 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finito.R
 import com.example.finito.core.domain.Result
-import com.example.finito.core.domain.util.SEARCH_DELAY_MILLIS
 import com.example.finito.core.domain.util.SortingOption
 import com.example.finito.core.presentation.util.PreferencesKeys
-import com.example.finito.core.presentation.util.TextFieldState
 import com.example.finito.features.boards.domain.entity.BoardState
 import com.example.finito.features.boards.domain.entity.BoardWithLabelsAndTasks
 import com.example.finito.features.boards.domain.usecase.BoardUseCases
-import com.example.finito.features.labels.domain.entity.SimpleLabel
-import com.example.finito.features.labels.domain.usecase.LabelUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -32,39 +28,25 @@ import javax.inject.Inject
 @HiltViewModel
 class ArchiveViewModel @Inject constructor(
     private val boardUseCases: BoardUseCases,
-    private val labelUseCases: LabelUseCases,
     private val preferences: SharedPreferences
 ) : ViewModel() {
-
-    var labels by mutableStateOf<List<SimpleLabel>>(emptyList())
-        private set
-
-    var labelFilters by mutableStateOf<List<Int>>(emptyList())
-        private set
 
     var boards by mutableStateOf<List<BoardWithLabelsAndTasks>>(emptyList())
         private set
 
     private var fetchBoardsJob: Job? = null
 
-    var showSearchBar by mutableStateOf(false)
-        private set
-
-    var searchQueryState by mutableStateOf(TextFieldState())
-        private set
-
-    private var searchJob: Job? = null
-
     var boardsOrder by mutableStateOf(
         preferences.getString(
             PreferencesKeys.BOARDS_ORDER,
-            null
+            SortingOption.Common.Default.name
         )?.let {
             when (it) {
                 SortingOption.Common.Newest.name -> SortingOption.Common.Newest
                 SortingOption.Common.Oldest.name -> SortingOption.Common.Oldest
                 SortingOption.Common.NameAZ.name -> SortingOption.Common.NameAZ
-                else -> SortingOption.Common.NameZA
+                SortingOption.Common.NameZA.name -> SortingOption.Common.NameZA
+                else -> SortingOption.Common.Custom
             }
         } ?: SortingOption.Common.Default
     ); private set
@@ -87,37 +69,27 @@ class ArchiveViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        fetchLabels()
         fetchBoards()
     }
 
     fun onEvent(event: ArchiveEvent) {
         when (event) {
-            is ArchiveEvent.AddFilter -> onAddFilter(event.labelId)
-            ArchiveEvent.RemoveFilters -> onRemoveFilters()
             is ArchiveEvent.SortBoards -> onSortBoards(event.sortingOption)
             is ArchiveEvent.UnarchiveBoard -> onMoveBoard(event.board, EditMode.UNARCHIVE)
             is ArchiveEvent.MoveBoardToTrash -> onMoveBoard(event.board, EditMode.DELETE)
-            is ArchiveEvent.SearchBoards -> onSearchBoards(event.query)
             ArchiveEvent.ToggleLayout -> onToggleLayout()
-            is ArchiveEvent.ShowSearchBar -> onShowSearchBar(event.show)
             is ArchiveEvent.ShowCardMenu -> onShowCardMenu(id = event.boardId, show = event.show)
             is ArchiveEvent.ShowDialog -> onShowDialogChange(event.type)
+            ArchiveEvent.EnableSearch -> onEnableSearch()
         }
+    }
+
+    private fun onEnableSearch() = viewModelScope.launch {
+        fireEvents(Event.NavigateToSearchBoards)
     }
 
     private fun onShowDialogChange(dialogType: ArchiveEvent.DialogType?) {
         this.dialogType = dialogType
-    }
-
-    private fun onSearchBoards(query: String) {
-        searchQueryState = searchQueryState.copy(value = query)
-
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(SEARCH_DELAY_MILLIS)
-            fetchBoards()
-        }
     }
 
     private fun onSortBoards(sortingOption: SortingOption.Common) {
@@ -129,34 +101,11 @@ class ArchiveViewModel @Inject constructor(
         fetchBoards()
     }
 
-    private fun onRemoveFilters() {
-        labelFilters = emptyList()
-        fetchBoards()
-    }
-
-    private fun onAddFilter(labelId: Int) {
-        val exists = labelFilters.contains(labelId)
-        labelFilters = if (exists) {
-            labelFilters.filter { it != labelId }
-        } else {
-            labelFilters + listOf(labelId)
-        }
-        fetchBoards()
-    }
-
-    private fun fetchLabels() = viewModelScope.launch {
-        labelUseCases.findSimpleLabels().data.onEach { labels ->
-            this@ArchiveViewModel.labels = labels
-        }.launchIn(viewModelScope)
-    }
-
     private fun fetchBoards() = viewModelScope.launch {
 
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findArchivedBoards(
-            boardOrder = boardsOrder,
-            searchQuery = searchQueryState.value,
-            labelIds = labelFilters.toIntArray()
+            boardOrder = boardsOrder
         ).onEach { boards ->
             this@ArchiveViewModel.boards = boards
             boardsOrder = boardsOrder
@@ -229,15 +178,6 @@ class ArchiveViewModel @Inject constructor(
         }
     }
 
-    private fun onShowSearchBar(show: Boolean) {
-        if (show == showSearchBar) return
-        if (!show) {
-            searchQueryState = searchQueryState.copy(value = "")
-            fetchBoards()
-        }
-        showSearchBar = show
-    }
-
     private fun onShowCardMenu(id: Int, show: Boolean) {
         selectedBoardId = if (!show) 0 else id
         showCardMenu = show
@@ -266,5 +206,7 @@ class ArchiveViewModel @Inject constructor(
                 val board: BoardWithLabelsAndTasks,
             ) : Snackbar(message)
         }
+
+        object NavigateToSearchBoards : Event()
     }
 }

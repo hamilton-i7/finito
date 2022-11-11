@@ -84,7 +84,7 @@ fun BoardScreen(
     val focusRequester = remember { FocusRequester() }
     val hapticFeedback = LocalHapticFeedback.current
 
-    val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val searchTopBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val reorderableState = rememberReorderableLazyListState(

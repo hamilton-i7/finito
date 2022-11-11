@@ -4,9 +4,7 @@ import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +39,7 @@ import com.example.finito.ui.theme.finitoColors
 fun SearchBoardScreen(
     searchBoardViewModel: SearchBoardViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
+    onNavigateToBoard: (boardId: Int) -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -49,6 +48,8 @@ fun SearchBoardScreen(
     var performedFeedback by rememberSaveable { mutableStateOf(false) }
     var selectedLabelsAmount by remember { mutableStateOf(0) }
     val selectModeEnabled = searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT
+
+    val gridState = rememberLazyGridState()
 
     BackHandler {
         if (searchBoardViewModel.mode == SearchBoardEvent.Mode.SELECT
@@ -140,8 +141,10 @@ fun SearchBoardScreen(
             labels = searchBoardViewModel.labels,
             selectedLabels = searchBoardViewModel.labelFilters,
             showNoResults = searchBoardViewModel.showNoResults,
+            gridState = gridState,
             gridLayout = searchBoardViewModel.gridLayout,
             boards = searchBoardViewModel.boards,
+            onBoardClick = onNavigateToBoard,
             onEnableSearchMode = {
                 searchBoardViewModel.onEvent(SearchBoardEvent.SelectLabel(it))
                 searchBoardViewModel.onEvent(SearchBoardEvent.SearchBoards(query = ""))
@@ -167,6 +170,7 @@ private fun SearchBoardScreen(
     paddingValues: PaddingValues = PaddingValues(),
     mode: SearchBoardEvent.Mode = SearchBoardEvent.Mode.IDLE,
     showNoResults: Boolean = false,
+    gridState: LazyGridState = rememberLazyGridState(),
     gridLayout: Boolean = true,
     labels: List<SimpleLabel> = emptyList(),
     selectedLabels: List<SimpleLabel> = emptyList(),
@@ -189,6 +193,8 @@ private fun SearchBoardScreen(
         else -> 120.dp
     }
     val selectedLabelsMap = selectedLabels.groupBy { it.labelId }
+
+    LaunchedEffect(boards) { gridState.scrollToItem(index = 0) }
 
     Surface(modifier = Modifier
         .imePadding()
@@ -272,6 +278,7 @@ private fun SearchBoardScreen(
                 }
                 BoardLayout(
                     gridLayout = gridLayout,
+                    gridState = gridState,
                     boards = boards,
                     onBoardClick = onBoardClick,
                     showCardMenu = showCardMenu,

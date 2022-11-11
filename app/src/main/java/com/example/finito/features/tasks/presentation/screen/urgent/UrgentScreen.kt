@@ -242,34 +242,37 @@ fun UrgentScreen(
             Scaffold(
                 modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection),
                 topBar = {
-                    SmallTopBarWithMenu(
-                        title = stringResource(id = R.string.urgent),
-                        showMenu = urgentViewModel.showScreenMenu,
-                        onDismissMenu = {
-                            urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = false))
-                        },
-                        onMenuClick = {
-                            scope.launch { drawerState.open() }
-                        },
-                        onMoreOptionsClick = {
-                            urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = true))
-                        },
-                        options = listOf<UrgentScreenMenuOption>(
-                            UrgentScreenMenuOption.DeleteCompleted
-                        ),
-                        disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
-                        onOptionClick = { option ->
-                            urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = false))
-                            when (option) {
-                                UrgentScreenMenuOption.DeleteCompleted -> {
-                                    urgentViewModel.onEvent(UrgentEvent.ShowDialog(
-                                        type = UrgentEvent.DialogType.DeleteCompleted
-                                    ))
+                    Column {
+                        SmallTopBarWithMenu(
+                            title = stringResource(id = R.string.urgent),
+                            showMenu = urgentViewModel.showScreenMenu,
+                            onDismissMenu = {
+                                urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = false))
+                            },
+                            onMenuClick = {
+                                scope.launch { drawerState.open() }
+                            },
+                            onMoreOptionsClick = {
+                                urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = true))
+                            },
+                            options = listOf<UrgentScreenMenuOption>(
+                                UrgentScreenMenuOption.DeleteCompleted
+                            ),
+                            disabledOptions = if (noCompletedTasks) disabledMenuOptions else emptyList(),
+                            onOptionClick = { option ->
+                                urgentViewModel.onEvent(UrgentEvent.ShowScreenMenu(show = false))
+                                when (option) {
+                                    UrgentScreenMenuOption.DeleteCompleted -> {
+                                        urgentViewModel.onEvent(UrgentEvent.ShowDialog(
+                                            type = UrgentEvent.DialogType.DeleteCompleted
+                                        ))
+                                    }
                                 }
-                            }
-                        },
-                        scrollBehavior = topBarScrollBehavior,
-                    )
+                            },
+                            scrollBehavior = topBarScrollBehavior,
+                        )
+                        UrgentTabs(state = pagerState)
+                    }
                 },
                 floatingActionButton = {
                     AnimatedContent(
@@ -325,7 +328,6 @@ fun UrgentScreen(
 
                 UrgentScreen(
                     paddingValues = innerPadding,
-                    isOverlapping = topBarScrollBehavior.state.overlappedFraction > 0f,
                     pagerState = pagerState,
                     listStates = listStates,
                     boardNamesMap = urgentViewModel.boardNamesMap,
@@ -413,7 +415,6 @@ fun UrgentScreen(
 @Composable
 private fun UrgentScreen(
     paddingValues: PaddingValues = PaddingValues(),
-    isOverlapping: Boolean = false,
     pagerState: PagerState = rememberPagerState(),
     listStates: List<LazyListState> = emptyList(),
     boardNamesMap: Map<Int, String> = mapOf(),
@@ -433,24 +434,21 @@ private fun UrgentScreen(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        Column {
-            UrgentTabs(state = pagerState, isTopBarCollapsed = isOverlapping)
-            UrgentTabsContent(
-                state = pagerState,
-                listStates = listStates,
-                boardNamesMap = boardNamesMap,
-                tasks = tasks,
-                showCompletedTasks = showCompletedTasks,
-                onToggleShowCompletedTasks = onToggleShowCompletedTasks,
-                onTaskClick = onTaskClick,
-                onPriorityClick = onPriorityClick,
-                onDateTimeClick = onDateTimeClick,
-                onToggleTaskCompleted = onToggleTaskCompleted,
-                onBoardNameClick = onBoardNameClick,
-                onSubtaskClick = onSubtaskClick,
-                onToggleSubtaskCompleted = onToggleSubtaskCompleted
-            )
-        }
+        UrgentTabsContent(
+            state = pagerState,
+            listStates = listStates,
+            boardNamesMap = boardNamesMap,
+            tasks = tasks,
+            showCompletedTasks = showCompletedTasks,
+            onToggleShowCompletedTasks = onToggleShowCompletedTasks,
+            onTaskClick = onTaskClick,
+            onPriorityClick = onPriorityClick,
+            onDateTimeClick = onDateTimeClick,
+            onToggleTaskCompleted = onToggleTaskCompleted,
+            onBoardNameClick = onBoardNameClick,
+            onSubtaskClick = onSubtaskClick,
+            onToggleSubtaskCompleted = onToggleSubtaskCompleted
+        )
     }
 }
 

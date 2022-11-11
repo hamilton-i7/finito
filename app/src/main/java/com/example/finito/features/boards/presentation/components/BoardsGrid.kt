@@ -54,13 +54,16 @@ fun BoardsGrid(
                 }
             }
         }
-        items(boards, key = { it.board.boardId }, contentType = { ContentTypes.BOARDS }) {
+        items(
+            items = boards,
+            key = { it.board.boardId },
+            contentType = { ContentTypes.BOARDS }
+        ) {
             ReorderableItem(
                 reorderableState,
                 key = it.board.boardId,
-                orientationLocked = false,
-                // FIXME: 18/10/2022: Fix item placement animation when list gets smaller
-//                defaultDraggingModifier = Modifier.animateItemPlacement()
+                defaultDraggingModifier = Modifier,
+                orientationLocked = false
             ) { isDragging ->
                 BoardCard(
                     onClick = { onBoardClick(it.board.boardId) },
@@ -72,9 +75,11 @@ fun BoardsGrid(
                     options = options,
                     onMenuItemClick = { option -> onMenuItemClick(it, option) },
                     modifier = if (allowDrag)
-                        Modifier.detectReorderAfterLongPress(reorderableState)
+                        Modifier
+                            .animateItemPlacement()
+                            .detectReorderAfterLongPress(reorderableState)
                     else
-                        Modifier,
+                        Modifier.animateItemPlacement(),
                 )
             }
         }

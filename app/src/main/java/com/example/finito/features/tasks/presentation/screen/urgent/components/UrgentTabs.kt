@@ -1,6 +1,5 @@
 package com.example.finito.features.tasks.presentation.screen.urgent.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -8,19 +7,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.example.finito.R
 import com.example.finito.core.presentation.util.TabOption
 import com.example.finito.features.subtasks.domain.entity.Subtask
 import com.example.finito.features.tasks.domain.entity.Task
 import com.example.finito.features.tasks.domain.entity.TaskWithSubtasks
-import com.example.finito.ui.theme.finitoColors
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -36,20 +32,14 @@ private val tabOptions = listOf(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun UrgentTabs(
+    modifier: Modifier = Modifier,
     state: PagerState = rememberPagerState(),
-    isTopBarCollapsed: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
-    val containerColor by animateColorAsState(
-        targetValue = if (isTopBarCollapsed)
-            finitoColors.surfaceColorAtElevation(3.dp)
-        else
-            finitoColors.surface
-    )
 
     TabRow(
         selectedTabIndex = state.currentPage,
-        containerColor = containerColor
+        modifier = modifier
     ) {
         tabOptions.forEachIndexed { index, tabOption ->
             Tab(

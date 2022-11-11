@@ -38,7 +38,8 @@ fun NavGraphBuilder.boardGraph(
             enterTransition = {
                 when (initialState.destination.route) {
                     Screen.Home.route, Screen.Archive.route,
-                    Screen.Trash.route, Screen.Label.route -> childScreenEnterTransition()
+                    Screen.Trash.route, Screen.Label.route,
+                    Screen.SearchBoards.route -> childScreenEnterTransition()
                     Screen.EditBoard.route, Screen.CreateTask.route,
                     Screen.EditTask.route -> childScreenPopEnterTransition()
                     else -> peerScreenEnterTransition()

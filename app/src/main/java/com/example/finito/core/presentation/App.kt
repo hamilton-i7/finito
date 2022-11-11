@@ -416,7 +416,8 @@ fun App(
                     popExitTransition = childScreenPopExitTransition
                 ) {
                     SearchBoardScreen(
-                        onNavigateBack = { navController.navigateUp() }
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToBoard = { navController.navigateToBoardFlow(it) },
                     )
                 }
 

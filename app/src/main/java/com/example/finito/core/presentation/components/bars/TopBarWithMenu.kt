@@ -3,6 +3,7 @@ package com.example.finito.core.presentation.components.bars
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.finito.R
@@ -22,7 +23,8 @@ fun <M: MenuOption> SmallTopBarWithMenu(
     disabledOptions: List<M> = emptyList(),
     onOptionClick: (M) -> Unit = {},
 ) {
-    TopAppBar(title = { Text(title) },
+    TopAppBar(
+        title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(
@@ -47,6 +49,8 @@ fun <M: MenuOption> SmallTopBarWithMenu(
                     onOptionClick = onOptionClick
                 )
             }
-        }, scrollBehavior = scrollBehavior
+        },
+        scrollBehavior = scrollBehavior,
+        modifier = Modifier
     )
 }

@@ -52,6 +52,9 @@ class TrashViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    var loading by mutableStateOf(false)
+        private set
+
     init {
         fetchBoards()
     }
@@ -68,8 +71,10 @@ class TrashViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
+        loading = true
         boardUseCases.findDeletedBoards().data.onEach { boards ->
             this@TrashViewModel.boards = boards
+            loading = false
         }.launchIn(viewModelScope)
     }
 

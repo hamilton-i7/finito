@@ -158,9 +158,9 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    fun canDragTask(position: ItemPosition): Boolean {
+    fun canDragTask(draggedOver: ItemPosition): Boolean {
         if (subtaskNameStates.isEmpty()) return false
-        return subtaskNameStates.any { it.id == position.key }
+        return subtaskNameStates.any { it.id == draggedOver.key }
     }
 
     private fun onToggleCompleted() = viewModelScope.launch {

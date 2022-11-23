@@ -68,6 +68,9 @@ class ArchiveViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    var loading by mutableStateOf(false)
+        private set
+
     init {
         fetchBoards()
     }
@@ -102,13 +105,14 @@ class ArchiveViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
-
+        loading = true
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findArchivedBoards(
             boardOrder = boardsOrder
-        ).onEach { boards ->
+        ).data.onEach { boards ->
             this@ArchiveViewModel.boards = boards
             boardsOrder = boardsOrder
+            loading = false
         }.launchIn(viewModelScope)
     }
 

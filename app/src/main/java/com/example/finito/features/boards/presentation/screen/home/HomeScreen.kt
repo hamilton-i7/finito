@@ -80,7 +80,7 @@ fun HomeScreen(
             homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
-        canDragOver = homeViewModel::canDrag,
+        canDragOver = { draggedOver, _ -> homeViewModel.canDrag(draggedOver) },
         onDragEnd = { from, to ->
             homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
         }
@@ -90,7 +90,7 @@ fun HomeScreen(
             homeViewModel.onEvent(HomeEvent.ReorderTasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
-        canDragOver = homeViewModel::canDrag,
+        canDragOver = { draggedOver, _ -> homeViewModel.canDrag(draggedOver) },
         onDragEnd = { from, to ->
             homeViewModel.onEvent(HomeEvent.SaveTasksOrder(from, to))
         }
@@ -163,8 +163,9 @@ fun HomeScreen(
                 .nestedScroll(homeTopBarScrollBehavior.nestedScrollConnection)
                 .testTag(TestTags.HOME_SCREEN),
         ) { innerPadding ->
-            HomeDialogs(homeViewModel)
+            if (homeViewModel.loading) return@Scaffold
 
+            HomeDialogs(homeViewModel)
             HomeScreen(
                 paddingValues = innerPadding,
                 reorderableListState = reorderableListState,

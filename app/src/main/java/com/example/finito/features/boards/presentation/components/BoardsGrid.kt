@@ -59,6 +59,7 @@ fun BoardsGrid(
             key = { it.board.boardId },
             contentType = { ContentTypes.BOARDS }
         ) {
+            // FIXME 23/11/2022: Fix failed requirement when adding placement animation
             ReorderableItem(
                 reorderableState,
                 key = it.board.boardId,

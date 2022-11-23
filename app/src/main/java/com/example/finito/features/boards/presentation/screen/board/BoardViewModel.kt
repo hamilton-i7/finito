@@ -335,14 +335,14 @@ class BoardViewModel @Inject constructor(
         return subtasks.intersect(allTasks.toSet())
     }
 
-    fun canDrag(position: ItemPosition): Boolean {
+    fun canDrag(draggedOver: ItemPosition): Boolean {
         val tasks = getTasksWithNoCompletedSubtasks()
         tasks.find { it.task.taskId == draggingItem }?.let {
-            if (it.subtasks.any { subtask -> subtask.subtaskId == position.key }) return false
+            if (it.subtasks.any { subtask -> subtask.subtaskId == draggedOver.key }) return false
         }
         return tasks.any {
-            it.task.taskId == position.key
-                    || it.subtasks.any { subtask -> subtask.subtaskId == position.key }
+            it.task.taskId == draggedOver.key
+                    || it.subtasks.any { subtask -> subtask.subtaskId == draggedOver.key }
         }
     }
 

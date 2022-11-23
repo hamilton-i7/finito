@@ -93,8 +93,9 @@ fun TrashScreen(
         },
         modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
     ) { innerPadding ->
-        TrashDialogs(trashViewModel)
+        if (trashViewModel.loading) return@Scaffold
 
+        TrashDialogs(trashViewModel)
         TrashScreen(
             paddingValues = innerPadding,
             gridLayout = trashViewModel.gridLayout,

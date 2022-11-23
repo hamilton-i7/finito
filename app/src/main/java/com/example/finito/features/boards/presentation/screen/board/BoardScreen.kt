@@ -92,7 +92,7 @@ fun BoardScreen(
             boardViewModel.onEvent(BoardEvent.ReorderTasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
-        canDragOver = boardViewModel::canDrag,
+        canDragOver = { draggedOver, _ -> boardViewModel.canDrag(draggedOver) },
         onDragEnd = { from, to ->
             boardViewModel.onEvent(BoardEvent.SaveTasksOrder(from, to))
         }

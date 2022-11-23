@@ -128,7 +128,7 @@ fun AddEditTaskScreen(
             addEditTaskViewModel.onEvent(AddEditTaskEvent.ReorderSubtasks(from, to))
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
         },
-        canDragOver = addEditTaskViewModel::canDragTask,
+        canDragOver = { draggedOver, _ -> addEditTaskViewModel.canDragTask(draggedOver) },
     )
     val bottomSheetCorners by animateDpAsState(
         targetValue = calculateDp(bottomSheetState)

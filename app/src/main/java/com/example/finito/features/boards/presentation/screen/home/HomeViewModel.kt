@@ -70,6 +70,9 @@ class HomeViewModel @Inject constructor(
     private val _eventFlow = MutableSharedFlow<Event>()
     val eventFlow = _eventFlow.asSharedFlow()
 
+    var loading by mutableStateOf(false)
+        private set
+
     init {
         fetchBoards()
     }
@@ -96,7 +99,7 @@ class HomeViewModel @Inject constructor(
         this.dialogType = dialogType
     }
 
-    fun canDrag(position: ItemPosition): Boolean = boards.any { it.board.boardId == position.key }
+    fun canDrag(draggedOver: ItemPosition): Boolean = boards.any { it.board.boardId == draggedOver.key }
 
     private fun onSaveTasksOrder(from: Int, to: Int) = viewModelScope.launch {
         if (from == to) return@launch
@@ -122,12 +125,14 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun fetchBoards() = viewModelScope.launch {
+        loading = true
         fetchBoardsJob?.cancel()
         fetchBoardsJob = boardUseCases.findActiveBoards(
             boardOrder = boardsOrder
         ).data.onEach { boards ->
             this@HomeViewModel.boards = boards
             boardsOrder = boardsOrder
+            loading = false
         }.launchIn(viewModelScope)
     }
 

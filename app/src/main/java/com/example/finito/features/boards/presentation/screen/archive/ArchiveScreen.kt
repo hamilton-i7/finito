@@ -121,8 +121,9 @@ fun ArchiveScreen(
             },
             modifier = Modifier.nestedScroll(archiveTopBarScrollBehavior.nestedScrollConnection)
         ) { innerPadding ->
-            ArchiveDialogs(archiveViewModel)
+            if (archiveViewModel.loading) return@Scaffold
 
+            ArchiveDialogs(archiveViewModel)
             ArchiveScreen(
                 paddingValues = innerPadding,
                 gridLayout = archiveViewModel.gridLayout,

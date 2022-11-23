@@ -103,7 +103,7 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.0'
 
     // Drag and drop
-    implementation "org.burnoutcrew.composereorderable:reorderable:0.9.4"
+    implementation "org.burnoutcrew.composereorderable:reorderable:0.9.6"
 
     // Room
     implementation "androidx.room:room-runtime:$room_version"
